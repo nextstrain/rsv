@@ -1,4 +1,4 @@
-# Nextstrain RSV
+# nextstrain rsv
 
 ### Input Data
 
