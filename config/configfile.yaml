@@ -1,0 +1,29 @@
+conda_environment: "workflow/envs/nextstrain.yaml"
+
+gene: "everything"
+
+genesforglycosylation: ["G"]
+
+build_name: "rsv"
+
+filter:
+  group_by: "year"
+  min_length: 10000
+  sequences_per_group: 10
+
+files:
+  reference: "config/areference.gb"
+  color_schemes: "config/colors.tsv"
+  auspice_config: "config/auspice_config.json"
+
+refine:
+  coalescent: "opt"
+  date_inference: "marginal"
+  divergence_unit: "mutations"
+  clock_filter_iqd: 4
+
+ancestral:
+  inference: "joint"
+
+traits:
+  columns: "country"
