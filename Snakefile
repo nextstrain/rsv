@@ -9,7 +9,8 @@ rule all:
 
 include: "workflow/snakemake_rules/core.smk"
 
+include: "workflow/snakemake_rules/export.smk"
+
 if config['gene'] == 'G':
     include: "workflow/snakemake_rules/glycosylation.smk"
-else:
-    include: "workflow/snakemake_rules/export.smk"
+
