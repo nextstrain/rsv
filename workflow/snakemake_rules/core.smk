@@ -13,7 +13,7 @@ rule movemetadata:
         metadata = "data/metadata.tsv"
     shell:
         """
-        cp {input.metadata} {output.metadata} 
+        cp {input.metadata} {output.metadata}
         """
 
 rule movesequences:
@@ -23,7 +23,7 @@ rule movesequences:
         sequences = "data/sequences.fasta"
     shell:
         """
-        cp {input.sequences} {output.sequences} 
+        cp {input.sequences} {output.sequences}
         """
 
 rule sequencesdeduplicated:
@@ -131,12 +131,12 @@ rule align:
         alignment = build_dir + "/{build_name}/sequences.aligned.fasta"
     shell:
         """
-        nextalign \
-            --sequences {input.sequences} \
+        nextalign run \
             --reference {input.reference} \
-            --output-fasta {output.alignment} 
-        """ 
-         
+            --output-fasta {output.alignment} \
+            {input.sequences}
+        """
+
 rule sorted:
     input:
         sequences = rules.align.output.alignment,
@@ -161,7 +161,7 @@ rule tree:
         """
         augur tree \
             --alignment {input.alignment} \
-            --output {output.tree} 
+            --output {output.tree}
         """
 
 rule refine:
@@ -217,7 +217,7 @@ rule ancestral:
             --tree {input.tree} \
             --alignment {input.alignment} \
             --output-node-data {output.node_data} \
-            --inference {params.inference} 
+            --inference {params.inference}
         """
 
 rule translate:
@@ -249,7 +249,7 @@ rule traits:
         node_data = build_dir + "/{build_name}/traits.json"
     log:
         "logs/traits_{build_name}_rsv.txt"
-    conda: 
+    conda:
         config["conda_environment"]
     params:
     	columns = config["traits"]["columns"]
@@ -260,6 +260,6 @@ rule traits:
             --metadata {input.metadata} \
             --output {output.node_data} \
             --columns {params.columns} \
-            --confidence 
+            --confidence
         """
 
