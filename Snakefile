@@ -3,6 +3,11 @@ configfile: "config/configfile.yaml"
 build_dir = 'results'
 auspice_dir = 'auspice'
 
+if config['rsv'] == 'a':
+    reference = 'areference'
+if config['rsv'] == 'b':
+    reference = 'breference'
+
 rule all:
     input:
         results = "auspice/rsv.json"
