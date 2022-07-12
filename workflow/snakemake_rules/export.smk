@@ -16,7 +16,8 @@ rule export:
         node_data = get_node_data,
         auspice_config = config["files"]["auspice_config"]
     output:
-        auspice_json = "auspice/{build_name}.json"
+        auspice_json = "auspice/{build_name}.json",
+        root_sequence = "auspice/{build_name}_root-sequence.json"
     params:
     	title = "RSV-A phylogeny"
     shell:
@@ -27,5 +28,6 @@ rule export:
             --node-data {input.node_data} \
             --title {params.title:q} \
             --auspice-config {input.auspice_config} \
+            --include-root-sequence \
             --output {output.auspice_json}
         """
