@@ -1,0 +1,73 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	1	fetch_all_sequences
+	1	fetch_from_genbank
+	1	fetch_general_geolocation_rules
+	1	transform
+	5
+
+[Mon Jul 11 13:01:53 2022]
+rule fetch_general_geolocation_rules:
+    output: data/general-geolocation-rules.tsv
+    jobid: 3
+
+
+        curl https://raw.githubusercontent.com/nextstrain/ncov-ingest/master/source-data/gisaid_geoLocationRules.tsv > data/general-geolocation-rules.tsv
+        
+[Mon Jul 11 13:01:54 2022]
+Finished job 3.
+1 of 5 steps (20%) done
+
+[Mon Jul 11 13:01:54 2022]
+rule fetch_from_genbank:
+    output: data/genbank.ndjson
+    jobid: 4
+
+
+        ./bin/fetch-from-genbank > data/genbank.ndjson
+        
+[Mon Jul 11 13:02:46 2022]
+Finished job 4.
+2 of 5 steps (40%) done
+
+[Mon Jul 11 13:02:46 2022]
+rule fetch_all_sequences:
+    input: data/genbank.ndjson
+    output: data/sequences.ndjson
+    jobid: 2
+
+
+        cat data/genbank.ndjson > data/sequences.ndjson
+        
+[Mon Jul 11 13:02:46 2022]
+Finished job 2.
+3 of 5 steps (60%) done
+
+[Mon Jul 11 13:02:46 2022]
+rule transform:
+    input: data/sequences.ndjson, data/general-geolocation-rules.tsv
+    output: data/metadata.tsv, data/sequences.fasta
+    log: logs/transform.txt
+    jobid: 1
+
+
+        (cat data/sequences.ndjson             | ./bin/transform-field-names                 --field-map collected=date submitted=date_submitted genbank_accession=accession             | ./bin/transform-string-fields --normalize             | ./bin/transform-strain-names                 --strain-regex ^.+$                 --backup-fields accession             | ./bin/transform-date-fields                 --date-fields date date_submitted                 --expected-date-formats %Y %Y-%m %Y-%m-%d %Y-%m-%dT%H:%M:%SZ             | ./bin/transform-genbank-location             | ./bin/transform-string-fields                 --titlecase-fields region country division location                 --articles and d de del des di do en l la las le los nad of op sur the y                 --abbreviations USA             | ./bin/transform-authors                 --authors-field authors                 --default-value ?                 --abbr-authors-field abbr_authors             | ./bin/apply-geolocation-rules                 --geolocation-rules data/general-geolocation-rules.tsv             | ./bin/merge-user-metadata                 --annotations ./source-data/annotations.tsv                 --id-field accession             | ./bin/ndjson-to-tsv-and-fasta                 --metadata-columns accession genbank_accession_rev strain date region country division location host date_submitted sra_accession abbr_authors reverse authors institution                 --metadata data/metadata.tsv                 --id-field accession                 --sequence-field sequence ) 2>> logs/transform.txt
+        
+[Mon Jul 11 13:03:18 2022]
+Finished job 1.
+4 of 5 steps (80%) done
+
+[Mon Jul 11 13:03:18 2022]
+localrule all:
+    input: data/sequences.fasta, data/metadata.tsv
+    jobid: 0
+
+[Mon Jul 11 13:03:18 2022]
+Finished job 0.
+5 of 5 steps (100%) done
+Complete log: /nextstrain/build/.snakemake/log/2022-07-11T130153.845822.snakemake.log

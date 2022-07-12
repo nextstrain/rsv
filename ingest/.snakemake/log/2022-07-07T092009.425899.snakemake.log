@@ -1,0 +1,10 @@
+Building DAG of jobs...
+Relative file path './source-data/geolocation-rules.tsv' starts with './'. This is redundant and strongly discouraged. It can also lead to inconsistent results of the file-matching approach used by Snakemake. You can simply omit the './' for relative file paths.
+The code used to generate one or several output files has changed:
+    To inspect which output files have changes, run 'snakemake --list-code-changes'.
+    To trigger a re-run, use 'snakemake -R $(snakemake --list-code-changes)'.
+Nothing to be done (all requested files are present and up to date).
+The code used to generate one or several output files has changed:
+    To inspect which output files have changes, run 'snakemake --list-code-changes'.
+    To trigger a re-run, use 'snakemake -R $(snakemake --list-code-changes)'.
+Complete log: /home/laura/code/new_from_scratch/ingest/.snakemake/log/2022-07-07T092009.425899.snakemake.log

@@ -1,0 +1,117 @@
+Building DAG of jobs...
+Relative file path './source-data/geolocation-rules.tsv' starts with './'. This is redundant and strongly discouraged. It can also lead to inconsistent results of the file-matching approach used by Snakemake. You can simply omit the './' for relative file paths.
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	1	concat_geolocation_rules
+	1	fetch_all_sequences
+	1	fetch_from_genbank
+	1	fetch_general_geolocation_rules
+	1	join_metadata_clades
+	1	nextclade
+	1	nextclade_dataset
+	1	reverse_reversed_sequences
+	1	transform
+	10
+
+[Tue Jul  5 09:26:37 2022]
+rule fetch_general_geolocation_rules:
+    output: data/general-geolocation-rules.tsv
+    jobid: 7
+
+
+        curl https://raw.githubusercontent.com/nextstrain/ncov-ingest/master/source-data/gisaid_geoLocationRules.tsv > data/general-geolocation-rules.tsv
+        
+[Tue Jul  5 09:26:38 2022]
+Finished job 7.
+1 of 10 steps (10%) done
+
+[Tue Jul  5 09:26:38 2022]
+rule concat_geolocation_rules:
+    input: data/general-geolocation-rules.tsv, ./source-data/geolocation-rules.tsv
+    output: data/all-geolocation-rules.tsv
+    jobid: 4
+
+
+        cat data/general-geolocation-rules.tsv ./source-data/geolocation-rules.tsv >> data/all-geolocation-rules.tsv
+        
+[Tue Jul  5 09:26:38 2022]
+Finished job 4.
+2 of 10 steps (20%) done
+
+[Tue Jul  5 09:26:38 2022]
+rule fetch_from_genbank:
+    output: data/genbank.ndjson
+    jobid: 6
+
+
+        ./bin/fetch-from-genbank > data/genbank.ndjson
+        
+[Tue Jul  5 09:26:42 2022]
+Finished job 6.
+3 of 10 steps (30%) done
+
+[Tue Jul  5 09:26:42 2022]
+rule fetch_all_sequences:
+    input: data/genbank.ndjson
+    output: data/sequences.ndjson
+    jobid: 3
+
+
+        cat data/genbank.ndjson > data/sequences.ndjson
+        
+[Tue Jul  5 09:26:42 2022]
+Finished job 3.
+4 of 10 steps (40%) done
+
+[Tue Jul  5 09:26:42 2022]
+rule transform:
+    input: data/sequences.ndjson, data/all-geolocation-rules.tsv
+    output: data/metadata_raw.tsv, data/sequences.fasta
+    log: logs/transform.txt
+    jobid: 1
+
+
+        (cat data/sequences.ndjson             | ./bin/transform-field-names                 --field-map collected=date submitted=date_submitted genbank_accession=accession             | ./bin/transform-string-fields --normalize             | ./bin/transform-strain-names                 --strain-regex ^.+$                 --backup-fields accession             | ./bin/transform-date-fields                 --date-fields date date_submitted                 --expected-date-formats %Y %Y-%m %Y-%m-%d %Y-%m-%dT%H:%M:%SZ             | ./bin/transform-genbank-location             | ./bin/transform-string-fields                 --titlecase-fields region country division location                 --articles and d de del des di do en l la las le los nad of op sur the y                 --abbreviations USA             | ./bin/transform-authors                 --authors-field authors                 --default-value ?                 --abbr-authors-field abbr_authors             | ./bin/apply-geolocation-rules                 --geolocation-rules data/all-geolocation-rules.tsv             | ./bin/merge-user-metadata                 --annotations ./source-data/annotations.tsv                 --id-field accession             | ./bin/ndjson-to-tsv-and-fasta                 --metadata-columns accession genbank_accession_rev strain date region country division location host date_submitted sra_accession abbr_authors reverse authors institution                 --metadata data/metadata_raw.tsv                 --id-field accession                 --sequence-field sequence ) 2>> logs/transform.txt
+        
+[Tue Jul  5 09:27:12 2022]
+Finished job 1.
+5 of 10 steps (50%) done
+
+[Tue Jul  5 09:27:12 2022]
+rule reverse_reversed_sequences:
+    input: data/metadata_raw.tsv, data/sequences.fasta
+    output: data/sequences_reversed.fasta
+    jobid: 8
+
+
+        python3 bin/reverse_reversed_sequences.py             --metadata data/metadata_raw.tsv             --sequences data/sequences.fasta             --output data/sequences_reversed.fasta
+        
+[Tue Jul  5 09:27:19 2022]
+Finished job 8.
+6 of 10 steps (60%) done
+
+[Tue Jul  5 09:27:19 2022]
+rule nextclade_dataset:
+    output: mpxv.zip
+    jobid: 9
+
+
+        nextclade dataset get --name MPXV --output-zip mpxv.zip
+        
+[Tue Jul  5 09:27:19 2022]
+Error in rule nextclade_dataset:
+    jobid: 9
+    output: mpxv.zip
+    shell:
+        
+        nextclade dataset get --name MPXV --output-zip mpxv.zip
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: /nextstrain/build/.snakemake/log/2022-07-05T092637.190401.snakemake.log
