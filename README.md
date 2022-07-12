@@ -11,5 +11,5 @@ This will produce ingest/data/metadata.tsv and ingest/data/sequences.fasta.
 
 By default, the workflow uses whole genome sequences. To run for individual genes, change 'everything' to gene of interest (eg. 'G') in ```/config/configfile.yaml```.
 
-To run the pipeline, use ```snakemake  --cores 1``` and ```nextstrain view auspice``` to visualise results.
+To run the workflow, use ```snakemake  --cores 1``` and ```nextstrain view auspice``` to visualise results.
 
