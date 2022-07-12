@@ -70,14 +70,14 @@ rule newreference:
         Making new reference
         """
     input:
-        oldreference = "config/areference.gbk"
+        oldreference = "config/" + reference +".gbk"
     output:
         newreferencegbk = build_dir + "/{build_name}/newreference.gbk",
         newreferencefasta = build_dir + "/{build_name}/newreference.fasta"
     params:
         gene = config['gene'],
         newreference = build_dir + "/{build_name}/newreference",
-        oldreference = 'config/areference'
+        oldreference = 'config/' + reference
     shell:
         """
         python scripts/newreference.py \
@@ -95,7 +95,7 @@ rule filter:
         """
     input:
         sequences = build_dir + "/{build_name}/sequencesdedup.fasta",
-        reference = "config/areference.gbk",
+        reference = "config/" + reference + ".gbk",
         metadata = rules.metadatadeduplicated.output.metadata,
         sequence_index = rules.index_sequences.output
     output:
@@ -115,8 +115,6 @@ rule filter:
             --sequences-per-group {params.sequences_per_group} \
             --min-length {params.min_length}
         """
-
-
 
 
 rule align:
