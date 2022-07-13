@@ -6,29 +6,11 @@ This part of the workflow expects input files
 
 build_name = config['build_name']
 
-rule movemetadata:
-    input:
-        metadata = "ingest/data/metadata.tsv"
-    output:
-        metadata = "data/metadata.tsv"
-    shell:
-        """
-        cp {input.metadata} {output.metadata}
-        """
 
-rule movesequences:
-    input:
-        sequences = "ingest/data/sequences.fasta"
-    output:
-        sequences = "data/sequences.fasta"
-    shell:
-        """
-        cp {input.sequences} {output.sequences}
-        """
 
 rule sequencesdeduplicated:
     input:
-        allsequences = rules.movesequences.output.sequences
+        allsequences = "data/sequences.fasta"
     output:
         sequences = build_dir + "/{build_name}/sequencesdedup.fasta"
     shell:
@@ -38,7 +20,7 @@ rule sequencesdeduplicated:
 
 rule metadatadeduplicated:
     input:
-        metadata = rules.movemetadata.output
+        metadata = "data/metadata.tsv"
     output:
         metadata = "data/metadatadedup.tsv"
     shell:
