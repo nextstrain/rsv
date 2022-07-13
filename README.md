@@ -13,3 +13,7 @@ By default, the workflow uses whole genome sequences. To run for individual gene
 
 To run the workflow, use ```snakemake  --cores 1``` and ```nextstrain view auspice``` to visualise results.
 
+##
+
+
+The workflow can be used for either for either rsv-A or rsv-B. To specify which, add 'a' or 'b' in the config file for rsv.
