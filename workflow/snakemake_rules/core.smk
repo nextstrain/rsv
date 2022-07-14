@@ -205,7 +205,7 @@ rule translate:
     input:
         tree = rules.refine.output.tree,
         node_data = rules.ancestral.output.node_data,
-        reference = rules.newreference.input.oldreference
+        reference = rules.newreference.output.newreferencegbk
     output:
     	aa_data = expand(build_dir + "/{{build_name}}/alignedandsorted{gene}.fasta", gene=config["genesforglycosylation"]),
         node_data = build_dir + "/{build_name}/aa_muts.json"
