@@ -207,10 +207,10 @@ rule translate:
         node_data = rules.ancestral.output.node_data,
         reference = rules.newreference.output.newreferencegbk
     output:
-    	aa_data = expand(build_dir + "/{{build_name}}/alignedandsorted{gene}.fasta", gene=config["genesforglycosylation"]),
         node_data = build_dir + "/{build_name}/aa_muts.json"
     params:
-    	alignment_file_mask = build_dir + "/{build_name}/alignedandsorted%GENE.fasta"
+    	alignment_file_mask = build_dir + "/{build_name}/alignedandsorted%GENE.fasta",
+        aa_data = expand(build_dir + "/{{build_name}}/alignedandsorted{gene}.fasta", gene=config["genesforglycosylation"])
     shell:
         """
         augur translate \
