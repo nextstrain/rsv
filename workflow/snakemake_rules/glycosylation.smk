@@ -1,13 +1,15 @@
 rule glycosylation:
     input:
         tree = rules.refine.output.tree,
-        alignment = rules.translate.output.aa_data
     output:
         glycosylations = build_dir + "/{build_name}/glyc.json"
+    params:
+        alignment = rules.translate.params.aa_data
+
     shell:
      """
      python scripts/glycosylation.py \
-     --alignment {input.alignment} \
+     --alignment {params.alignment} \
      --tree {input.tree} \
      --output {output.glycosylations}
      """
