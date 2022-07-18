@@ -21,7 +21,7 @@ def sorted_file(referencefile, alignedfile):
     for record in SeqIO.parse(args.alignment,"fasta"):
 
         seq1 = np.array(record.seq)
-        good_indices = (refseq!='N')&(seq1!='N')
+        good_indices = (refseq!='-')&(seq1!='-')
         a = np.mean(seq1[good_indices]==seq2[good_indices])
 
         if a >0.9: list1.append(record)
