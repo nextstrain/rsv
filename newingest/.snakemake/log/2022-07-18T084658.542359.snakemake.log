@@ -1,0 +1,3 @@
+Building DAG of jobs...
+WorkflowError in line 39 of /nextstrain/build/Snakefile:
+Function did not return str or list of str.

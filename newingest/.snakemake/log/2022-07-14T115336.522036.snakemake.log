@@ -1,0 +1,91 @@
+Building DAG of jobs...
+Relative file path './source-data/geolocation-rules.tsv' starts with './'. This is redundant and strongly discouraged. It can also lead to inconsistent results of the file-matching approach used by Snakemake. You can simply omit the './' for relative file paths.
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	1	csv_to_ndjson
+	1	fetch_all_sequences
+	1	fetch_from_genbank
+	2	transform
+	6
+
+[Thu Jul 14 11:53:36 2022]
+rule transform:
+    input: data/a_sequences.ndjson, data/all-geolocation-rules.tsv
+    output: data/a_metadata.tsv, data/a_sequences.fasta
+    log: logs/a_transform.txt
+    jobid: 1
+    wildcards: type=a
+
+
+        (cat data/a_sequences.ndjson             | ./bin/transform-field-names                 --field-map collected=date submitted=date_submitted genbank_accession=accession             | ./bin/transform-string-fields --normalize             | ./bin/transform-strain-names                 --strain-regex ^.+$                 --backup-fields accession             | ./bin/transform-date-fields                 --date-fields date date_submitted                 --expected-date-formats %Y %Y-%m %Y-%m-%d %Y-%m-%dT%H:%M:%SZ             | ./bin/transform-genbank-location             | ./bin/transform-string-fields                 --titlecase-fields region country division location                 --articles and d de del des di do en l la las le los nad of op sur the y                 --abbreviations USA             | ./bin/transform-authors                 --authors-field authors                 --default-value ?                 --abbr-authors-field abbr_authors             | ./bin/apply-geolocation-rules                 --geolocation-rules data/all-geolocation-rules.tsv             | ./bin/merge-user-metadata                 --annotations ./source-data/annotations.tsv                 --id-field accession             | ./bin/ndjson-to-tsv-and-fasta                 --metadata-columns accession genbank_accession_rev strain date region country division location host date_submitted sra_accession abbr_authors reverse authors institution                 --metadata data/a_metadata.tsv                 --id-field accession                 --sequence-field sequence ) 2>> logs/a_transform.txt
+        
+[Thu Jul 14 11:53:39 2022]
+Finished job 1.
+1 of 6 steps (17%) done
+
+[Thu Jul 14 11:53:39 2022]
+rule fetch_from_genbank:
+    output: data/b_genbank.csv
+    jobid: 10
+    wildcards: type=b
+
+
+        curl "https://www.ncbi.nlm.nih.gov/genomes/VirusVariation/vvsearch2/?fq=%7B%21tag%3DSeqType_s%7DSeqType_s%3A%28%22Nucleotide%22%29&fq=VirusLineageId_ss%3A%28208895%29&q=%2A%3A%2A&cmd=download&dlfmt=csv&fl=genbank_accession%3Aid%2Cgenbank_accession_rev%3AAccVer_s%2Cdatabase%3ASourceDB_s%2Cstrain%3AIsolate_s%2Cregion%3ARegion_s%2Clocation%3ACountryFull_s%2Ccollected%3ACollectionDate_s%2Csubmitted%3ACreateDate_dt%2Clength%3ASLen_i%2Chost%3AHost_s%2Cisolation_source%3AIsolation_csv%2Cbioproject_accession%3ABioProject_s%2Cbiosample_accession%3ABioSample_s%2Csra_accession%3ASRALink_csv%2Ctitle%3ADefinition_s%2Cauthors%3AAuthors_csv%2Cpublications%3APubMed_csv%2Csequence%3ANucleotide_seq&sort=SourceDB_s+desc%2C+CollectionDate_s+asc%2C+id+asc&email=hello%40nextstrain.org" --fail --silent --show-error --http1.1 --header 'User-Agent: https://github.com/nextstrain/monkeypox (hello@nextstrain.org)' >> data/b_genbank.csv
+        
+[Thu Jul 14 11:54:08 2022]
+Finished job 10.
+2 of 6 steps (33%) done
+
+[Thu Jul 14 11:54:08 2022]
+rule csv_to_ndjson:
+    input: data/b_genbank.csv
+    output: data/b_genbank.ndjson
+    jobid: 8
+    wildcards: type=b
+
+
+        python bin/csv-to-ndjson.py             --input data/b_genbank.csv             --output data/b_genbank.ndjson
+        
+[Thu Jul 14 11:54:09 2022]
+Finished job 8.
+3 of 6 steps (50%) done
+
+[Thu Jul 14 11:54:09 2022]
+rule fetch_all_sequences:
+    input: data/b_genbank.ndjson
+    output: data/b_sequences.ndjson
+    jobid: 5
+    wildcards: type=b
+
+
+        cat data/b_genbank.ndjson > data/b_sequences.ndjson
+        
+[Thu Jul 14 11:54:09 2022]
+Finished job 5.
+4 of 6 steps (67%) done
+
+[Thu Jul 14 11:54:09 2022]
+rule transform:
+    input: data/b_sequences.ndjson, data/all-geolocation-rules.tsv
+    output: data/b_metadata.tsv, data/b_sequences.fasta
+    log: logs/b_transform.txt
+    jobid: 2
+    wildcards: type=b
+
+
+        (cat data/b_sequences.ndjson             | ./bin/transform-field-names                 --field-map collected=date submitted=date_submitted genbank_accession=accession             | ./bin/transform-string-fields --normalize             | ./bin/transform-strain-names                 --strain-regex ^.+$                 --backup-fields accession             | ./bin/transform-date-fields                 --date-fields date date_submitted                 --expected-date-formats %Y %Y-%m %Y-%m-%d %Y-%m-%dT%H:%M:%SZ             | ./bin/transform-genbank-location             | ./bin/transform-string-fields                 --titlecase-fields region country division location                 --articles and d de del des di do en l la las le los nad of op sur the y                 --abbreviations USA             | ./bin/transform-authors                 --authors-field authors                 --default-value ?                 --abbr-authors-field abbr_authors             | ./bin/apply-geolocation-rules                 --geolocation-rules data/all-geolocation-rules.tsv             | ./bin/merge-user-metadata                 --annotations ./source-data/annotations.tsv                 --id-field accession             | ./bin/ndjson-to-tsv-and-fasta                 --metadata-columns accession genbank_accession_rev strain date region country division location host date_submitted sra_accession abbr_authors reverse authors institution                 --metadata data/b_metadata.tsv                 --id-field accession                 --sequence-field sequence ) 2>> logs/b_transform.txt
+        
+Waiting at most 5 seconds for missing files.
+MissingOutputException in line 39 of /nextstrain/build/workflow/snakemake_rules/transform.smk:
+Missing files after 5 seconds:
+data/b_sequences.fasta
+This might be due to filesystem latency. If that is the case, consider to increase the wait time with --latency-wait.
+Removing output files of failed job transform since they might be corrupted:
+data/b_metadata.tsv
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: /nextstrain/build/.snakemake/log/2022-07-14T115336.522036.snakemake.log

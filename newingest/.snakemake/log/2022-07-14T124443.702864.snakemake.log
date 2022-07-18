@@ -1,0 +1,4 @@
+Building DAG of jobs...
+Relative file path './source-data/geolocation-rules.tsv' starts with './'. This is redundant and strongly discouraged. It can also lead to inconsistent results of the file-matching approach used by Snakemake. You can simply omit the './' for relative file paths.
+Nothing to be done.
+Complete log: /nextstrain/build/.snakemake/log/2022-07-14T124443.702864.snakemake.log
