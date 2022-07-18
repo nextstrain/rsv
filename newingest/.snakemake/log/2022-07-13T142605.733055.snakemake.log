@@ -1,4 +1,0 @@
-SyntaxError:
-Not all output, log and benchmark files of rule transform contain the same wildcards. This is crucial though, in order to avoid that two or more jobs write to the same file.
-  File "/nextstrain/build/Snakefile", line 50, in <module>
-  File "/nextstrain/build/workflow/snakemake_rules/transform.smk", line 66, in <module>
