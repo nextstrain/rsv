@@ -5,8 +5,10 @@ if not config:
 def _get_all_targets(wildcards):
     # Default targets are the metadata TSV and sequences FASTA files
     all_targets = [
-        "data/sequences.fasta",
-        "data/metadata.tsv"
+        "data/a_sequences.fasta",
+        "data/a_metadata.tsv",
+        "data/b_sequences.fasta",
+        "data/b_metadata.tsv"
     ]
 
     # Add additional targets based on upload config
@@ -34,13 +36,12 @@ def _get_all_targets(wildcards):
                     remote_file_name=remote_file_names
                 )
             )
-
-
     return all_targets
-
-
+    
 rule all:
     input: _get_all_targets
+        
+
 
 include: "workflow/snakemake_rules/fetch_sequences.smk"
 
