@@ -8,11 +8,11 @@ This is the Nextstrain build for respiratory syncytial virus (RSV). Output from 
 
 Input metadata and sequences for RSV-A and RSV-B are available on data.nextstrain.org
 
-* [https://data.nextstrain.org/files/workflows/rsv/a/sequences.fasta.xz](RSV-A sequences)
-* [https://data.nextstrain.org/files/workflows/rsv/a/metadata.tsv.gz](RSV-A metadata)
+* [RSV-A sequences](https://data.nextstrain.org/files/workflows/rsv/a/sequences.fasta.xz)
+* [RSV-A metadata](https://data.nextstrain.org/files/workflows/rsv/a/metadata.tsv.gz)
 
-* [https://data.nextstrain.org/files/workflows/rsv/b/sequences.fasta.xz](RSV-B sequences)
-* [https://data.nextstrain.org/files/workflows/rsv/a/metadata.tsv.gz](RSV-B metadata)
+* [RSV-B sequences](https://data.nextstrain.org/files/workflows/rsv/b/sequences.fasta.xz)
+* [RSV-B metadata](https://data.nextstrain.org/files/workflows/rsv/a/metadata.tsv.gz)
 
 
 This data is generously shared by labs around the world. Please contact these labs first if you plan to publish using this data.
