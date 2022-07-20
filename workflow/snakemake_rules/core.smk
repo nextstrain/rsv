@@ -5,12 +5,12 @@ This part of the workflow expects input files
 '''
 
 build_name = config['build_name']
-
+typ = config['rsv']
 
 
 rule sequencesdeduplicated:
     input:
-        allsequences = "data/sequences.fasta"
+        allsequences = "data/rsv"+ typ +"/sequences.fasta"
     output:
         sequences = build_dir + "/{build_name}/sequencesdedup.fasta"
     shell:
@@ -20,9 +20,9 @@ rule sequencesdeduplicated:
 
 rule metadatadeduplicated:
     input:
-        metadata = "data/metadata.tsv"
+        metadata = "data/rsv"+ typ +"/metadata.tsv"
     output:
-        metadata = "data/metadatadedup.tsv"
+        metadata = "data/rsv"+ typ +"/metadatadedup.tsv"
     shell:
         """
         python scripts/metadatadedup.py \
