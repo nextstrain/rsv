@@ -78,24 +78,24 @@ upload:
     dst: 's3://nextstrain-data/files/workflows/rsv'
     # Files to upload to S3 that are in the `data` directory
     files_to_upload: [
-      'a_genbank.ndjson',
-      'a_sequences.ndjson',
-      'a_metadata.tsv',
-      'a_sequences.fasta',
-      b_sequences.fasta,
-      b_metadata.tsv,
-      b_genbank.ndjson,
-      b_genbank.ndjson
+      'a/genbank.ndjson',
+      'a/sequences.ndjson',
+      'a/metadata.tsv',
+      'a/sequences.fasta',
+      'b/sequences.fasta',
+      'b/metadata.tsv',
+      'b/genbank.ndjson',
+      'b/sequences.ndjson'
     ]
     # Remote file names for the files to upload, must be in the same order as local files above
     remote_file_names: [
-      'a_genbank.ndjson.xz',
-      'a_all_sequences.ndjson.xz',
-      'a_metadata.tsv.gz',
-      'a_sequences.fasta.xz',
-      'b_genbank.ndjson.xz',
-      'b_all_sequences.ndjson.xz',
-      'b_metadata.tsv.gz',
-      'b_sequences.fasta.xz'
+      'a/genbank.ndjson.xz',
+      'a/all_sequences.ndjson.xz',
+      'a/metadata.tsv.gz',
+      'a/sequences.fasta.xz',
+      'b/genbank.ndjson.xz',
+      'b/all_sequences.ndjson.xz',
+      'b/metadata.tsv.gz',
+      'b/sequences.fasta.xz'
     ]
     cloudfront_domain: 'data.nextstrain.org'
