@@ -14,26 +14,34 @@ Produces final output as
 """
 
 rule fetch_from_genbank:
-    output:
-        genbank_ndjson = "data/genbank.ndjson"
+    output: 
+        csv = "data/{type}_genbank.csv"
+    params: 
+        URL = lambda w: config['fetch']['genbank_url'][w.type] #generate URL from wildcard
+    conda: config["conda_environment"]
     shell:
         """
-        ./bin/fetch-from-genbank > {output.genbank_ndjson}
+        curl "{params.URL}" --fail --silent --show-error --http1.1 --header 'User-Agent: https://github.com/nextstrain/monkeypox (hello@nextstrain.org)' >> {output}
         """
 
-
-def _get_all_sources(wildcards):
-    return [
-        f"data/{source}.ndjson"
-        for source in config['sources']
-    ]
+rule csv_to_ndjson:
+    input: 
+        csv = rules.fetch_from_genbank.output.csv
+    output: 
+        ndjson = "data/{type}_genbank.ndjson"
+    shell:
+        """
+        python bin/csv-to-ndjson.py \
+            --input {input.csv} \
+            --output {output.ndjson}
+        """
 
 
 rule fetch_all_sequences:
     input:
-        all_sources = _get_all_sources
+        all_sources = "data/{type}_genbank.ndjson"
     output:
-        sequences_ndjson = "data/sequences.ndjson"
+        sequences_ndjson = "data/{type}_sequences.ndjson"
     shell:
         """
         cat {input.all_sources} > {output.sequences_ndjson}

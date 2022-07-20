@@ -10,7 +10,7 @@ typ = config['rsv']
 
 rule sequencesdeduplicated:
     input:
-        allsequences = "data/rsv"+ typ +"/sequences.fasta"
+        allsequences = "data/rsv" + typ + "/sequences.fasta"
     output:
         sequences = build_dir + "/{build_name}/sequencesdedup.fasta"
     shell:
@@ -20,9 +20,9 @@ rule sequencesdeduplicated:
 
 rule metadatadeduplicated:
     input:
-        metadata = "data/rsv"+ typ +"/metadata.tsv"
+        metadata = "data/rsv" + typ + "/metadata.tsv"
     output:
-        metadata = "data/rsv"+ typ +"/metadatadedup.tsv"
+        metadata = "data/rsv" + typ + "/metadatadedup.tsv"
     shell:
         """
         python scripts/metadatadedup.py \

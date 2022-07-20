@@ -38,13 +38,13 @@ rule concat_geolocation_rules:
 
 rule transform:
     input:
-        sequences_ndjson = "data/sequences.ndjson",
+        sequences_ndjson = "data/{type}_sequences.ndjson",
         all_geolocation_rules = "data/all-geolocation-rules.tsv"
     output:
-        metadata = "data/metadata.tsv",
-        sequences = "data/sequences.fasta"
+        metadata = "data/{type}_metadata.tsv",
+        sequences = "data/{type}_sequences.fasta"
     log:
-        "logs/transform.txt"
+        "logs/{type}_transform.txt"
     params:
         field_map = config['transform']['field_map'],
         strain_regex = config['transform']['strain_regex'],
@@ -89,6 +89,7 @@ rule transform:
                 --annotations {params.annotations} \
                 --id-field {params.annotations_id} \
             | ./bin/ndjson-to-tsv-and-fasta \
+                --fasta {output.sequences} \
                 --metadata-columns {params.metadata_columns} \
                 --metadata {output.metadata} \
                 --id-field {params.id_field} \
