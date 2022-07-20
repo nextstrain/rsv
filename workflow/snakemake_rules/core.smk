@@ -82,7 +82,7 @@ rule filter:
     params:
     	group_by = config["filter"]["group_by"],
     	min_length = lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
-    	sequences_per_group = config["filter"]["sequences_per_group"]
+    	subsample_max_sequences = config["filter"]["subsample_max_sequences"]
     shell:
         """
         augur filter \
@@ -91,7 +91,7 @@ rule filter:
             --metadata {input.metadata} \
             --output {output.sequences} \
             --group-by {params.group_by} \
-            --sequences-per-group {params.sequences_per_group} \
+            --subsample-max-sequences {params.subsample_max_sequences} \
             --min-length {params.min_length}
         """
 
