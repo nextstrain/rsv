@@ -1,20 +1,20 @@
 conda_environment: "workflow/envs/nextstrain.yaml"
 
-gene: "everything"
+genesforglycosylation: ["G", "F"]
 
-genesforglycosylation: ["G"]
+buildstorun: ["genome", "G"]
 
-build_name: "rsv"
-
-rsv: "a"
+subtypes: ['a', 'b']
 
 filter:
-  group_by: "year"
-  min_length: 10000
+  group_by: "year country"
+  min_length:
+    genome: 10000
+    G: 600
+    F: 600
   sequences_per_group: 10
 
 files:
-  reference: "config/areference.gb"
   color_schemes: "config/colors.tsv"
   auspice_config: "config/auspice_config.json"
 

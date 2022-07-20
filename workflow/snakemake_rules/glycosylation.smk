@@ -2,7 +2,7 @@ rule glycosylation:
     input:
         tree = rules.refine.output.tree,
     output:
-        glycosylations = build_dir + "/{build_name}/{typ}/glyc.json"
+        glycosylations = build_dir + "/{a_or_b}/{build_name}/glyc.json"
     params:
         alignment = rules.translate.params.aa_data
 
@@ -13,4 +13,4 @@ rule glycosylation:
      --tree {input.tree} \
      --output {output.glycosylations}
      """
-     
+

@@ -14,20 +14,21 @@ Produces final output as
 """
 
 rule fetch_from_genbank:
-    output: 
+    output:
         csv = "data/{type}/genbank.csv"
-    params: 
+    params:
         URL = lambda w: config['fetch']['genbank_url'][w.type] #generate URL from wildcard
     conda: config["conda_environment"]
     shell:
         """
-        curl "{params.URL}" --fail --silent --show-error --http1.1 --header 'User-Agent: https://github.com/nextstrain/monkeypox (hello@nextstrain.org)' >> {output}
+        curl "{params.URL}" --fail --silent --show-error --http1.1 \
+             --header 'User-Agent: https://github.com/nextstrain/monkeypox (hello@nextstrain.org)' >> {output}
         """
 
 rule csv_to_ndjson:
-    input: 
+    input:
         csv = rules.fetch_from_genbank.output.csv
-    output: 
+    output:
         ndjson = "data/{type}/genbank.ndjson"
     shell:
         """

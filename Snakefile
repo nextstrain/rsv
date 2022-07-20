@@ -2,16 +2,12 @@ configfile: "config/configfile.yaml"
 
 build_dir = 'results'
 auspice_dir = 'auspice'
-typ = config['rsv']
-
-if config['rsv'] == 'a':
-    reference = 'areference'
-if config['rsv'] == 'b':
-    reference = 'breference'
 
 rule all:
     input:
-        results = "auspice/" + typ + "/rsv.json"
+        expand("auspice/rsv_{subtype}_{build}.json",
+               subtype = config.get("subtypes",['a']),
+               build = config.get("buildstorun", ['genome']))
 
 include: "workflow/snakemake_rules/core.smk"
 
@@ -19,6 +15,5 @@ include: "workflow/snakemake_rules/export.smk"
 
 include: "workflow/snakemake_rules/download.smk"
 
-if config['gene'] == 'G':
-    include: "workflow/snakemake_rules/glycosylation.smk"
+include: "workflow/snakemake_rules/glycosylation.smk"
 

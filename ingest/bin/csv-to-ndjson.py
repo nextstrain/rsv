@@ -23,6 +23,7 @@ if __name__ == '__main__':
 csv.field_size_limit(200 * 1024 * 1024)
 
 with open(args.input) as file:
-    for row in csv.DictReader(file):
-        with open(args.output, 'w') as file1:
-            json.dump(row, file1, allow_nan = False, indent = None, separators = ',:')
+    with open(args.output, 'w') as output_file:
+        for row in csv.DictReader(file):
+            json.dump(row, output_file, allow_nan = False, indent = None, separators = ',:')
+            output_file.write("\n")

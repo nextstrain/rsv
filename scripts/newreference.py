@@ -4,19 +4,8 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation, Seq
 import shutil
 import argparse
 
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description="make new reference depending on whether the entire genome or only part is to be used for the tree",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    parser.add_argument("--reference", required=True, help="GenBank file with reference sequences")
-    parser.add_argument("--output", required=True, help="GenBank new reference file")
-    parser.add_argument("--gene", help="add gene name, otherwise entire genome will be used")
-    args = parser.parse_args()
-
-def new_reference(referencefile, newfile, gene='everything'):
-    if gene=='everything':
+def new_reference(referencefile, newfile, gene='genome'):
+    if gene=='genome':
         shutil.copy(f'{referencefile}.gbk', f'{newfile}.gbk')
         shutil.copy(f'{referencefile}.fasta', f'{newfile}.fasta')
     else:
@@ -52,6 +41,16 @@ def new_reference(referencefile, newfile, gene='everything'):
         reffasta = SeqIO.read(f"{referencefile}.fasta", 'fasta')
         newrecord = SeqRecord(Seq(reffasta.seq[startofgene:endofgene]), id=reffasta.id, description=reffasta.description)
         newfasta = SeqIO.write(newrecord, f"{newfile}.fasta", "fasta")
-    
-print(new_reference(args.reference, args.output, args.gene))
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description="make new reference depending on whether the entire genome or only part is to be used for the tree",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument("--reference", required=True, help="GenBank file with reference sequences")
+    parser.add_argument("--output", required=True, help="GenBank new reference file")
+    parser.add_argument("--gene", help="add gene name, otherwise entire genome will be used")
+    args = parser.parse_args()
+
+    new_reference(args.reference, args.output, args.gene)
 

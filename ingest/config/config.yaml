@@ -82,10 +82,10 @@ upload:
       'a/sequences.ndjson',
       'a/metadata.tsv',
       'a/sequences.fasta',
-      'b/sequences.fasta',
-      'b/metadata.tsv',
       'b/genbank.ndjson',
-      'b/sequences.ndjson'
+      'b/sequences.ndjson',
+      'b/metadata.tsv',
+      'b/sequences.fasta'
     ]
     # Remote file names for the files to upload, must be in the same order as local files above
     remote_file_names: [

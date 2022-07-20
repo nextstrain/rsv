@@ -1,10 +1,11 @@
+
 def get_node_data(w):
     node_data = [rules.refine.output.node_data,
                     rules.traits.output.node_data,
                     rules.ancestral.output.node_data,
                     rules.translate.output.node_data]
-    if config["gene"]=='G':
-        node_data.append(rules.glycosylation.output.node_data)
+    if w.build_name in config["genesforglycosylation"]:
+        node_data.append(rules.glycosylation.output.glycosylations)
     return node_data
 
 
@@ -16,10 +17,10 @@ rule export:
         node_data = get_node_data,
         auspice_config = config["files"]["auspice_config"]
     output:
-        auspice_json = "auspice/{typ}/{build_name}.json",
-        root_sequence = "auspice/{typ}/{build_name}_root-sequence.json"
+        auspice_json =  "auspice/rsv_{a_or_b}_{build_name}.json",
+        root_sequence = "auspice/rsv_{a_or_b}_{build_name}_root-sequence.json"
     params:
-    	title = "RSV-A phylogeny"
+    	title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny"
     shell:
         """
         augur export v2 \
