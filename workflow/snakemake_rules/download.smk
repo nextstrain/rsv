@@ -1,11 +1,11 @@
 rule download:
     message: "downloading sequences and metadata from data.nextstrain.org"
     output:
-        metadata = "data/rsv"+ typ +"/metadata.tsv.gz",
-        sequences = "data/rsv"+ typ +"/sequences.fasta.xz"
+        metadata = "data/rsv"+ typ +"/" + typ + "_metadata.tsv.gz",
+        sequences = "data/rsv"+ typ +"/" + typ + "_sequences.fasta.xz"
     params:
-        metadata_url = "http://data.nextstrain.org/files/workflows/rsv-A/metadata.tsv.gz",
-        sequence_url = "http://data.nextstrain.org/files/workflows/rsv-A/sequences.fasta.xz"
+        metadata_url = "http://data.nextstrain.org/files/workflows/rsv/"+ typ + "_metadata.tsv.gz",
+        sequence_url = "http://data.nextstrain.org/files/workflows/rsv/" + typ + "_sequences.fasta.xz"
     shell:
         """
         curl -fsSL --compressed {params.metadata_url:q} --output {output.metadata}
@@ -15,8 +15,8 @@ rule download:
 rule decompress:
     message: "decompressing sequences and metadata"
     input:
-        sequences = "data/rsv"+ typ +"/sequences.fasta.xz",
-        metadata = "data/rsv"+ typ +"/metadata.tsv.gz"
+        sequences = "data/rsv"+ typ +"/" + typ + "_sequences.fasta.xz",
+        metadata = "data/rsv"+ typ +"/" + typ + "_metadata.tsv.gz"
     output:
         sequences = "data/rsv"+ typ +"/sequences.fasta",
         metadata = "data/rsv"+ typ +"/metadata.tsv"
