@@ -17,3 +17,18 @@ include: "workflow/snakemake_rules/download.smk"
 
 include: "workflow/snakemake_rules/glycosylation.smk"
 
+rule clean:
+    params:
+        targets = ["auspice", "results"]
+    shell:
+        """
+        rm -rf {params.targets}
+        """
+
+rule clobber:
+    params:
+        targets = ["data", "auspice", "results"]
+    shell:
+        """
+        rm -rf {params.targets}
+        """

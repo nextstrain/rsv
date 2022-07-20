@@ -9,7 +9,7 @@ rule sequencesdeduplicated:
     input:
         allsequences = "data/{a_or_b}/sequences.fasta"
     output:
-        sequences = build_dir + "/{a_or_b}/{build_name}/sequencesdedup.fasta"
+        sequences = "data/{a_or_b}/sequencesdedup.fasta"
     shell:
      """
      seqkit rmdup < {input.allsequences} > {output.sequences}
@@ -73,7 +73,7 @@ rule filter:
             - gaps relative to reference are considered real
         """
     input:
-        sequences = build_dir + "/{a_or_b}/{build_name}/sequencesdedup.fasta",
+        sequences = "data/{a_or_b}/sequencesdedup.fasta",
         reference = "config/{a_or_b}reference.gbk",
         metadata = rules.metadatadeduplicated.output.metadata,
         sequence_index = rules.index_sequences.output
