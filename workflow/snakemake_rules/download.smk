@@ -1,8 +1,8 @@
 rule download:
     message: "downloading sequences and metadata from data.nextstrain.org"
     output:
-        metadata = "data/metadata.tsv.gz",
-        sequences = "data/sequences.fasta.xz"
+        metadata = "data/rsv"+ typ +"/metadata.tsv.gz",
+        sequences = "data/rsv"+ typ +"/sequences.fasta.xz"
     params:
         metadata_url = "http://data.nextstrain.org/files/workflows/rsv-A/metadata.tsv.gz",
         sequence_url = "http://data.nextstrain.org/files/workflows/rsv-A/sequences.fasta.xz"
@@ -15,11 +15,11 @@ rule download:
 rule decompress:
     message: "decompressing sequences and metadata"
     input:
-        sequences = "data/sequences.fasta.xz",
-        metadata = "data/metadata.tsv.gz"
+        sequences = "data/rsv"+ typ +"/sequences.fasta.xz",
+        metadata = "data/rsv"+ typ +"/metadata.tsv.gz"
     output:
-        sequences = "data/sequences.fasta",
-        metadata = "data/metadata.tsv"
+        sequences = "data/rsv"+ typ +"/sequences.fasta",
+        metadata = "data/rsv"+ typ +"/metadata.tsv"
     shell:
         """
         gzip --decompress --keep {input.metadata}
