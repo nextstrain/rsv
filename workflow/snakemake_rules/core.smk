@@ -10,9 +10,9 @@ typ = config['rsv']
 
 rule sequencesdeduplicated:
     input:
-        allsequences = "data/rsv" + typ + "/sequences.fasta"
+        allsequences = "data/" + typ + "/sequences.fasta"
     output:
-        sequences = build_dir + "/{build_name}/sequencesdedup.fasta"
+        sequences = build_dir + "/{build_name}/{typ}/sequencesdedup.fasta"
     shell:
      """
      seqkit rmdup < {input.allsequences} > {output.sequences}
@@ -20,9 +20,9 @@ rule sequencesdeduplicated:
 
 rule metadatadeduplicated:
     input:
-        metadata = "data/rsv" + typ + "/metadata.tsv"
+        metadata = "data/" + typ + "/metadata.tsv"
     output:
-        metadata = "data/rsv" + typ + "/metadatadedup.tsv"
+        metadata = "data/" + typ + "/metadatadedup.tsv"
     shell:
         """
         python scripts/metadatadedup.py \
@@ -38,7 +38,7 @@ rule index_sequences:
     input:
         sequences = rules.sequencesdeduplicated.output.sequences
     output:
-        sequence_index = build_dir + "/{build_name}/sequence_index.tsv"
+        sequence_index = build_dir + "/{build_name}/{typ}/sequence_index.tsv"
     shell:
         """
         augur index \
@@ -54,11 +54,11 @@ rule newreference:
     input:
         oldreference = "config/" + reference +".gbk"
     output:
-        newreferencegbk = build_dir + "/{build_name}/newreference.gbk",
-        newreferencefasta = build_dir + "/{build_name}/newreference.fasta"
+        newreferencegbk = build_dir + "/{build_name}/{typ}/newreference.gbk",
+        newreferencefasta = build_dir + "/{build_name}/{typ}/newreference.fasta"
     params:
         gene = config['gene'],
-        newreference = build_dir + "/{build_name}/newreference",
+        newreference = build_dir + "/{build_name}/{typ}/newreference",
         oldreference = 'config/' + reference
     shell:
         """
@@ -76,12 +76,12 @@ rule filter:
             - gaps relative to reference are considered real
         """
     input:
-        sequences = build_dir + "/{build_name}/sequencesdedup.fasta",
+        sequences = build_dir + "/{build_name}/{typ}/sequencesdedup.fasta",
         reference = "config/" + reference + ".gbk",
         metadata = rules.metadatadeduplicated.output.metadata,
         sequence_index = rules.index_sequences.output
     output:
-    	sequences = build_dir + "/{build_name}/filtered.fasta"
+    	sequences = build_dir + "/{build_name}/{typ}/filtered.fasta"
     params:
     	group_by = config["filter"]["group_by"],
     	min_length =config["filter"]["min_length"],
@@ -108,7 +108,7 @@ rule align:
         sequences = rules.filter.output.sequences,
         reference = rules.newreference.output.newreferencefasta
     output:
-        alignment = build_dir + "/{build_name}/sequences.aligned.fasta"
+        alignment = build_dir + "/{build_name}/{typ}/sequences.aligned.fasta"
     shell:
         """
         nextalign run \
@@ -122,7 +122,7 @@ rule sorted:
         sequences = rules.align.output.alignment,
         reference = rules.newreference.output.newreferencegbk
     output:
-        alignedandsorted = build_dir + "/{build_name}/alignedandsorted.fasta"
+        alignedandsorted = build_dir + "/{build_name}/{typ}/alignedandsorted.fasta"
     shell:
         """
         python scripts/sort.py \
@@ -136,7 +136,7 @@ rule tree:
     input:
         alignment = rules.sorted.output.alignedandsorted
     output:
-        tree = build_dir + "/{build_name}/tree_raw.nwk"
+        tree = build_dir + "/{build_name}/{typ}/tree_raw.nwk"
     shell:
         """
         augur tree \
@@ -157,8 +157,8 @@ rule refine:
         alignment = rules.sorted.output.alignedandsorted,
         metadata = rules.metadatadeduplicated.output
     output:
-        tree = build_dir + "/{build_name}/tree.nwk",
-        node_data = build_dir + "/{build_name}/branch_lengths.json"
+        tree = build_dir + "/{build_name}/{typ}/tree.nwk",
+        node_data = build_dir + "/{build_name}/{typ}/branch_lengths.json"
     params:
     	coalescent = config["refine"]["coalescent"],
     	clock_filter_iqd = config["refine"]["clock_filter_iqd"],
@@ -188,7 +188,7 @@ rule ancestral:
         tree = rules.refine.output.tree,
         alignment = rules.align.output.alignment
     output:
-        node_data = build_dir + "/{build_name}/nt_muts.json"
+        node_data = build_dir + "/{build_name}/{typ}/nt_muts.json"
     params:
     	inference = config["ancestral"]["inference"]
     shell:
@@ -207,10 +207,10 @@ rule translate:
         node_data = rules.ancestral.output.node_data,
         reference = rules.newreference.output.newreferencegbk
     output:
-        node_data = build_dir + "/{build_name}/aa_muts.json"
+        node_data = build_dir + "/{build_name}/{typ}/aa_muts.json"
     params:
-    	alignment_file_mask = build_dir + "/{build_name}/alignedandsorted%GENE.fasta",
-        aa_data = expand(build_dir + "/{{build_name}}/alignedandsorted{gene}.fasta", gene=config["genesforglycosylation"])
+    	alignment_file_mask = build_dir + "/{build_name}/{typ}/alignedandsorted%GENE.fasta",
+        aa_data = expand(build_dir + "/{{build_name}}/{{typ}}/alignedandsorted{gene}.fasta", gene=config["genesforglycosylation"])
     shell:
         """
         augur translate \
@@ -226,9 +226,9 @@ rule traits:
         tree = rules.refine.output.tree,
         metadata = rules.metadatadeduplicated.output
     output:
-        node_data = build_dir + "/{build_name}/traits.json"
+        node_data = build_dir + "/{build_name}/{typ}/traits.json"
     log:
-        "logs/traits_{build_name}_rsv.txt"
+        "logs/{typ}/traits_{build_name}_rsv.txt"
     conda:
         config["conda_environment"]
     params:

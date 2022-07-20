@@ -5,10 +5,10 @@ if not config:
 def _get_all_targets(wildcards):
     # Default targets are the metadata TSV and sequences FASTA files
     all_targets = [
-        "data/a_sequences.fasta",
-        "data/a_metadata.tsv",
-        "data/b_sequences.fasta",
-        "data/b_metadata.tsv"
+        "data/a/sequences.fasta",
+        "data/a/metadata.tsv",
+        "data/b/sequences.fasta",
+        "data/b/metadata.tsv"
     ]
 
     # Add additional targets based on upload config

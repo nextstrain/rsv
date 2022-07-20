@@ -2,6 +2,7 @@ configfile: "config/configfile.yaml"
 
 build_dir = 'results'
 auspice_dir = 'auspice'
+typ = config['rsv']
 
 if config['rsv'] == 'a':
     reference = 'areference'
@@ -10,7 +11,7 @@ if config['rsv'] == 'b':
 
 rule all:
     input:
-        results = "auspice/rsv.json"
+        results = "auspice/" + typ + "/rsv.json"
 
 include: "workflow/snakemake_rules/core.smk"
 

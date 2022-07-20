@@ -15,7 +15,7 @@ Produces final output as
 
 rule fetch_from_genbank:
     output: 
-        csv = "data/{type}_genbank.csv"
+        csv = "data/{type}/genbank.csv"
     params: 
         URL = lambda w: config['fetch']['genbank_url'][w.type] #generate URL from wildcard
     conda: config["conda_environment"]
@@ -28,7 +28,7 @@ rule csv_to_ndjson:
     input: 
         csv = rules.fetch_from_genbank.output.csv
     output: 
-        ndjson = "data/{type}_genbank.ndjson"
+        ndjson = "data/{type}/genbank.ndjson"
     shell:
         """
         python bin/csv-to-ndjson.py \
@@ -39,9 +39,9 @@ rule csv_to_ndjson:
 
 rule fetch_all_sequences:
     input:
-        all_sources = "data/{type}_genbank.ndjson"
+        all_sources = "data/{type}/genbank.ndjson"
     output:
-        sequences_ndjson = "data/{type}_sequences.ndjson"
+        sequences_ndjson = "data/{type}/sequences.ndjson"
     shell:
         """
         cat {input.all_sources} > {output.sequences_ndjson}

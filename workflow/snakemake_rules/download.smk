@@ -18,7 +18,7 @@ rule decompress:
     message: "decompressing sequences and metadata"
     input:
         sequences = "data/" + typ + "/sequences.fasta.xz",
-        metadata = "data/" +typ + "/metadata.tsv.gz"
+        metadata = "data/" + typ + "/metadata.tsv.gz"
     output:
         sequences = "data/"+ typ +"/sequences.fasta",
         metadata = "data/"+ typ +"/metadata.tsv"
