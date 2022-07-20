@@ -1,6 +1,5 @@
 # nextstrain.org/rsv
 
-##
 
 This is the Nextstrain build for respiratory syncytial virus (RSV). Output from this build is visible at nextstrain.org/rsv.
 
@@ -20,12 +19,10 @@ RSV sequences and metadata can be downloaded in the ```/ingest``` folder using
 ```nextstrain build --cpus 1 ingest``` or ```nextstrain build --cpus 1 .``` if running directly from the ```/ingest``` directory.
 
 The ingest pipeline is based on the Nextstrain Monkeypox ingest (nextstrain.org/monkeypox/ingest). 
-Run to produce ingest/data/{a and b}/metadata.tsv and ingest/data/{a and b}/sequences.fasta.
+Run to produce ```ingest/data/{a and b}/metadata.tsv``` and ```ingest/data/{a and b}/sequences.fasta```.
 
 
 ## Run Analysis Pipeline
-
-##
 
 The workflow produces whole genome and G gene trees for RSV-A and RSV-B. 
 To run the workflow, use ``snakemake -j4 -p --configfile config/configfile.yaml ` and ```nextstrain view auspice``` to visualise results.
