@@ -1,0 +1,36 @@
+# Optional configs used by Nextstrain team
+# Params for uploads
+upload:
+  # Upload params for AWS S3
+  s3:
+    # AWS S3 Bucket with prefix
+    dst: 's3://nextstrain-data/files/workflows/'
+    # Files to upload to S3 that are in the `data` directory
+    files_to_upload: [
+      'a/genbank.ndjson',
+      'a/sequences.ndjson',
+      'a/metadata.tsv',
+      'a/sequences.fasta',
+      'b/genbank.ndjson',
+      'b/sequences.ndjson',
+      'b/metadata.tsv',
+      'b/sequences.fasta'
+    ]
+    # Remote file names for the files to upload, must be in the same order as local files above
+    remote_file_names: [
+      'a/genbank.ndjson.xz',
+      'a/all_sequences.ndjson.xz',
+      'a/metadata.tsv.gz',
+      'a/sequences.fasta.xz',
+      'b/genbank.ndjson.xz',
+      'b/all_sequences.ndjson.xz',
+      'b/metadata.tsv.gz',
+      'b/sequences.fasta.xz'
+    ]
+    cloudfront_domain: 'data.nextstrain.org'
+
+# Toggle for Slack notifications
+send_slack_notifications: True
+
+# Toggle for triggering builds
+trigger_rebuild: True
