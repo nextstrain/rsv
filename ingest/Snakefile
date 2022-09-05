@@ -48,3 +48,5 @@ include: "workflow/snakemake_rules/fetch_sequences.smk"
 include: "workflow/snakemake_rules/transform.smk"
 
 include: "workflow/snakemake_rules/upload.smk"
+
+include: "workflow/snakemake_rules/sort.smk"

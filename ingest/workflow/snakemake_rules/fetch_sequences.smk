@@ -15,13 +15,19 @@ Produces final output as
 
 rule fetch_from_genbank:
     output:
-        csv = "data/{type}/genbank.csv"
+        csv = "data/genbank.csv"
     params:
-        URL = lambda w: config['fetch']['genbank_url'][w.type] #generate URL from wildcard
+        URL_a = config['fetch']['genbank_url']['a'],
+        URL_b = config['fetch']['genbank_url']['b'],
+        URL_general = config['fetch']['genbank_url']['general']
     conda: config["conda_environment"]
     shell:
         """
-        curl "{params.URL}" --fail --silent --show-error --http1.1 \
+        curl "{params.URL_a}" --fail --silent --show-error --http1.1 \
+             --header 'User-Agent: https://github.com/nextstrain/monkeypox (hello@nextstrain.org)' >> {output}
+        curl "{params.URL_b}" --fail --silent --show-error --http1.1 \
+             --header 'User-Agent: https://github.com/nextstrain/monkeypox (hello@nextstrain.org)' >> {output}
+        curl "{params.URL_general}" --fail --silent --show-error --http1.1 \
              --header 'User-Agent: https://github.com/nextstrain/monkeypox (hello@nextstrain.org)' >> {output}
         """
 
@@ -29,7 +35,7 @@ rule csv_to_ndjson:
     input:
         csv = rules.fetch_from_genbank.output.csv
     output:
-        ndjson = "data/{type}/genbank.ndjson"
+        ndjson = "data/genbank.ndjson"
     shell:
         """
         python bin/csv-to-ndjson.py \
@@ -40,9 +46,9 @@ rule csv_to_ndjson:
 
 rule fetch_all_sequences:
     input:
-        all_sources = "data/{type}/genbank.ndjson"
+        all_sources = "data/genbank.ndjson"
     output:
-        sequences_ndjson = "data/{type}/sequences.ndjson"
+        sequences_ndjson = "data/sequences.ndjson"
     shell:
         """
         cat {input.all_sources} > {output.sequences_ndjson}
