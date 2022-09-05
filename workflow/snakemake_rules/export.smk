@@ -1,13 +1,14 @@
-
 def get_node_data(w):
     node_data = [rules.refine.output.node_data,
+                    rules.clades.output.node_data,
                     rules.traits.output.node_data,
                     rules.ancestral.output.node_data,
                     rules.translate.output.node_data]
     if w.build_name in config["genesforglycosylation"]:
         node_data.append(rules.glycosylation.output.glycosylations)
+    if w.build_name == "genome":
+        node_data.append(rules.clades_genome.output.node_data)
     return node_data
-
 
 rule export:
     message: "Exporting data files for auspice"

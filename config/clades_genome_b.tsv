@@ -1,0 +1,25 @@
+clade	gene	site	alt
+B1	G	109	P
+B1	L	30	S
+			
+B2	clade	B3	
+B2	G	77	S
+B2	G	154	I
+			
+			
+B3	L	7	S
+B3	P	66	T
+			
+B5	nuc	2687	C
+B5	nuc	4604	A
+			
+B4	clade	B1	
+B4	nuc	1998	A
+			
+			
+			
+			
+			
+B6	nuc	1131	G
+B6	nuc	3374	C
+B6	nuc	3683	A

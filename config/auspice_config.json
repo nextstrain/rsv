@@ -3,6 +3,11 @@
 
   "colorings": [
     {
+      "key": "genome_clade",
+      "title": "Genome Clade",
+      "type": "categorical"
+    },
+    {
       "key": "gt",
       "title": "Genotype",
       "type": "categorical"
