@@ -10,14 +10,14 @@ It produces output files as
 
 """
 
-TIME = ['new', 'middle','old']
+TIME = ['1', '2','3']
 
 rule align:
     input: 
         sequences = rules.transform.output.sequences,
-        reference = "config/{type}{time}reference.fasta"
+        reference = "config/{type}_{time}_reference.fasta"
     output:
-        alignment = "data/{type}/{time}sequences.aligned.fasta"
+        alignment = "data/{type}/{time}_sequences.aligned.fasta"
     shell:
         """
         nextalign run \
@@ -32,12 +32,12 @@ rule metadataandsequences:
         metadata = rules.transform.output.metadata,
         sequences = rules.transform.output.sequences
     output:
-        metadata = "data/{type}/{time}metadata.tsv",
-        sequences = "data/{type}/{time}sequences.fasta"
+        metadata = "data/{type}/{time}_metadata.tsv",
+        sequences = "data/{type}/{time}_sequences.fasta"
 
     shell:
         """
-        python bin/metadataandsequences.py \
+        python bin/sequencesandmetadata.py \
         --sortedalignment {input.alignment} \
         --allmetadata {input.metadata} \
         --allsequences {input.sequences} \
@@ -47,12 +47,14 @@ rule metadataandsequences:
 
 rule sort:
     input:
-        alignment_a = expand("data/a/{time}sequences.aligned.fasta", time=TIME),
-        alignment_b = expand("data/b/{time}sequences.aligned.fasta", time=TIME),
-        reference_a = expand("config/a{time}reference.fasta", time=TIME),
-        reference_b = expand("config/b{time}reference.fasta", time=TIME),
-        metadata_b = expand("data/b/{time}metadata.tsv", time=TIME),
-        metadata_a = expand("data/a/{time}metadata.tsv", time=TIME)
+        allsequences = "data/sequences.fasta",
+        metadata = "data/metadata.tsv",
+        alignment_a = expand("data/a/{time}_sequences.aligned.fasta", time=TIME),
+        alignment_b = expand("data/b/{time}_sequences.aligned.fasta", time=TIME),
+        reference_a = expand("config/a_{time}_reference.fasta", time=TIME),
+        reference_b = expand("config/b_{time}_reference.fasta", time=TIME),
+        metadata_b = expand("data/b/{time}_metadata.tsv", time=TIME),
+        metadata_a = expand("data/a/{time}_metadata.tsv", time=TIME)
     output:
         sequences_a = "data/a/sequences_notdedup.fasta",
         metadata_a = "data/a/metadata_notdedup.tsv",

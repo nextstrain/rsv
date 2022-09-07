@@ -1,102 +1,61 @@
 import numpy as np
 import pandas as pd
 from Bio import SeqIO
-import csv
+from functools import reduce
 
-listofa, lista, ids_a, listofb, ids_b, listb, alltherest, list1, list2 = ([] for i in range(9))
+dfs, a_list, b_list, a_sequences, b_sequences, listofdictionaries, a_metadata, b_metadata = ([] for i in range(8))
+to_a = ['a_new', 'a_middle', 'a_old']
+to_b = ['b_new', 'b_middle', 'b_old']
+seq = ["data/a/1_sequences.aligned.fasta", "data/a/2_sequences.aligned.fasta", "data/a/3_sequences.aligned.fasta", "data/b/1_sequences.aligned.fasta", "data/b/2_sequences.aligned.fasta", "data/b/3_sequences.aligned.fasta"]
+references = ["config/a_1_reference.fasta", "config/a_2_reference.fasta", "config/a_3_reference.fasta", "config/b_1_reference.fasta", "config/b_2_reference.fasta", "config/b_3_reference.fasta"]
+accessions = [pd.read_csv("data/a/1_metadata.tsv", sep='\t').accession, pd.read_csv("data/a/2_metadata.tsv", sep='\t').accession, pd.read_csv("data/a/3_metadata.tsv", sep='\t').accession, pd.read_csv("data/b/1_metadata.tsv", sep='\t').accession, pd.read_csv("data/b/2_metadata.tsv", sep='\t').accession, pd.read_csv("data/b/3_metadata.tsv", sep='\t').accession] 
+everything = (set().union(*accessions))
 
-seq_a = ["data/a/newsequences.aligned.fasta", "data/a/middlesequences.aligned.fasta", "data/a/oldsequences.aligned.fasta"]
-unaligned_a = ["data/a/newsequences.fasta", "data/a/middlesequences.fasta", "data/a/oldsequences.fasta"]
-unaligned_b = ["data/b/newsequences.fasta", "data/b/middlesequences.fasta", "data/b/oldsequences.fasta"]
-seq_b = ["data/b/newsequences.aligned.fasta", "data/b/middlesequences.aligned.fasta", "data/b/oldsequences.aligned.fasta"]
-references_a = ["config/anewreference.fasta", "config/amiddlereference.fasta", "config/aoldreference.fasta"]
-references_b = ["config/bnewreference.fasta", "config/bmiddlereference.fasta", "config/boldreference.fasta"]
-accessions_a = [pd.read_csv("data/a/newmetadata.tsv", sep='\t').accession, pd.read_csv("data/a/middlemetadata.tsv", sep='\t').accession, pd.read_csv("data/a/oldmetadata.tsv", sep='\t').accession] 
-accessions_b = [pd.read_csv("data/b/newmetadata.tsv", sep='\t').accession, pd.read_csv("data/b/middlemetadata.tsv", sep='\t').accession, pd.read_csv("data/b/oldmetadata.tsv", sep='\t').accession]
+for file_, reference in zip(seq, references):
+    dictionary = dict()
+    accessions_, values = ([] for i in range(2))
+    file = SeqIO.parse(file_,"fasta")
+    ref_array = np.array(SeqIO.read(reference,"fasta").seq)
 
-everything_a = (set().union(*accessions_a))
-everything_b = (set().union(*accessions_b))
-everything = everything_a.union(everything_b)
+    for record in file:
+        record_array = np.array(record.seq)
+        good_indices = (ref_array!='-')&(record_array!='-')
+        mean = np.mean(record_array[good_indices]==ref_array[good_indices])
+        accessions_.append(record.id)
+        values.append(mean)
 
-for file_a, file_b,  a_fasta, b_fasta in zip(seq_a, seq_b, references_a, references_b):
+    for accession in everything:
+        if accession not in accessions_:
+            accessions_.append(accession)
+            values.append(0.001)
 
-    sequences = [file_a, file_b]
-    both = list(everything_a.intersection(everything_b))
+    dictionary['accession'] = accessions_
+    dictionary['value'] = values
+    listofdictionaries.append(dictionary)
 
-    for file in sequences:
-        for record in SeqIO.parse(file, "fasta"):
-            if record.id not in both:
-                if record.id in everything_a: listofa.append(record.id)
-                if record.id in everything_b: listofb.append(record.id)
-            else: alltherest.append(record.id)
+for i, column in zip(listofdictionaries, (to_a+to_b)):
+    df = pd.DataFrame(i).groupby('accession', group_keys=False).apply(lambda x: x.loc[x.value.idxmax()]).iloc[:,1:].reset_index().sort_values('accession').rename(columns={"value": column})
+    dfs.append(df)
+merged_df = reduce(lambda l, r: pd.merge(l, r, on='accession'), dfs)
 
-    refseq_a = SeqIO.read(a_fasta, "fasta").seq
-    seq2 = np.array(refseq_a)
-    refseq_b = SeqIO.read(b_fasta, "fasta").seq
-    seq3 = np.array(refseq_b)
+df_drop = merged_df.iloc[:, 1:]
+first_column = (merged_df.iloc[:, 0])
+df_values = (df_drop.idxmax(axis=1)).rename("values")
+result = pd.concat([first_column,df_values], axis=1)
 
-    for record in SeqIO.parse(file_a,"fasta"):
-        if record.id in alltherest:
-            seq1 = np.array(record.seq)
-            good_indices = (refseq_a!='-')&(seq1!='-')
-            a = np.mean(seq1[good_indices]==seq2[good_indices])
-            lista.append(a)
-            ids_a.append(record.id)
+for acc, a_or_b in zip(result['accession'], result['values']):
+    if a_or_b in to_a: a_list.append(acc)
+    elif a_or_b in to_b: b_list.append(acc)
 
-    for record in SeqIO.parse(file_b,"fasta"):
-        if record.id in alltherest:
-            seq1 = np.array(record.seq)
-            good_indices = (refseq_b!='-')&(seq1!='-')
-            b = np.mean(seq1[good_indices]==seq3[good_indices])
-            listb.append(b)
-            ids_b.append(record.id)
+for record in SeqIO.parse("data/sequences.fasta", "fasta"):
+    if record.id in a_list: a_sequences.append(record)
+    if record.id in b_list: b_sequences.append(record)
 
-dict_a, dict_b = (dict() for i in range(2))
+SeqIO.write(a_sequences, "data/a/sequences_notdedup.fasta","fasta")
+SeqIO.write(b_sequences, "data/b/sequences_notdedup.fasta", "fasta")
 
-dict_a["a"] = lista
-dict_a["id a"] = ids_a
-dict_b["b"] = listb
-dict_b["id b"] = ids_b
-
-df_b = pd.DataFrame(dict_b)
-df_a = pd.DataFrame(dict_a)
-df_a = (df_a.drop_duplicates(subset=["id a"])).sort_values("id a")
-df_b = (df_b.drop_duplicates(subset=["id b"])).sort_values("id b")
-
-for i, j, a, b in zip(df_a["id a"], df_b["id b"], df_a["a"], df_b["b"]):
-    if i == j:
-        if a > b: listofa.append(i)
-        if b > a: listofb.append(i)
-
-#writing new sequences files for a and b 
-
-for file_a, file_b in zip(unaligned_a, unaligned_b):
-    for record in SeqIO.parse(file_a,"fasta"):
-        if record.id in listofa: list1.append(record)
-
-    for record in SeqIO.parse(file_b, "fasta"):
-        if record.id in listofb: list2.append(record)
-        
-SeqIO.write(list1, "data/a/sequences_notdedup.fasta","fasta")
-SeqIO.write(list2, "data/b/sequences_notdedup.fasta", "fasta")
-
-for type in ["a", "b"]:
-    listofid = []
-    metadata_ = []
-    with open(f"data/{type}/sequences_notdedup.fasta") as file:
-        parse_file = SeqIO.parse(file, "fasta")
-        for i in parse_file:
-            listofid.append(i.id)
-
-#writing new metadata files for a and b
-
-    with open("data/metadata.tsv") as file:
-        tsv_file = csv.reader(file, delimiter="\t")
-        row1= next(tsv_file)
-        metadata_.append(row1)
-        for line in tsv_file:
-            if line[0] in listofid: metadata_.append(line)
-
-    with open(f"data/{type}/metadata_notdedup.tsv", 'w') as f:
-        writer = csv.writer(f, delimiter='\t')
-        for i in metadata_: writer.writerow(i)
+tsv_file = pd.read_csv("data/metadata.tsv", sep="\t")
+a_metadata = pd.DataFrame(data =tsv_file.loc[tsv_file['accession'].isin(a_list)], columns=tsv_file.columns)
+b_metadata = pd.DataFrame(data=tsv_file.loc[tsv_file['accession'].isin(b_list)], columns=tsv_file.columns)
+a_metadata.to_csv('data/a/metadata_notdedup.tsv', sep="\t")
+b_metadata.to_csv('data/b/metadata_notdedup.tsv', sep="\t")
