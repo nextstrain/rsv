@@ -1,0 +1,103 @@
+clade	gene	site	alt
+A1	nuc	345	C
+A1	nuc	411	C
+A1	nuc	527	T
+A1	nuc	909	G
+A1	F	16	I
+A1	L	81	L
+			
+A2	clade	A1	
+A2	G	102	S
+A2	G	110	L
+A2	G	199	R
+A2	M2	69	S
+A2	L	2016	I
+			
+A3	G	264	X
+			
+A4	clade	A3	
+A4	L	1739	G
+A4	nuc	7641	G
+A4	nuc	13783	G
+			
+A5	nuc	4954	G
+A5	nuc	5715	G
+A5	nuc	7626	C
+A5	nuc	8702	C
+A5	nuc	11666	C
+			
+A6	nuc	182	C
+A6	nuc	1329	G
+A6	nuc	3186	C
+			
+A7	nuc	3118	G
+A7	nuc	4046	T
+A7	nuc	4061	C
+A7	nuc	3584	C
+			
+A8	nuc	651	T
+A8	nuc	1997	A
+A8	nuc	2564	C
+A8	nuc	3202	T
+			
+A9	clade	A8	
+A9	nuc	3236	G
+A9	nuc	5162	G
+A9	nuc	4268	C
+			
+A10	clade	A9	
+A10	nuc	2589	A
+A10	nuc	3236	A
+A10	G	117	S
+A10	nuc	5031	C
+			
+			
+A11	nuc	5769	G
+A11	nuc	7496	T
+A11	nuc	9338	T
+			
+			
+A12	nuc	2982	C
+A12	nuc	8044	A
+A12	nuc	10631	T
+A12	nuc	13376	G
+			
+A13	nuc	137	G
+A13	M2	67	T
+			
+A14	nuc	1397	T
+A14	nuc	4042	A
+A14	nuc	5744	T
+			
+A15	nuc	94	A
+A15	nuc	4274	G
+			
+A16	nuc	6191	C
+A16	nuc	9504	T
+			
+			
+A17	L	216	S
+A17	F	574	S
+A17	M2	37	I
+			
+A18	G	323	K
+A18	L	217	P
+			
+A19	clade	A18	
+A19	G	133	I
+			
+A20	nuc	9101	C
+			
+A21	nuc	509	C
+			
+A22	nuc	95	C
+A22	nuc	1958	G
+A22	nuc	4515	C
+			
+A23	clade	A20	
+A23	nuc	1271	T
+A23	nuc	2114	G
+A23	nuc	3632	A
+A23	nuc	5140	T
+A23	nuc	10718	C
+A23	nuc	13496	T

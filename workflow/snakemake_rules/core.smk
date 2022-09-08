@@ -5,35 +5,13 @@ This part of the workflow expects input files
 '''
 
 
-rule sequencesdeduplicated:
-    input:
-        allsequences = "data/{a_or_b}/sequences.fasta"
-    output:
-        sequences = "data/{a_or_b}/sequencesdedup.fasta"
-    shell:
-     """
-     seqkit rmdup < {input.allsequences} > {output.sequences}
-     """
-
-rule metadatadeduplicated:
-    input:
-        metadata = "data/{a_or_b}/metadata.tsv"
-    output:
-        metadata = "data/{a_or_b}/metadatadedup.tsv"
-    shell:
-        """
-        python scripts/metadatadedup.py \
-            --metadataoriginal {input.metadata} \
-            --metadataoutput {output.metadata}
-        """
-
 rule index_sequences:
     message:
         """
         Creating an index of sequence composition for filtering.
         """
     input:
-        sequences = rules.sequencesdeduplicated.output.sequences
+        sequences = "data/{a_or_b}/sequences.fasta"
     output:
         sequence_index = build_dir + "/{a_or_b}/{build_name}/sequence_index.tsv"
     shell:
@@ -73,9 +51,9 @@ rule filter:
             - gaps relative to reference are considered real
         """
     input:
-        sequences = "data/{a_or_b}/sequencesdedup.fasta",
+        sequences = "data/{a_or_b}/sequences.fasta",
         reference = "config/{a_or_b}reference.gbk",
-        metadata = rules.metadatadeduplicated.output.metadata,
+        metadata = "data/{a_or_b}/metadata.tsv",
         sequence_index = rules.index_sequences.output
     output:
     	sequences = build_dir + "/{a_or_b}/{build_name}/filtered.fasta"
@@ -103,7 +81,7 @@ rule align:
         """
     input:
         sequences = rules.filter.output.sequences,
-        reference = rules.newreference.output.newreferencefasta
+        reference = "config/{a_or_b}reference.fasta"
     output:
         alignment = build_dir + "/{a_or_b}/{build_name}/sequences.aligned.fasta"
     shell:
@@ -114,31 +92,35 @@ rule align:
             {input.sequences}
         """
 
-rule sorted:
-    input:
-        sequences = rules.align.output.alignment,
-        reference = rules.newreference.output.newreferencegbk
+rule cut:
+    input: 
+        oldalignment = rules.align.output.alignment,
+        reference = "config/{a_or_b}reference.gbk"
     output:
-        alignedandsorted = build_dir + "/{a_or_b}/{build_name}/alignedandsorted.fasta"
+        newalignment = build_dir + "/{a_or_b}/{build_name}/newalignment.fasta"
+    params:
+        gene = lambda w: w.build_name
     shell:
         """
-        python scripts/sort.py \
-            --alignment {input.sequences} \
+        python scripts/cut.py \
+            --oldalignment {input.oldalignment} \
+            --newalignment {output.newalignment} \
             --reference {input.reference} \
-            --output {output.alignedandsorted}
+            --gene {params.gene}
         """
 
 rule tree:
     message: "Building tree"
     input:
-        alignment = rules.sorted.output.alignedandsorted
+        alignment = rules.cut.output.newalignment
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree_raw.nwk"
     shell:
         """
         augur tree \
             --alignment {input.alignment} \
-            --output {output.tree}
+            --output {output.tree} \
+            --nthreads 4
         """
 
 rule refine:
@@ -151,8 +133,8 @@ rule refine:
         """
     input:
         tree = rules.tree.output.tree,
-        alignment = rules.sorted.output.alignedandsorted,
-        metadata = rules.metadatadeduplicated.output
+        alignment = rules.align.output.alignment,
+        metadata = rules.filter.input.metadata
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree.nwk",
         node_data = build_dir + "/{a_or_b}/{build_name}/branch_lengths.json"
@@ -204,10 +186,10 @@ rule translate:
         node_data = rules.ancestral.output.node_data,
         reference = rules.newreference.output.newreferencegbk
     output:
-        node_data = build_dir + "/{a_or_b}/{build_name}/aa_muts.json"
+        node_data = build_dir + "/{a_or_b}/{build_name}/aa_muts.json",
+        aa_data = build_dir + "/{a_or_b}/{build_name}/alignedG.fasta"
     params:
-    	alignment_file_mask = build_dir + "/{a_or_b}/{build_name}/alignedandsorted%GENE.fasta",
-        aa_data = build_dir + "/{a_or_b}/{build_name}/alignedandsorted{build_name}.fasta"
+    	alignment_file_mask = build_dir + "/{a_or_b}/{build_name}/aligned%GENE.fasta"
     shell:
         """
         augur translate \
@@ -221,13 +203,11 @@ rule translate:
 rule traits:
     input:
         tree = rules.refine.output.tree,
-        metadata = rules.metadatadeduplicated.output
+        metadata = rules.filter.input.metadata
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/traits.json"
     log:
         "logs/{a_or_b}/traits_{build_name}_rsv.txt"
-    conda:
-        config["conda_environment"]
     params:
     	columns = config["traits"]["columns"]
     shell:
@@ -239,4 +219,24 @@ rule traits:
             --columns {params.columns} \
             --confidence
         """
+
+rule clades:
+    message: "Adding internal clade labels"
+    input:
+        tree = rules.refine.output.tree,
+        aa_muts = rules.translate.output.node_data,
+        nuc_muts = rules.ancestral.output.node_data,
+        clades = "config/clades_G_{a_or_b}.tsv"
+    output:
+        node_data = build_dir + "/{a_or_b}/{build_name}/clades_G.json"
+    log:
+        "logs/{a_or_b}/clades_{build_name}.txt"
+    shell:
+        """
+        augur clades --tree {input.tree} \
+            --mutations {input.nuc_muts} {input.aa_muts} \
+            --clades {input.clades} \
+            --output-node-data {output.node_data} 2>&1 | tee {log}
+        """
+
 

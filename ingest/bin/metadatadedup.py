@@ -1,10 +1,12 @@
 import pandas as pd
 import argparse
 
+
 def metadatadeduplication(old, new):
     df  = pd.read_csv(old, sep='\t')
     df1 = df.drop_duplicates(subset=['strain'], keep='first')
     df1.to_csv(new,sep='\t')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
