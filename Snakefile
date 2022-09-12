@@ -5,7 +5,7 @@ auspice_dir = 'auspice'
 
 rule all:
     input:
-        expand("auspice/rsv_{subtype}_{build}_tree.json",
+        expand("auspice/rsv_{subtype}_{build}.json",
                subtype = config.get("subtypes",['a']),
                build = config.get("buildstorun", ['genome']))
 

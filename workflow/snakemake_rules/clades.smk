@@ -1,5 +1,5 @@
 rule clades_genome:
-    message: 
+    message:
         "adding clades based on the entire genome"
     input:
         tree = rules.refine.output.tree,
@@ -16,5 +16,6 @@ rule clades_genome:
             --mutations {input.nuc_muts} {input.aa_muts} \
             --clades {input.clades} \
             --output-node-data tmp.json 2>&1 | tee {log}
-        sed -e 's/clade_membership/genome_clade/g' tmp.json > {output.node_data}
+        sed -e 's/clade_membership/genome_clade/g' tmp.json |
+        sed -e 's/clade_annotation/genome_clade_annotation/g' > {output.node_data}
         """

@@ -1,9 +1,11 @@
 import json, argparse
 
 def replace_clade_recursive(node):
-    if 'genome_clade' in node:
-        node["branch_attrs"]["labels"]= node["node_attrs"]["genome_clade_annotation"]
-        node['node_attrs'].pop('genome_clade')
+    if "genome_clade_annotation" in node["node_attrs"]:
+        if "labels" not in node["branch_attrs"]:
+            node["branch_attrs"]["labels"] = {}
+        node["branch_attrs"]["labels"]["genome_clade"] = node["node_attrs"]["genome_clade_annotation"]["value"]
+        node["node_attrs"].pop("genome_clade_annotation")
     if "children" in node:
         for child in node["children"]:
             replace_clade_recursive(child)
@@ -24,4 +26,4 @@ if __name__=="__main__":
     replace_clade_recursive(data['tree'])
 
     with open(args.output, 'w') as fh:
-        json.dump(data, fh, indent=2)
+        json.dump(data, fh, indent=0)
