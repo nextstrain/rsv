@@ -18,8 +18,8 @@ rule export:
         node_data = get_node_data,
         auspice_config = config["files"]["auspice_config"]
     output:
-        auspice_json =  "auspice/rsv_{a_or_b}_{build_name}.json",
-        root_sequence = "auspice/rsv_{a_or_b}_{build_name}_root-sequence.json"
+        auspice_json =  "auspice/raw_tree_{a_or_b}_{build_name}.json",
+        root_sequence = "auspice/raw_tree_{a_or_b}_{build_name}_root-sequence.json"
     params:
     	title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny"
     shell:
@@ -32,4 +32,20 @@ rule export:
             --auspice-config {input.auspice_config} \
             --include-root-sequence \
             --output {output.auspice_json}
+        """
+
+rule final_strain_name:
+    input:
+        auspice_json= rules.export.output.auspice_json,
+        root_sequence= rules.export.output.root_sequence
+    output:
+        auspice_json= "auspice/rsv_{a_or_b}_{build_name}_tree.json",
+        root_sequence= "auspice/rsv_{a_or_b}_{build_name}_tree_root-sequence.json"
+    shell:
+        """
+        python3 scripts/clade_names.py  \
+                --input-auspice-json {input.auspice_json} \
+                --output {output.auspice_json} 
+
+        cp {input.root_sequence} {output.root_sequence}
         """
