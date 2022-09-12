@@ -165,7 +165,7 @@ rule ancestral:
         """
     input:
         tree = rules.refine.output.tree,
-        alignment = rules.align.output.alignment
+        alignment = rules.cut.output.newalignment
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/nt_muts.json"
     params:
