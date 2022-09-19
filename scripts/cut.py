@@ -1,13 +1,9 @@
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import Seq
-import shutil
 import argparse 
     
-def cut(oldalignment, newalignment, referencefile, gene='genome'):
-    if gene=='genome':
-        shutil.copy(oldalignment, newalignment)
-    else:
+def cut(oldalignment, newalignment, referencefile, gene='G'):
         list1 = []
         list2=[]
         ref = SeqIO.read(referencefile, "genbank")
@@ -29,7 +25,7 @@ def cut(oldalignment, newalignment, referencefile, gene='genome'):
             sequence = sequence.replace("-", "")
             if sequence != "":
                 list2.append(i)
-        newfasta = SeqIO.write(list2, newalignment, "fasta")
+        SeqIO.write(list2, newalignment, "fasta")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -39,7 +35,6 @@ if __name__ == '__main__':
     parser.add_argument("--oldalignment", required=True, help="fasta input with alignment of entire genome")
     parser.add_argument("--newalignment", required=True, help="fasta output with alignment of relevant part of geome")
     parser.add_argument("--reference", required=True, help="reference genbank file of entire genome")
-    parser.add_argument("--gene", help="add gene name, otherwise entire genome will be used")
     args = parser.parse_args()
 
-    cut(args.oldalignment, args.newalignment, args.reference, args.gene)
+    cut(args.oldalignment, args.newalignment, args.reference)

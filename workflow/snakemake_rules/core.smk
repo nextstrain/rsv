@@ -30,14 +30,17 @@ rule newreference:
         oldreference = "config/{a_or_b}reference.gbk"
     output:
         newreferencegbk = build_dir + "/{a_or_b}/{build_name}/newreference.gbk",
-        newreferencefasta = build_dir + "/{a_or_b}/{build_name}/newreference.fasta"
+        newreferencefasta = build_dir + "/{a_or_b}/{build_name}/newreference.fasta",
+        greference = build_dir + "/{a_or_b}/{build_name}/greference.fasta"
     params:
         gene = lambda w: w.build_name,
         newreference = build_dir + "/{a_or_b}/{build_name}/newreference",
-        oldreference = 'config/{a_or_b}reference'
+        oldreference = 'config/{a_or_b}reference',
+        greference = build_dir + "/{a_or_b}/{build_name}/greference"
     shell:
         """
         python scripts/newreference.py \
+            --greference {params.greference} \
             --reference {params.oldreference} \
             --output {params.newreference} \
             --gene {params.gene}
@@ -73,7 +76,6 @@ rule filter:
             --min-length {params.min_length}
         """
 
-
 rule align:
     message:
         """
@@ -98,21 +100,51 @@ rule cut:
         reference = "config/{a_or_b}reference.gbk"
     output:
         newalignment = build_dir + "/{a_or_b}/{build_name}/newalignment.fasta"
-    params:
-        gene = lambda w: w.build_name
     shell:
         """
         python scripts/cut.py \
             --oldalignment {input.oldalignment} \
             --newalignment {output.newalignment} \
             --reference {input.reference} \
+        """
+
+rule realign:
+    input: 
+        newalignment = rules.cut.output.newalignment,
+        reference = rules.newreference.output.greference
+    output:
+        realigned = build_dir + "/{a_or_b}/{build_name}/realigned.fasta"
+    shell:
+        """
+        augur align \
+            --sequences {input.newalignment} \
+            --reference-sequence {input.reference} \
+            --output {output.realigned} 
+        """
+
+rule alignment_for_tree:
+    input:
+        realigned = rules.realign.output.realigned,
+        original = rules.align.output.alignment,
+        reference = "config/{a_or_b}reference.gbk"
+    output:
+        aligned_for_tree = build_dir + "/{a_or_b}/{build_name}/alignment_for_tree.fasta"
+    params:
+        gene = lambda w: w.build_name
+    shell:
+        """
+        python scripts/align_for_tree.py \
+            --realign {input.realigned} \
+            --original {input.original} \
+            --reference {input.reference} \
+            --output {output.aligned_for_tree} \
             --gene {params.gene}
         """
 
 rule tree:
     message: "Building tree"
     input:
-        alignment = rules.cut.output.newalignment
+        alignment = rules.alignment_for_tree.output
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree_raw.nwk"
     shell:
@@ -165,7 +197,7 @@ rule ancestral:
         """
     input:
         tree = rules.refine.output.tree,
-        alignment = rules.cut.output.newalignment
+        alignment = rules.alignment_for_tree.output
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/nt_muts.json"
     params:
@@ -238,5 +270,3 @@ rule clades:
             --clades {input.clades} \
             --output-node-data {output.node_data} 2>&1 | tee {log}
         """
-
-
