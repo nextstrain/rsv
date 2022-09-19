@@ -86,16 +86,17 @@ rule align:
         reference = "config/{a_or_b}reference.fasta"
     output:
         alignment = build_dir + "/{a_or_b}/{build_name}/sequences.aligned.fasta"
+    threads: 4
     shell:
         """
-        nextalign run \
+        nextalign run -j {threads}\
             --reference {input.reference} \
             --output-fasta {output.alignment} \
             {input.sequences}
         """
 
 rule cut:
-    input: 
+    input:
         oldalignment = rules.align.output.alignment,
         reference = "config/{a_or_b}reference.gbk"
     output:
@@ -109,7 +110,7 @@ rule cut:
         """
 
 rule realign:
-    input: 
+    input:
         newalignment = rules.cut.output.newalignment,
         reference = rules.newreference.output.greference
     output:
@@ -119,7 +120,7 @@ rule realign:
         augur align \
             --sequences {input.newalignment} \
             --reference-sequence {input.reference} \
-            --output {output.realigned} 
+            --output {output.realigned}
         """
 
 rule alignment_for_tree:
