@@ -115,9 +115,10 @@ rule realign:
         reference = rules.newreference.output.greference
     output:
         realigned = build_dir + "/{a_or_b}/{build_name}/realigned.fasta"
+    threads: 4
     shell:
         """
-        augur align \
+        augur align --nthreads {threads} \
             --sequences {input.newalignment} \
             --reference-sequence {input.reference} \
             --output {output.realigned}
@@ -148,12 +149,13 @@ rule tree:
         alignment = rules.alignment_for_tree.output
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree_raw.nwk"
+    threads: 4
     shell:
         """
         augur tree \
             --alignment {input.alignment} \
             --output {output.tree} \
-            --nthreads 4
+            --nthreads {threads}
         """
 
 rule refine:
