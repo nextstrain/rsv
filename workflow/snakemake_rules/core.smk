@@ -168,7 +168,7 @@ rule refine:
         """
     input:
         tree = rules.tree.output.tree,
-        alignment = rules.align.output.alignment,
+        alignment = rules.alignment_for_tree.output,
         metadata = rules.filter.input.metadata
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree.nwk",
@@ -189,6 +189,7 @@ rule refine:
             --date-inference {params.date_inference} \
             --date-confidence \
             --timetree \
+            --use-fft \
             --clock-filter-iqd {params.clock_filter_iqd}
         """
 
