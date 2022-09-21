@@ -10,7 +10,7 @@ def alignfortree(realign, align, reference, newoutput, build):
 
     if build == "genome":
 
-        realigned = SeqIO.parse(realign, "fasta")
+        realigned = {s.id:s for s in SeqIO.parse(realign, "fasta")}
         original = SeqIO.parse(align, "fasta")
         ref = SeqIO.read(reference, "genbank")
 
@@ -21,8 +21,9 @@ def alignfortree(realign, align, reference, newoutput, build):
                         startofgene = int(list(feature.location)[0])
                         endofgene =  int(list(feature.location)[-1])+1
 
-        for record_new, record_original in zip(realigned, original):
-            record_for_tree = record_original.seq.replace(record_original.seq[startofgene:endofgene], record_new.seq)
+        for record_original in original:
+
+            record_for_tree = record_original.seq.replace(record_original.seq[startofgene:endofgene], realigned[record_original.id].seq)
             newrecord = SeqRecord(record_for_tree, id=record_original.id, description=record_original.description)
             records.append(newrecord)
 
