@@ -15,7 +15,7 @@ slack_ts_file="${1:-}"
 echo "Notifying Slack about successful build."
 
 thread_ts=""
-message="❌ RSV build pipeline has FAILED 😞."
+message="❌ Monkepox build pipeline has FAILED 😞."
 
 if [[ -n "$slack_ts_file" ]]; then
   thread_ts=$(cat "$slack_ts_file")
