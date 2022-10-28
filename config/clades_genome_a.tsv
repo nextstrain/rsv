@@ -1,103 +1,99 @@
-clade	gene	site	alt
-A1	nuc	345	C
-A1	nuc	411	C
-A1	nuc	527	T
-A1	nuc	909	G
-A1	F	16	I
-A1	L	81	L
+clade	site	gene	alt
+A1	297	nuc	C
+A1	363	nuc	C
+A1	479	nuc	T
+A1	861	nuc	G
+A1	16	F	I
+A1	81	L	L
 			
-A2	clade	A1	
-A2	G	102	S
-A2	G	110	L
-A2	G	199	R
-A2	M2	69	S
-A2	L	2016	I
+A2	A1	clade	
+A2	110	G	L
+A2	197	G	R
+A2	2016	L	I
 			
-A3	G	264	X
+A3	238	G	X
 			
-A4	clade	A3	
-A4	L	1739	G
-A4	nuc	7641	G
-A4	nuc	13783	G
+A4	A3	clade	
+A4	174	L	G
+A4	7516	nuc	G
+A4	13658	nuc	G
 			
-A5	nuc	4954	G
-A5	nuc	5715	G
-A5	nuc	7626	C
-A5	nuc	8702	C
-A5	nuc	11666	C
+A5	4905	nuc	G
+A5	5588	nuc	G
+A5	7501	nuc	C
+A5	8577	nuc	C
+A5	11541	nuc	C
 			
-A6	nuc	182	C
-A6	nuc	1329	G
-A6	nuc	3186	C
+A6	134	nuc	C
+A6	1281	nuc	G
 			
-A7	nuc	3118	G
-A7	nuc	4046	T
-A7	nuc	4061	C
-A7	nuc	3584	C
+A7	3070	nuc	G
+A7	3998	nuc	T
+A7	4013	nuc	C
+A7	3536	nuc	C
 			
-A8	nuc	651	T
-A8	nuc	1997	A
-A8	nuc	2564	C
-A8	nuc	3202	T
+A8	603	nuc	T
+A8	1949	nuc	A
+A8	2516	nuc	C
+A8	3155	nuc	T
 			
-A9	clade	A8	
-A9	nuc	3236	G
-A9	nuc	5162	G
-A9	nuc	4268	C
+A9	A8	clade	
+A9	3188	nuc	G
+A9	5113	nuc	G
+A9	4220	nuc	C
 			
-A10	clade	A9	
-A10	nuc	2589	A
-A10	nuc	3236	A
-A10	G	117	S
-A10	nuc	5031	C
+A10	A9	clade	
+A10	2541	nuc	A
+A10	3188	nuc	A
+A10	117	G	S
+A10	4982	nuc	C
 			
 			
-A11	nuc	5769	G
-A11	nuc	7496	T
-A11	nuc	9338	T
+A11	5642	nuc	G
+A11	7369	nuc	T
+A11	9213	nuc	T
 			
 			
-A12	nuc	2982	C
-A12	nuc	8044	A
-A12	nuc	10631	T
-A12	nuc	13376	G
+A12	2934	nuc	C
+A12	7919	nuc	A
+A12	10506	nuc	T
+A12	13251	nuc	G
 			
-A13	nuc	137	G
-A13	M2	67	T
+A13	89	nuc	G
+A13	84	N	K
 			
-A14	nuc	1397	T
-A14	nuc	4042	A
-A14	nuc	5744	T
+A14	1349	nuc	T
+A14	3994	nuc	A
+A14	5619	nuc	T
 			
-A15	nuc	94	A
-A15	nuc	4274	G
+A15	46	nuc	A
+A15	4226	nuc	G
 			
-A16	nuc	6191	C
-A16	nuc	9504	T
+A16	6064	nuc	C
+A16	9379	nuc	T
 			
 			
-A17	L	216	S
-A17	F	574	S
-A17	M2	37	I
+A17	216	L	S
+A17	574	F	S
 			
-A18	G	323	K
-A18	L	217	P
+A18	297	G	K
+A18	217	L	P
 			
-A19	clade	A18	
-A19	G	133	I
+A19	A18	clade	
+A19	133	G	I
 			
-A20	nuc	9101	C
+A20	8976	nuc	C
 			
-A21	nuc	509	C
+A21	461	nuc	C
 			
-A22	nuc	95	C
-A22	nuc	1958	G
-A22	nuc	4515	C
+A22	47	nuc	C
+A22	1910	nuc	G
+A22	4467	nuc	C
 			
-A23	clade	A20	
-A23	nuc	1271	T
-A23	nuc	2114	G
-A23	nuc	3632	A
-A23	nuc	5140	T
-A23	nuc	10718	C
-A23	nuc	13496	T
+A23	A20	clade	
+A23	1223	nuc	T
+A23	2066	nuc	G
+A23	3584	nuc	A
+A23	5091	nuc	T
+A23	10593	nuc	C
+A23	13371	nuc	T
