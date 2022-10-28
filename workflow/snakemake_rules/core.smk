@@ -86,9 +86,10 @@ rule align:
         reference = "config/{a_or_b}reference.fasta"
     output:
         alignment = build_dir + "/{a_or_b}/{build_name}/sequences.aligned.fasta"
+    threads: 4
     shell:
         """
-        nextalign run \
+        nextalign run -j {threads}\
             --reference {input.reference} \
             --output-fasta {output.alignment} \
             {input.sequences}
@@ -114,9 +115,10 @@ rule realign:
         reference = rules.newreference.output.greference
     output:
         realigned = build_dir + "/{a_or_b}/{build_name}/realigned.fasta"
+    threads: 4
     shell:
         """
-        augur align \
+        augur align --nthreads {threads} \
             --sequences {input.newalignment} \
             --reference-sequence {input.reference} \
             --output {output.realigned}
@@ -153,7 +155,7 @@ rule tree:
         augur tree \
             --alignment {input.alignment} \
             --output {output.tree} \
-            --nthreads 4
+            --nthreads {threads}
         """
 
 rule refine:
@@ -187,6 +189,7 @@ rule refine:
             --date-inference {params.date_inference} \
             --date-confidence \
             --timetree \
+            --use-fft \
             --clock-filter-iqd {params.clock_filter_iqd}
         """
 
