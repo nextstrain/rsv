@@ -95,7 +95,7 @@ rule align:
         """
 
 rule cut:
-    input: 
+    input:
         oldalignment = rules.align.output.alignment,
         reference = "config/{a_or_b}reference.gbk"
     output:
@@ -109,7 +109,7 @@ rule cut:
         """
 
 rule realign:
-    input: 
+    input:
         newalignment = rules.cut.output.newalignment,
         reference = rules.newreference.output.greference
     output:
@@ -119,7 +119,7 @@ rule realign:
         augur align \
             --sequences {input.newalignment} \
             --reference-sequence {input.reference} \
-            --output {output.realigned} 
+            --output {output.realigned}
         """
 
 rule alignment_for_tree:
@@ -144,9 +144,10 @@ rule alignment_for_tree:
 rule tree:
     message: "Building tree"
     input:
-        alignment = rules.alignment_for_tree.output
+        alignment = rules.alignment_for_tree.output.aligned_for_tree
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree_raw.nwk"
+    threads: 4
     shell:
         """
         augur tree \
@@ -165,7 +166,7 @@ rule refine:
         """
     input:
         tree = rules.tree.output.tree,
-        alignment = rules.align.output.alignment,
+        alignment = rules.alignment_for_tree.output.aligned_for_tree,
         metadata = rules.filter.input.metadata
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree.nwk",
@@ -197,7 +198,7 @@ rule ancestral:
         """
     input:
         tree = rules.refine.output.tree,
-        alignment = rules.alignment_for_tree.output
+        alignment = rules.alignment_for_tree.output.aligned_for_tree
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/nt_muts.json"
     params:
