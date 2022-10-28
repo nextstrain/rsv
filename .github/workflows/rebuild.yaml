@@ -33,7 +33,7 @@ jobs:
           --exec env \
           . \
             envdir env.d snakemake notify_on_deploy \
-              --configfiles config/config.yaml config/nextstrain_automation.yaml \
+              --configfiles config/configfile.yaml config/nextstrain_automation.yaml \
               --printshellcmds
       env:
         AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
