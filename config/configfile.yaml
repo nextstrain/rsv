@@ -4,6 +4,8 @@ genesforglycosylation: ["G", "F"]
 
 buildstorun: ["genome", "G"]
 
+description: "config/description.md"
+
 subtypes: ['a', 'b']
 
 filter:
