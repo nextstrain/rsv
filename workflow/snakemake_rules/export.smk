@@ -30,7 +30,7 @@ rule export:
             --metadata {input.metadata} \
             --node-data {input.node_data} \
             --title {params.title:q} \
-            -- description {input.description} \
+            --description {input.description} \
             --auspice-config {input.auspice_config} \
             --include-root-sequence \
             --output {output.auspice_json}
