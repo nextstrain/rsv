@@ -1,5 +1,17 @@
 {
-  "title": "Nextstrain build for RSV",
+  "title": "Genomic epidemiology of RSV",
+  "maintainers": [
+    {"name": "Laura Urbanska", "url": "http://nextstrain.org"},
+    {"name": "Richard Neher", "url": "http://nextstrain.org"}
+
+  ],
+  "data_provenance": [
+    {
+      "name": "GenBank",
+      "url": "https://www.ncbi.nlm.nih.gov/genbank/"
+    }
+  ],
+  "build_url": "https://github.com/nextstrain/rsv",
 
   "colorings": [
     {

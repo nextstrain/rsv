@@ -16,7 +16,8 @@ rule export:
         tree = rules.refine.output.tree,
         metadata = rules.traits.input.metadata,
         node_data = get_node_data,
-        auspice_config = config["files"]["auspice_config"]
+        auspice_config = config["files"]["auspice_config"],
+        description = config["description"]
     output:
         auspice_json =  build_dir + "/{a_or_b}/{build_name}/tree.json",
         root_sequence = build_dir + "/{a_or_b}/{build_name}/tree_root-sequence.json"
@@ -29,6 +30,7 @@ rule export:
             --metadata {input.metadata} \
             --node-data {input.node_data} \
             --title {params.title:q} \
+            --description {input.description} \
             --auspice-config {input.auspice_config} \
             --include-root-sequence \
             --output {output.auspice_json}
