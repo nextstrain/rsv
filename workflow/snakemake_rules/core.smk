@@ -4,6 +4,19 @@ This part of the workflow expects input files
             metadata = "data/metadata.tsv"
 '''
 
+rule wrangle_metadata:
+    input:
+        metadata="data/{a_or_b}/metadata.tsv",
+    output:
+        metadata="data/{a_or_b}/metadata_by_accession.tsv",
+    params:
+        strain_id=lambda w: config.get("strain_id_field", "strain"),
+    shell:
+        """
+        python3 scripts/wrangle_metadata.py --metadata {input.metadata} \
+                    --strain-id {params.strain_id} \
+                    --output {output.metadata}
+        """
 
 rule index_sequences:
     message:
@@ -50,13 +63,12 @@ rule newreference:
 rule filter:
     message:
         """
-        Aligning sequences to {input.reference}
-            - gaps relative to reference are considered real
+        filtering sequences
         """
     input:
         sequences = "data/{a_or_b}/sequences.fasta",
         reference = "config/{a_or_b}reference.gbk",
-        metadata = "data/{a_or_b}/metadata.tsv",
+        metadata = "data/{a_or_b}/metadata_by_accession.tsv",
         sequence_index = rules.index_sequences.output
     output:
     	sequences = build_dir + "/{a_or_b}/{build_name}/filtered.fasta"
