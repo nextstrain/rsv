@@ -5,7 +5,7 @@ import argparse
 
 def alignfortree(realign, align, reference, newoutput, build):
     records = []
-    if build == "G":
+    if build == "G" or "F":
         shutil.copy(realign, newoutput)
 
     if build == "genome":

@@ -4,13 +4,13 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation, Seq
 import shutil
 import argparse
 
-def new_reference(greference, referencefile, newfile, gene='genome'):
+def new_reference(greference, referencefile, newfile, gene):
     ref = SeqIO.read(f"{referencefile}.gbk", "genbank")
 
     for feature in ref.features:
         if feature.type =='gene':
             a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
-            if a == 'G':
+            if a == gene:
                 startofgene = int(list(feature.location)[0])
                 endofgene =  int(list(feature.location)[-1])+1
                 finish = endofgene-startofgene
@@ -24,12 +24,15 @@ def new_reference(greference, referencefile, newfile, gene='genome'):
     record.features.append(feature1)
 
     for feature in ref.features:
-        if feature.type == 'CDS':
+        if feature.type == 'gene':
             a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
             if a == gene:
                 startofgene = int(list(feature.location)[0])
                 endofgene =  int(list(feature.location)[-1])+1
                 finish = endofgene-startofgene
+        if feature.type == 'CDS':
+            a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
+            if a == gene:
                 feature2 = SeqFeature(FeatureLocation(start=0, end=finish), type='CDS', qualifiers=feature.qualifiers)
                 record.features.append(feature2)
 
@@ -45,6 +48,7 @@ def new_reference(greference, referencefile, newfile, gene='genome'):
         reffasta = SeqIO.read(f"{referencefile}.fasta", 'fasta')
         newrecord = SeqRecord(Seq(reffasta.seq[startofgene:endofgene]), id=reffasta.id, description=reffasta.description)
         SeqIO.write(newrecord, f"{newfile}.fasta", "fasta")
+
 
 
 if __name__ == '__main__':
