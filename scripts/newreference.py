@@ -4,50 +4,24 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation, Seq
 import shutil
 import argparse
 
-def new_reference(greference, referencefile, newfile, gene):
-    ref = SeqIO.read(f"{referencefile}.gbk", "genbank")
-
-    for feature in ref.features:
-        if feature.type =='gene':
-            a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
-            if a == gene:
-                startofgene = int(list(feature.location)[0])
-                endofgene =  int(list(feature.location)[-1])+1
-                finish = endofgene-startofgene
-    sequence_object = Seq(ref.seq[startofgene:endofgene])
-
-    record = SeqRecord(sequence_object, id=ref.id, name=ref.name, description=ref.description, annotations=ref.annotations)
-
+def new_reference(referencefile, outgenbank, outfasta, gene):
+    ref = SeqIO.read(referencefile, "genbank")
     for feature in ref.features:
         if feature.type == 'source':
-            feature1 =  SeqFeature(FeatureLocation(start=0, end=finish), type='source', qualifiers=feature.qualifiers)
-    record.features.append(feature1)
-
-    for feature in ref.features:
-        if feature.type == 'gene':
-            a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
+            ref_source_feature = feature
+        if feature.type =='gene':
+            a = list(feature.qualifiers.items())[0][-1][0]
             if a == gene:
                 startofgene = int(list(feature.location)[0])
                 endofgene =  int(list(feature.location)[-1])+1
-                finish = endofgene-startofgene
-        if feature.type == 'CDS':
-            a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
-            if a == gene:
-                feature2 = SeqFeature(FeatureLocation(start=0, end=finish), type='CDS', qualifiers=feature.qualifiers)
-                record.features.append(feature2)
 
-    reffasta = SeqIO.read(f"{referencefile}.fasta", 'fasta')
-    newrecord = SeqRecord(Seq(reffasta.seq[startofgene:endofgene]), id=reffasta.id, description=reffasta.description)
-    SeqIO.write(newrecord, f"{greference}.fasta", "fasta")
+    record = ref[startofgene:endofgene]
+    source_feature =  SeqFeature(FeatureLocation(start=0, end=len(record)), type='source',
+                                 qualifiers=ref_source_feature.qualifiers)
+    record.features.append(source_feature)
 
-    if gene=='genome':
-        shutil.copy(f'{referencefile}.gbk', f'{newfile}.gbk')
-        shutil.copy(f'{referencefile}.fasta', f'{newfile}.fasta')
-    else:
-        SeqIO.write(record, f"{newfile}.gbk", 'genbank')
-        reffasta = SeqIO.read(f"{referencefile}.fasta", 'fasta')
-        newrecord = SeqRecord(Seq(reffasta.seq[startofgene:endofgene]), id=reffasta.id, description=reffasta.description)
-        SeqIO.write(newrecord, f"{newfile}.fasta", "fasta")
+    SeqIO.write(record, outgenbank, 'genbank')
+    SeqIO.write(record, outfasta, "fasta")
 
 
 
@@ -56,11 +30,15 @@ if __name__ == '__main__':
         description="make new reference depending on whether the entire genome or only part is to be used for the tree",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument("--greference", required=True, help="fasta output file with reference sequences")
     parser.add_argument("--reference", required=True, help="GenBank file with reference sequences")
-    parser.add_argument("--output", required=True, help="GenBank new reference file")
-    parser.add_argument("--gene", help="add gene name, otherwise entire genome will be used")
+    parser.add_argument("--output-fasta", required=True, help="GenBank new reference file")
+    parser.add_argument("--output-genbank", required=True, help="GenBank new reference file")
+    parser.add_argument("--gene", help="gene name or genome for entire genome")
     args = parser.parse_args()
 
-    new_reference(args.greference, args.reference, args.output, args.gene)
+    if args.gene=='genome':
+        shutil.copy(args.reference, args.output_genbank)
+        SeqIO.write(SeqIO.read(args.reference, 'genbank'), args.output_fasta, 'fasta')
+    else:
+        new_reference(args.reference, args.output_genbank, args.output_fasta, args.gene)
 

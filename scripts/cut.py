@@ -1,12 +1,13 @@
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import Seq
-import argparse 
-    
+import argparse
+
 def cut(oldalignment, newalignment, referencefile, gene):
         list1 = []
-        list2=[]
+        list2 = []
         if gene == 'genome': gene = 'G'
+
         ref = SeqIO.read(referencefile, "genbank")
         for feature in ref.features:
             if feature.type =='gene':
@@ -23,7 +24,7 @@ def cut(oldalignment, newalignment, referencefile, gene):
             newrecord = SeqRecord(Seq(entry.seq[startofgene:endofgene]), id=entry.id, description=entry.description)
             print(newrecord)
             list1.append(newrecord)
-            
+
         for record in list1:
             sequence =str(record.seq)
             sequence = sequence.replace("-", "")
@@ -37,9 +38,9 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("--oldalignment", required=True, help="fasta input with alignment of entire genome")
-    parser.add_argument("--newalignment", required=True, help="fasta output with alignment of relevant part of geome")
+    parser.add_argument("--slicedalignment", required=True, help="fasta output with alignment of relevant part of geome")
     parser.add_argument("--reference", required=True, help="reference genbank file of entire genome")
     parser.add_argument("--gene", required=True, help="build name, G or F or genome")
     args = parser.parse_args()
 
-    cut(args.oldalignment, args.newalignment, args.reference, args.gene)
+    cut(args.oldalignment, args.slicedalignment, args.reference, args.gene)
