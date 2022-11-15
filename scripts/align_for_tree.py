@@ -5,11 +5,9 @@ import argparse
 
 def alignfortree(realign, align, reference, newoutput, build):
     records = []
-    if build == "G":
+    if build != "genome":
         shutil.copy(realign, newoutput)
-
-    if build == "genome":
-
+    else:
         realigned = {s.id:s for s in SeqIO.parse(realign, "fasta")}
         original = SeqIO.parse(align, "fasta")
         ref = SeqIO.read(reference, "genbank")
@@ -20,10 +18,16 @@ def alignfortree(realign, align, reference, newoutput, build):
                     if a == "G":
                         startofgene = int(list(feature.location)[0])
                         endofgene =  int(list(feature.location)[-1])+1
+                        break
 
         for record_original in original:
+            sequence_to_insert = realigned.get(record_original.id, None)
+            if sequence_to_insert is None:
+                sequence_to_insert = '-' * (endofgene - startofgene)
+            else:
+                sequence_to_insert = sequence_to_insert.seq
 
-            record_for_tree = record_original.seq.replace(record_original.seq[startofgene:endofgene], realigned[record_original.id].seq)
+            record_for_tree = record_original.seq.replace(record_original.seq[startofgene:endofgene], sequence_to_insert)
             newrecord = SeqRecord(record_for_tree, id=record_original.id, description=record_original.description)
             records.append(newrecord)
 
@@ -31,7 +35,7 @@ def alignfortree(realign, align, reference, newoutput, build):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="make new reference depending on whether the entire genome or only part is to be used for the tree",
+        description="insert the G gene realignment into the alignment of the entire genome",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("--realign", required=True, help="multiple sequence aligned G gene input FASTA")

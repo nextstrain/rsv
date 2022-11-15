@@ -2,7 +2,7 @@ conda_environment: "workflow/envs/nextstrain.yaml"
 
 genesforglycosylation: ["G", "F"]
 
-buildstorun: ["genome", "G"]
+buildstorun: ["genome", "G", "F"]
 
 description: "config/description.md"
 

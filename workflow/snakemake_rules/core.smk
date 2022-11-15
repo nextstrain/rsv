@@ -42,20 +42,16 @@ rule newreference:
     input:
         oldreference = "config/{a_or_b}reference.gbk"
     output:
-        newreferencegbk = build_dir + "/{a_or_b}/{build_name}/newreference.gbk",
-        newreferencefasta = build_dir + "/{a_or_b}/{build_name}/newreference.fasta",
-        greference = build_dir + "/{a_or_b}/{build_name}/greference.fasta"
+        newreferencegbk = build_dir + "/{a_or_b}/{build_name}/{gene}_reference.gbk",
+        newreferencefasta = build_dir + "/{a_or_b}/{build_name}/{gene}_reference.fasta",
     params:
-        gene = lambda w: w.build_name,
-        newreference = build_dir + "/{a_or_b}/{build_name}/newreference",
-        oldreference = 'config/{a_or_b}reference',
-        greference = build_dir + "/{a_or_b}/{build_name}/greference"
+        gene = lambda w: w.gene,
     shell:
         """
         python scripts/newreference.py \
-            --greference {params.greference} \
-            --reference {params.oldreference} \
-            --output {params.newreference} \
+            --reference {input.oldreference} \
+            --output-genbank {output.newreferencegbk} \
+            --output-fasta {output.newreferencefasta} \
             --gene {params.gene}
         """
 
@@ -88,14 +84,14 @@ rule filter:
             --min-length {params.min_length}
         """
 
-rule align:
+rule nextalign:
     message:
         """
         Aligning sequences to {input.reference}
         """
     input:
         sequences = rules.filter.output.sequences,
-        reference = "config/{a_or_b}reference.fasta"
+        reference = build_dir + "/{a_or_b}/{build_name}/genome_reference.fasta"
     output:
         alignment = build_dir + "/{a_or_b}/{build_name}/sequences.aligned.fasta"
     threads: 4
@@ -109,56 +105,68 @@ rule align:
 
 rule cut:
     input:
-        oldalignment = rules.align.output.alignment,
+        oldalignment = rules.nextalign.output.alignment,
         reference = "config/{a_or_b}reference.gbk"
     output:
-        newalignment = build_dir + "/{a_or_b}/{build_name}/newalignment.fasta"
+        slicedalignment = build_dir + "/{a_or_b}/{build_name}/{gene}_slicedalignment.fasta"
+    params:
+        gene = lambda w: w.gene,
+        min_length = lambda w: config["filter"]["min_length"].get(w.gene, 10000),
     shell:
         """
         python scripts/cut.py \
             --oldalignment {input.oldalignment} \
-            --newalignment {output.newalignment} \
+            --slicedalignment {output.slicedalignment} \
             --reference {input.reference} \
+            --min-length {params.min_length} \
+            --gene {params.gene}
         """
 
 rule realign:
     input:
-        newalignment = rules.cut.output.newalignment,
-        reference = rules.newreference.output.greference
+        slicedalignment = rules.cut.output.slicedalignment,
+        reference = build_dir + "/{a_or_b}/{build_name}/{gene}_reference.fasta"
     output:
-        realigned = build_dir + "/{a_or_b}/{build_name}/realigned.fasta"
+        realigned = build_dir + "/{a_or_b}/{build_name}/{gene}_aligned.fasta"
     threads: 4
     shell:
         """
         augur align --nthreads {threads} \
-            --sequences {input.newalignment} \
+            --sequences {input.slicedalignment} \
             --reference-sequence {input.reference} \
             --output {output.realigned}
         """
 
-rule alignment_for_tree:
+
+rule hybrid_align:
     input:
-        realigned = rules.realign.output.realigned,
-        original = rules.align.output.alignment,
+        original = rules.nextalign.output.alignment,
+        G_alignment = build_dir + "/{a_or_b}/{build_name}/G_aligned.fasta",
         reference = "config/{a_or_b}reference.gbk"
     output:
-        aligned_for_tree = build_dir + "/{a_or_b}/{build_name}/alignment_for_tree.fasta"
+        hybrid_alignment = build_dir + "/{a_or_b}/{build_name}/hybrid_alignment.fasta"
     params:
         gene = lambda w: w.build_name
     shell:
         """
         python scripts/align_for_tree.py \
-            --realign {input.realigned} \
+            --realign {input.G_alignment} \
             --original {input.original} \
             --reference {input.reference} \
-            --output {output.aligned_for_tree} \
+            --output {output.hybrid_alignment} \
             --gene {params.gene}
         """
+
+def get_alignment(w):
+    if w.build_name == "genome":
+        return rules.hybrid_align.output.hybrid_alignment
+    else:
+        return build_dir + f"/{w.a_or_b}/{w.build_name}/{w.build_name}_aligned.fasta"
 
 rule tree:
     message: "Building tree"
     input:
-        alignment = rules.alignment_for_tree.output.aligned_for_tree
+        alignment = get_alignment
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree_raw.nwk"
     threads: 4
@@ -180,7 +188,7 @@ rule refine:
         """
     input:
         tree = rules.tree.output.tree,
-        alignment = rules.alignment_for_tree.output.aligned_for_tree,
+        alignment =get_alignment,
         metadata = rules.filter.input.metadata
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree.nwk",
@@ -213,7 +221,7 @@ rule ancestral:
         """
     input:
         tree = rules.refine.output.tree,
-        alignment = rules.alignment_for_tree.output.aligned_for_tree
+        alignment = get_alignment
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/nt_muts.json"
     params:
@@ -232,12 +240,11 @@ rule translate:
     input:
         tree = rules.refine.output.tree,
         node_data = rules.ancestral.output.node_data,
-        reference = rules.newreference.output.newreferencegbk
+        reference = build_dir + "/{a_or_b}/{build_name}/{build_name}_reference.gbk",
     output:
-        node_data = build_dir + "/{a_or_b}/{build_name}/aa_muts.json",
-        aa_data = build_dir + "/{a_or_b}/{build_name}/alignedG.fasta"
+        node_data = build_dir + "/{a_or_b}/{build_name}/aa_muts.json"
     params:
-    	alignment_file_mask = build_dir + "/{a_or_b}/{build_name}/aligned%GENE.fasta"
+    	alignment_file_mask = build_dir + "/{a_or_b}/{build_name}/aligned_%GENE.fasta"
     shell:
         """
         augur translate \
