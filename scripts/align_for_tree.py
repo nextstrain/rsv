@@ -18,9 +18,16 @@ def alignfortree(realign, align, reference, newoutput, build):
                     if a == "G":
                         startofgene = int(list(feature.location)[0])
                         endofgene =  int(list(feature.location)[-1])+1
+                        break
 
         for record_original in original:
-            record_for_tree = record_original.seq.replace(record_original.seq[startofgene:endofgene], realigned[record_original.id].seq)
+            sequence_to_insert = realigned.get(record_original.id, None)
+            if sequence_to_insert is None:
+                sequence_to_insert = '-' * (endofgene - startofgene)
+            else:
+                sequence_to_insert = sequence_to_insert.seq
+
+            record_for_tree = record_original.seq.replace(record_original.seq[startofgene:endofgene], sequence_to_insert)
             newrecord = SeqRecord(record_for_tree, id=record_original.id, description=record_original.description)
             records.append(newrecord)
 
