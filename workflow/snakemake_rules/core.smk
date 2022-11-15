@@ -111,12 +111,14 @@ rule cut:
         slicedalignment = build_dir + "/{a_or_b}/{build_name}/{gene}_slicedalignment.fasta"
     params:
         gene = lambda w: w.gene,
+        min_length = lambda w: config["filter"]["min_length"].get(w.gene, 10000),
     shell:
         """
         python scripts/cut.py \
             --oldalignment {input.oldalignment} \
             --slicedalignment {output.slicedalignment} \
             --reference {input.reference} \
+            --min-length {params.min_length} \
             --gene {params.gene}
         """
 
