@@ -4,6 +4,19 @@ This part of the workflow expects input files
             metadata = "data/metadata.tsv"
 '''
 
+rule wrangle_metadata:
+    input:
+        metadata="data/{a_or_b}/metadata.tsv",
+    output:
+        metadata="data/{a_or_b}/metadata_by_accession.tsv",
+    params:
+        strain_id=lambda w: config.get("strain_id_field", "strain"),
+    shell:
+        """
+        python3 scripts/wrangle_metadata.py --metadata {input.metadata} \
+                    --strain-id {params.strain_id} \
+                    --output {output.metadata}
+        """
 
 rule index_sequences:
     message:
@@ -50,13 +63,12 @@ rule newreference:
 rule filter:
     message:
         """
-        Aligning sequences to {input.reference}
-            - gaps relative to reference are considered real
+        filtering sequences
         """
     input:
         sequences = "data/{a_or_b}/sequences.fasta",
         reference = "config/{a_or_b}reference.gbk",
-        metadata = "data/{a_or_b}/metadata.tsv",
+        metadata = "data/{a_or_b}/metadata_by_accession.tsv",
         sequence_index = rules.index_sequences.output
     output:
     	sequences = build_dir + "/{a_or_b}/{build_name}/filtered.fasta"
@@ -86,16 +98,17 @@ rule align:
         reference = "config/{a_or_b}reference.fasta"
     output:
         alignment = build_dir + "/{a_or_b}/{build_name}/sequences.aligned.fasta"
+    threads: 4
     shell:
         """
-        nextalign run \
+        nextalign run -j {threads}\
             --reference {input.reference} \
             --output-fasta {output.alignment} \
             {input.sequences}
         """
 
 rule cut:
-    input: 
+    input:
         oldalignment = rules.align.output.alignment,
         reference = "config/{a_or_b}reference.gbk"
     output:
@@ -109,17 +122,18 @@ rule cut:
         """
 
 rule realign:
-    input: 
+    input:
         newalignment = rules.cut.output.newalignment,
         reference = rules.newreference.output.greference
     output:
         realigned = build_dir + "/{a_or_b}/{build_name}/realigned.fasta"
+    threads: 4
     shell:
         """
-        augur align \
+        augur align --nthreads {threads} \
             --sequences {input.newalignment} \
             --reference-sequence {input.reference} \
-            --output {output.realigned} 
+            --output {output.realigned}
         """
 
 rule alignment_for_tree:
@@ -144,15 +158,16 @@ rule alignment_for_tree:
 rule tree:
     message: "Building tree"
     input:
-        alignment = rules.alignment_for_tree.output
+        alignment = rules.alignment_for_tree.output.aligned_for_tree
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree_raw.nwk"
+    threads: 4
     shell:
         """
         augur tree \
             --alignment {input.alignment} \
             --output {output.tree} \
-            --nthreads 4
+            --nthreads {threads}
         """
 
 rule refine:
@@ -165,7 +180,7 @@ rule refine:
         """
     input:
         tree = rules.tree.output.tree,
-        alignment = rules.align.output.alignment,
+        alignment = rules.alignment_for_tree.output.aligned_for_tree,
         metadata = rules.filter.input.metadata
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree.nwk",
@@ -186,6 +201,7 @@ rule refine:
             --date-inference {params.date_inference} \
             --date-confidence \
             --timetree \
+            --use-fft \
             --clock-filter-iqd {params.clock_filter_iqd}
         """
 
@@ -197,7 +213,7 @@ rule ancestral:
         """
     input:
         tree = rules.refine.output.tree,
-        alignment = rules.alignment_for_tree.output
+        alignment = rules.alignment_for_tree.output.aligned_for_tree
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/nt_muts.json"
     params:

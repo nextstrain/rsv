@@ -14,7 +14,7 @@ rule export:
     message: "Exporting data files for auspice"
     input:
         tree = rules.refine.output.tree,
-        metadata = rules.traits.input.metadata,
+        metadata = rules.filter.input.metadata,
         node_data = get_node_data,
         auspice_config = config["files"]["auspice_config"],
         description = config["description"]
@@ -36,9 +36,26 @@ rule export:
             --output {output.auspice_json}
         """
 
-rule rename_clade_labels:
+rule final_strain_name:
     input:
         auspice_json= rules.export.output.auspice_json,
+        metadata = rules.filter.input.metadata,
+    output:
+        auspice_json=build_dir + "/{a_or_b}/{build_name}/tree_renamed.json"
+    params:
+        display_strain_field=lambda w: config.get("display_strain_field", "strain"),
+    shell:
+        """
+        python3 scripts/set_final_strain_name.py --metadata {input.metadata} \
+                --input-auspice-json {input.auspice_json} \
+                --display-strain-name {params.display_strain_field} \
+                --output {output.auspice_json}
+        """
+
+
+rule rename_clade_labels:
+    input:
+        auspice_json= rules.final_strain_name.output.auspice_json,
         root_sequence= rules.export.output.root_sequence
     output:
         auspice_json= "auspice/rsv_{a_or_b}_{build_name}.json",

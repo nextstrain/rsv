@@ -1,6 +1,6 @@
 """
 This part of the workflow handles sorting downloaded sequences and metadata
-into a and b by aligning them to reference sequences. 
+into a and b by aligning them to reference sequences.
 
 It produces output files as
 
@@ -13,14 +13,15 @@ It produces output files as
 TIME = ['1', '2','3']
 
 rule align:
-    input: 
+    input:
         sequences = rules.transform.output.sequences,
         reference = "config/{type}_{time}_reference.fasta"
     output:
         alignment = "data/{type}/{time}_sequences.aligned.fasta"
+    threads: 2
     shell:
         """
-        nextalign run \
+        nextalign run -j {threads}\
         --reference {input.reference} \
         --output-fasta {output.alignment} \
         {input.sequences}
@@ -62,7 +63,7 @@ rule sort:
         metadata_b = "data/b/metadata_notdedup.tsv"
     shell:
         """
-        python bin/sort.py 
+        python bin/sort.py
         """
 
 rule deduplication:
@@ -70,7 +71,7 @@ rule deduplication:
         sequences_a = rules.sort.output.sequences_a,
         metadata_a = rules.sort.output.metadata_a,
         sequences_b = rules.sort.output.sequences_b,
-        metadata_b = rules.sort.output.metadata_b     
+        metadata_b = rules.sort.output.metadata_b
     output:
         dedup_seq_a = "data/a/sequences.fasta",
         dedup_metadata_a = "data/a/metadata.tsv",
