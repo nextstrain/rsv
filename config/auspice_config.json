@@ -51,9 +51,12 @@
   ],
   "display_defaults": {
     "map_triplicate": true,
+    "color_by" : "clade_membership",
     "transmission_lines": false
     },
   "filters": [
-    "country"
+    "country",
+    "region",
+    "clade_membership"
   ]
 }
