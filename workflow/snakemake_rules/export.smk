@@ -11,12 +11,29 @@ def get_node_data(w):
         node_data.append(rules.clades.output.node_data)
     return node_data
 
+rule colors:
+    input:
+        color_schemes = "config/color_schemes.tsv",
+        color_orderings = "config/color_orderings.tsv",
+        metadata = "data/{a_or_b}/metadata.tsv",
+    output:
+        colors = "results/{a_or_b}/{build_name}/colors.tsv"
+    shell:
+        """
+        python scripts/assign-colors.py \
+            --color-schemes {input.color_schemes} \
+            --ordering {input.color_orderings} \
+            --metadata {input.metadata} \
+            --output {output.colors}
+        """
+
 rule export:
     message: "Exporting data files for auspice"
     input:
         tree = rules.refine.output.tree,
         metadata = rules.filter.input.metadata,
         node_data = get_node_data,
+        colors = rules.colors.output.colors,
         auspice_config = config["files"]["auspice_config"],
         description = config["description"]
     output:
@@ -32,6 +49,7 @@ rule export:
             --node-data {input.node_data} \
             --title {params.title:q} \
             --description {input.description} \
+            --colors {input.colors} \
             --auspice-config {input.auspice_config} \
             --include-root-sequence \
             --output {output.auspice_json}

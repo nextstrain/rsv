@@ -23,6 +23,8 @@ if __name__=="__main__":
     with open(args.input_auspice_json, 'r') as fh:
         data = json.load(fh)
 
+    data["meta"]["colorings"] = [x for x in data["meta"]["colorings"]
+                                 if x["key"] != "genome_clade_annotation"]
     replace_clade_recursive(data['tree'])
 
     with open(args.output, 'w') as fh:

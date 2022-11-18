@@ -38,8 +38,12 @@
       "key": "region",
       "title": "Region",
       "type": "categorical"
-    }
-  ],
+    },
+    {
+      "key": "glyc",
+      "title": "Glycosylation",
+      "type": "ordinal"
+    }  ],
   "geo_resolutions": [
     "country",
     "region"
