@@ -24,11 +24,11 @@ rule fetch_from_genbank:
     shell:
         """
         curl "{params.URL_a}" --fail --silent --show-error --http1.1 \
-             --header 'User-Agent: https://github.com/nextstrain/monkeypox (hello@nextstrain.org)' >> {output}
+             --header 'User-Agent: https://github.com/nextstrain/rsv (hello@nextstrain.org)' >> {output}
         curl "{params.URL_b}" --fail --silent --show-error --http1.1 \
-             --header 'User-Agent: https://github.com/nextstrain/monkeypox (hello@nextstrain.org)' >> {output}
+             --header 'User-Agent: https://github.com/nextstrain/rsv (hello@nextstrain.org)' >> {output}
         curl "{params.URL_general}" --fail --silent --show-error --http1.1 \
-             --header 'User-Agent: https://github.com/nextstrain/monkeypox (hello@nextstrain.org)' >> {output}
+             --header 'User-Agent: https://github.com/nextstrain/rsv (hello@nextstrain.org)' >> {output}
         """
 
 rule csv_to_ndjson:
