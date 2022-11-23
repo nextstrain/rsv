@@ -71,7 +71,7 @@ rule filter:
     params:
     	group_by = config["filter"]["group_by"],
     	min_length = lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
-    	subsample_max_sequences = config["filter"]["subsample_max_sequences"]
+    	subsample_max_sequences = config["filter"]["subsample_max_sequences"].get(w.build_name, 1000)
     shell:
         """
         augur filter \
