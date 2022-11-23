@@ -50,6 +50,8 @@ jobs:
           --aws-batch \
           --detach \
           --no-download \
+          --cpus 8 \
+          --memory 32gib \
           --exec env \
           ingest \
             envdir env.d snakemake \

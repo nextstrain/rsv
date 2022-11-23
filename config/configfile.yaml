@@ -19,8 +19,8 @@ filter:
     F: 600
   subsample_max_sequences:
     genome: 2000
-    G: 4000
-    F: 4000
+    G: 3000
+    F: 3000
 
 files:
   color_schemes: "config/colors.tsv"
