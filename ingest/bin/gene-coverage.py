@@ -3,18 +3,7 @@ import numpy as np
 import pandas as pd
 from Bio import SeqIO
 from collections import defaultdict
-
-
-
-#same as in the sort function
-
-def sequence_to_int_array(s, fill_value=110, fill_gaps=True):
-    seq = np.frombuffer(str(s).lower().encode('utf-8'), dtype=np.int8).copy()
-    if fill_gaps:
-        seq[(seq!=97) & (seq!=99) & (seq!=103) & (seq!=116)] = fill_value
-    else:
-        seq[(seq!=97) & (seq!=99) & (seq!=103) & (seq!=116) & (seq!=45)] = fill_value
-    return seq
+from sort import sequence_to_int_array
 
 
 #this function finds the coverage of the F and G gene for each sequence in each alignment. The genome annotations used are those of the respective alignment reference.
@@ -36,7 +25,7 @@ def G_and_F_coverage(alignment, indices_G, indices_F):
 
 if __name__=="__main__":
     alignments = ["data/a/1_sequences.aligned.fasta", "data/a/2_sequences.aligned.fasta", "data/a/3_sequences.aligned.fasta",
-            "data/b/1_sequences.aligned.fasta", "data/b/2_sequences.aligned.fasta", "data/b/3_sequences.aligned.fasta"]
+                  "data/b/1_sequences.aligned.fasta", "data/b/2_sequences.aligned.fasta", "data/b/3_sequences.aligned.fasta"]
 
     start_and_end_G = [ [4682, 5653], [4637,5602], [4633, 5229], [4713, 5645],[4688, 5641], [4615, 5578]]
 
@@ -57,7 +46,7 @@ if __name__=="__main__":
 
 
 
-    # add the G and F coverage into the dataframe 
+    # add the G and F coverage into the dataframe
 
     for filename, G_s, F_s in zip(alignments, start_and_end_G, start_and_end_F):
         coverages_G = G_and_F_coverage(filename, G_s, F_s)[0]
