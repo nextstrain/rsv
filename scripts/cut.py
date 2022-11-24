@@ -3,7 +3,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import Seq
 import argparse
 
-def cut(oldalignment, newalignment, referencefile, gene, min_length):
+def cut(oldalignment, newalignment, referencefile, gene, min_length=0):
         list1 = []
         list2 = []
         if gene == 'genome': gene = 'G'
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     parser.add_argument("--oldalignment", required=True, help="fasta input with alignment of entire genome")
     parser.add_argument("--slicedalignment", required=True, help="fasta output with alignment of relevant part of geome")
     parser.add_argument("--reference", required=True, help="reference genbank file of entire genome")
-    parser.add_argument("--min-length", type=int, help="minimal length of output sequence")
+    parser.add_argument("--min-length", default=0, type=int, help="minimal length of output sequence")
     parser.add_argument("--gene", required=True, help="build name, G or F or genome")
     args = parser.parse_args()
 

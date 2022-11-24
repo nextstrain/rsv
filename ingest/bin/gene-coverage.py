@@ -65,6 +65,6 @@ if __name__=="__main__":
             G_covg.append(max(G_coverage[acc]))
             genome_covg.append(max(genome_coverage[acc]))
 
-        coverages = pd.DataFrame({'F coverage':F_covg, 'G coverage': G_covg, 'genome coverage': genome_covg})
+        coverages = pd.DataFrame({'F_coverage':F_covg, 'G_coverage': G_covg, 'genome_coverage': genome_covg})
         m = pd.DataFrame(metadata.join(coverages))
         m.to_csv(output, sep='\t', index=False, float_format='%.3f')
