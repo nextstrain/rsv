@@ -82,13 +82,13 @@ rule deduplication:
         seqkit rmdup < {input.sequences_a} > {output.dedup_seq_a}
         seqkit rmdup < {input.sequences_b} > {output.dedup_seq_b}
 
-        python bin/metadatadedup.py \
-            --metadataoriginal {input.metadata_a} \
-            --metadataoutput {output.dedup_metadata_a}
+        python bin/metadata_dedup.py \
+            --metadata-original {input.metadata_a} \
+            --metadata-output {output.dedup_metadata_a}
 
-        python bin/metadatadedup.py \
-            --metadataoriginal {input.metadata_b} \
-            --metadataoutput {output.dedup_metadata_b}
+        python bin/metadata_dedup.py \
+            --metadata-original {input.metadata_b} \
+            --metadata-output {output.dedup_metadata_b}
         """
 
 rule coverage:
