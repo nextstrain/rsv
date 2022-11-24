@@ -74,9 +74,9 @@ rule deduplication:
         metadata_b = rules.sort.output.metadata_b
     output:
         dedup_seq_a = "data/a/sequences.fasta",
-        dedup_metadata_a = "data/a/metadata.tsv",
+        dedup_metadata_a = "data/a/metadata_no_covg.tsv",
         dedup_seq_b = "data/b/sequences.fasta",
-        dedup_metadata_b = "data/b/metadata.tsv"
+        dedup_metadata_b = "data/b/metadata_no_covg.tsv"
     shell:
         """
         seqkit rmdup < {input.sequences_a} > {output.dedup_seq_a}
@@ -89,4 +89,20 @@ rule deduplication:
         python bin/metadatadedup.py \
             --metadataoriginal {input.metadata_b} \
             --metadataoutput {output.dedup_metadata_b}
+        """
+
+rule coverage:
+    input:
+        alignment_a = expand("data/a/{time}_sequences.aligned.fasta", time=TIME),
+        alignment_b = expand("data/b/{time}_sequences.aligned.fasta", time=TIME),
+        metadata_b = expand("data/b/{time}_metadata.tsv", time=TIME),
+        metadata_a = expand("data/a/{time}_metadata.tsv", time=TIME),
+        dedup_metadata_a = rules.deduplication.output.dedup_metadata_a,
+        dedup_metadata_b = rules.deduplication.output.dedup_metadata_b
+    output:
+        metadata_a = "data/a/metadata.tsv",
+        metadata_b = "data/b/metadata.tsv"
+    shell:
+        """
+        python bin/gene-coverage.py
         """
