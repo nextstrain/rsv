@@ -6,7 +6,7 @@ from collections import defaultdict
 
 
 
-#same function as in the sort function
+#same as in the sort function
 
 def sequence_to_int_array(s, fill_value=110, fill_gaps=True):
     seq = np.frombuffer(str(s).lower().encode('utf-8'), dtype=np.int8).copy()
@@ -72,6 +72,8 @@ if __name__=="__main__":
 
     max_F_coverage = F_coverage_df.max(axis=1)
     max_G_coverage = G_coverage_df.max(axis=1)
+    F_df = pd.DataFrame({'Accession': max_F_coverage.index, 'Coverage': max_F_coverage.values})
+    G_df = pd.DataFrame({'Accession': max_G_coverage.index, 'Coverage': max_G_coverage.values})
 
 
     metadata_files = ["data/b/metadata_no_covg.tsv", "data/a/metadata_no_covg.tsv"]
@@ -84,13 +86,11 @@ if __name__=="__main__":
         F_covg, G_covg = ([] for i in range(2))
 
         for acc in metadata['accession']:
-            for access, covg in zip(max_F_coverage.index, max_F_coverage.values):
-                if acc == access:
-                    F_covg.append(covg)
-            for access, covg in zip(max_G_coverage.index, max_G_coverage.values):
-                if acc == access:
-                    G_covg.append(covg)
-                    
+                Fcovg = (F_df.loc[F_df['Accession'] == acc, 'Coverage'].iloc[0])
+                Gcovg = (G_df.loc[G_df['Accession'] == acc, 'Coverage'].iloc[0])
+                F_covg.append(Fcovg)
+                G_covg.append(Gcovg)
+
         coverages = pd.DataFrame({'F coverage':F_covg, 'G coverage': G_covg})
         m = pd.DataFrame(metadata.join(coverages))
         m.to_csv(output, sep='\t')
