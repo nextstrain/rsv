@@ -10,17 +10,17 @@ from sort import sequence_to_int_array
 
 def G_and_F_coverage(alignment, indices_G, indices_F):
     gap_symbol = 45
-    G_coverage, F_coverage = (dict() for i in range(2))
+    G_coverage, F_coverage, genome_coverage = {}, {}, {}
     for seq in SeqIO.parse(alignment, "fasta"):
-
-        seq_array_G = sequence_to_int_array(seq.seq[indices_G[0]:indices_G[1]], fill_gaps=False)
-
-        seq_array_F = sequence_to_int_array(seq.seq[indices_F[0]:indices_F[1]], fill_gaps=False)
+        seq_array = sequence_to_int_array(seq.seq, fill_gaps=False)
+        seq_array_G = seq_array[indices_G[0]:indices_G[1]]
+        seq_array_F = seq_array[indices_F[0]:indices_F[1]]
 
         F_coverage[seq.id] = np.mean(seq_array_F!=gap_symbol)
         G_coverage[seq.id] = np.mean(seq_array_G!=gap_symbol)
+        genome_coverage[seq.id] = np.mean(seq_array!=gap_symbol)
 
-    return(G_coverage, F_coverage)
+    return(G_coverage, F_coverage, genome_coverage)
 
 
 if __name__=="__main__":
@@ -43,14 +43,14 @@ if __name__=="__main__":
     everything = set().union(*accessions)
 
     # add the G and F coverage into the dataframe
-    G_coverage, F_coverage = (defaultdict(list) for i in range(2))
+    G_coverage, F_coverage, genome_coverage = (defaultdict(list) for i in range(3))
     for filename, G_s, F_s in zip(alignments, start_and_end_G, start_and_end_F):
-        coverages_G = G_and_F_coverage(filename, G_s, F_s)[0]
-        coverages_F = G_and_F_coverage(filename, G_s, F_s)[1]
+        coverages_G, coverages_F, coverage_genome = G_and_F_coverage(filename, G_s, F_s)
 
         for accession in everything:
             G_coverage[accession].append(coverages_G.get(accession, 0.00))
             F_coverage[accession].append(coverages_F.get(accession, 0.00))
+            genome_coverage[accession].append(coverage_genome.get(accession, 0.00))
 
     metadata_files = ["data/b/metadata_no_covg.tsv", "data/a/metadata_no_covg.tsv"]
     outputs = ["data/b/metadata.tsv", "data/a/metadata.tsv"]
@@ -58,12 +58,13 @@ if __name__=="__main__":
     # this part of the script reads the already separated a and b metadata and adds the F and G covg values to the correct row based on accession
     for metadata_fname, output in zip(metadata_files, outputs):
         metadata = pd.read_csv(metadata_fname, sep='\t')
-        F_covg, G_covg = [], []
+        F_covg, G_covg, genome_covg = [], [], []
 
         for acc in metadata['accession']:
             F_covg.append(max(F_coverage[acc]))
             G_covg.append(max(G_coverage[acc]))
+            genome_covg.append(max(genome_coverage[acc]))
 
-        coverages = pd.DataFrame({'F coverage':F_covg, 'G coverage': G_covg})
+        coverages = pd.DataFrame({'F coverage':F_covg, 'G coverage': G_covg, 'genome coverage': genome_covg})
         m = pd.DataFrame(metadata.join(coverages))
-        m.to_csv(output, sep='\t')
+        m.to_csv(output, sep='\t', index=False, float_format='%.3f')
