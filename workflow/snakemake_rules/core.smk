@@ -65,7 +65,8 @@ rule filter:
         sequences = "data/{a_or_b}/sequences.fasta",
         reference = "config/{a_or_b}reference.gbk",
         metadata = "data/{a_or_b}/metadata_by_accession.tsv",
-        sequence_index = rules.index_sequences.output
+        sequence_index = rules.index_sequences.output,
+        exclude = config['exclude']
     output:
     	sequences = build_dir + "/{a_or_b}/{build_name}/filtered.fasta"
     params:
@@ -78,6 +79,7 @@ rule filter:
             --sequences {input.sequences} \
             --sequence-index {input.sequence_index} \
             --metadata {input.metadata} \
+            --exclude {input.exclude} \
             --output {output.sequences} \
             --group-by {params.group_by} \
             --subsample-max-sequences {params.subsample_max_sequences} \

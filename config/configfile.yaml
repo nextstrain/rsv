@@ -4,6 +4,8 @@ genesforglycosylation: ["G", "F"]
 
 buildstorun: ["genome", "G", "F"]
 
+exclude: "config/outliers.txt"
+
 description: "config/description.md"
 
 strain_id_field: "accession"
