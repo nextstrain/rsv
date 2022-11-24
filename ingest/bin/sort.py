@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from Bio import SeqIO
-from functools import reduce
 from collections import defaultdict
 
 def sequence_to_int_array(s, fill_value=110, fill_gaps=True):
