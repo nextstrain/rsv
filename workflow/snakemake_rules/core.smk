@@ -70,7 +70,7 @@ rule filter:
     	sequences = build_dir + "/{a_or_b}/{build_name}/filtered.fasta"
     params:
     	group_by = config["filter"]["group_by"],
-    	min_length = lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
+    	min_coverage = lambda w: f'--exclude-where {w.build_name}_coverage<{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
     	subsample_max_sequences = lambda w: config["filter"]["subsample_max_sequences"].get(w.build_name, 1000)
     shell:
         """
@@ -81,7 +81,7 @@ rule filter:
             --output {output.sequences} \
             --group-by {params.group_by} \
             --subsample-max-sequences {params.subsample_max_sequences} \
-            --min-length {params.min_length}
+            {params.min_coverage}
         """
 
 rule nextalign:
@@ -110,15 +110,13 @@ rule cut:
     output:
         slicedalignment = build_dir + "/{a_or_b}/{build_name}/{gene}_slicedalignment.fasta"
     params:
-        gene = lambda w: w.gene,
-        min_length = lambda w: config["filter"]["min_length"].get(w.gene, 10000),
+        gene = lambda w: w.gene
     shell:
         """
         python scripts/cut.py \
             --oldalignment {input.oldalignment} \
             --slicedalignment {output.slicedalignment} \
             --reference {input.reference} \
-            --min-length {params.min_length} \
             --gene {params.gene}
         """
 

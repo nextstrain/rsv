@@ -13,10 +13,11 @@ subtypes: ['a', 'b']
 
 filter:
   group_by: "year country"
-  min_length:
-    genome: 10000
-    G: 600
-    F: 600
+  min_coverage:
+    genome: 0.3
+    G: 0.3
+    F: 0.3
+
   subsample_max_sequences:
     genome: 2000
     G: 3000
