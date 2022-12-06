@@ -10,15 +10,16 @@ from sort import sequence_to_int_array
 
 def G_and_F_coverage(alignment, indices_G, indices_F):
     gap_symbol = 45
+    missing_symbol = 110
     G_coverage, F_coverage, genome_coverage = {}, {}, {}
     for seq in SeqIO.parse(alignment, "fasta"):
         seq_array = sequence_to_int_array(seq.seq, fill_gaps=False)
         seq_array_G = seq_array[indices_G[0]:indices_G[1]]
         seq_array_F = seq_array[indices_F[0]:indices_F[1]]
 
-        F_coverage[seq.id] = np.mean(seq_array_F!=gap_symbol)
-        G_coverage[seq.id] = np.mean(seq_array_G!=gap_symbol)
-        genome_coverage[seq.id] = np.mean(seq_array!=gap_symbol)
+        F_coverage[seq.id] =      np.mean((seq_array_F!=gap_symbol)&(seq_array_F!=missing_symbol))
+        G_coverage[seq.id] =      np.mean((seq_array_G!=gap_symbol)&(seq_array_G!=missing_symbol))
+        genome_coverage[seq.id] = np.mean((seq_array!=gap_symbol)&(seq_array!=missing_symbol))
 
     return(G_coverage, F_coverage, genome_coverage)
 
