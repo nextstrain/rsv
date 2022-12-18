@@ -21,7 +21,7 @@ REFERENCE   1  (bases 1 to 15182)
 COMMENT     This work was supported by the National Institute of Allergy and
             Infectious Diseases (NIAID), Genome Center for Infectious Diseases
             (GCID) program.
-            
+
             ##Genome-Assembly-Data-START##
             Current Finishing Status :: Finished
             Assembly Method          :: clc_ref_assemble_long v. 3.22.55705
@@ -222,7 +222,7 @@ FEATURES             Location/Qualifiers
                      /gene="M2"
                      /locus_tag="M2"
      CDS             7594..8181
-                     /gene="M2"
+                     /gene="M2-1"
                      /locus_tag="M2"
                      /note="matrix M2-1 protein"
                      /codon_start=1
@@ -233,7 +233,7 @@ FEATURES             Location/Qualifiers
                      LIEINSDDIKKLRDNEEPNSPKIRVYNTVISYIESNRKNTKQTIHLLKRLPADVLKKT
                      IKNTLDIHKSITISNPKESTVNDQNDQTKNNDITG"
      CDS             8138..8419
-                     /gene="M2"
+                     /gene="M2-1"
                      /locus_tag="M2"
                      /note="matrix M2-2 protein"
                      /codon_start=1
@@ -297,7 +297,7 @@ FEATURES             Location/Qualifiers
      3'UTR           14986..15057
                      /gene="L"
                      /locus_tag="L"
-ORIGIN      
+ORIGIN
         1 acttgcacat tcggaaaaaa tggggcaaat aagaatttga taagtgttat ttaagtctaa
        61 ccttttcaat cagaaatggg gtgcaattca ctgagcatga taaaggttag attacaaaat
       121 ttatttgaca atgatgaagt agcattgtta aaaataacat gttatactga caaattaatt
