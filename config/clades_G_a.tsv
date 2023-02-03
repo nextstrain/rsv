@@ -3,89 +3,82 @@ GA1	141	G	A
 GA1	121	G	G
 GA1	244	G	I
 GA1	296	G	P
-			
+
 GA2	111	G	P
-			
+
 GA2.1	229	G	N
-			
+
 GA2.2	122	G	A
 GA2.2	114	G	T
 GA2.2	115	G	P
 GA2.2	117	G	P
-			
+
 GA2.3	122	G	A
 GA2.3	156	G	Q
 GA2.3	289	G	S
 GA2.3	269	G	T
-			
-GA2.3.1	GA2.3	clade	
+
+GA2.3.1	GA2.3	clade
 GA2.3.1	254	G	E
 GA2.3.1	252	G	I
-			
-GA2.3.2	GA2.3	clade	
+
+GA2.3.2	GA2.3	clade
 GA2.3.2	133	G	I
-			
-GA2.3.2a	GA2.3.2	clade	
+
+GA2.3.2a	GA2.3.2	clade
 GA2.3.2a	242	G	S
 GA2.3.2a	225	G	I
-			
-GA2.3.2b	GA2.3.2	clade	
+
+GA2.3.2b	GA2.3.2	clade
 GA2.3.2b	112	G	I
 GA2.3.2b	141	G	M
 GA2.3.2b	244	G	K
-			
-GA2.3.3	GA2.3	clade	
+
+GA2.3.3	GA2.3	clade
 GA2.3.3	111	G	S
 GA2.3.3	292	G	S
-			
-GA2.3.4	GA2.3	clade	
+
+GA2.3.4	GA2.3	clade
 GA2.3.4	273	G	Y
 GA2.3.4	210	G	L
-			
-GA2.3.5	GA2.3	clade	
+
+GA2.3.5	GA2.3	clade
 GA2.3.5	232	G	G
 GA2.3.5	253	G	K
-			
-GA2.3.6a	GA2.3.5	clade	
-GA2.3.6a	274	G	P
-GA2.3.6a	225	G	A
-			
-GA2.3.6b	GA2.3.5	clade	
-GA2.3.6b	208	G	Q
-GA2.3.6b	274	G	P
-			
+
+
 GA3	111	G	T
 GA3	250	G	N
-			
+
 GA3.0.0	111	G	T
 GA3.0.0	250	G	N
-			
+
 GA3.0.1	102	G	F
 GA3.0.1	193	G	S
 GA3.0.1	295	G	I
-			
-GA3.0.2	GA3	clade	
+
+GA3.0.2	GA3	clade
 GA3.0.2	113	G	A
 GA3.0.2	125	G	I
 GA3.0.2	274	G	T
-			
-GA3.0.3	GA3	clade	
+
+GA3.0.3	GA3	clade
 GA3.0.3	161	G	D
 GA3.0.3	297	G	D
-			
-GA3.0.3a	GA3.0.3	clade	
+
+GA3.0.3a	GA3.0.3	clade
 GA3.0.3a	232	G	D
-			
-GA3.0.4a	GA3.0.3a	clade	
+
+GA3.0.4a	GA3.0.3a	clade
 GA3.0.4a	227	G	S
-			
-GA3.0.3b	GA3.0.3	clade	
-			
-GA3.0.4b	GA3.0.3b	clade	
+
+GA3.0.3b	GA3.0.3	clade
+
+GA3.0.4b	GA3.0.3b	clade
 GA3.0.4b 	219	G	P
 GA3.0.4b 	224	G	P
 GA3.0.4b 	208	G	Q
 GA3.0.4b 	246	G	L
-			
-GA3.0.5b	GA3.0.4b	clade	
+
+GA3.0.5b	GA3.0.4b	clade
 GA3.0.5b	153	G	K

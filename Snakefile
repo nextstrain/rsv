@@ -7,6 +7,9 @@ rule all:
     input:
         expand("auspice/rsv_{subtype}_{build}.json",
                subtype = config.get("subtypes",['a']),
+               build = config.get("buildstorun", ['genome'])),
+        expand("auspice/rsv_{subtype}_{build}_root-sequence.json",
+               subtype = config.get("subtypes",['a']),
                build = config.get("buildstorun", ['genome']))
 
 include: "workflow/snakemake_rules/core.smk"
