@@ -3,14 +3,16 @@ B1	232	L	T
 B1	261	G	T
 			
 B2	154	G	I
+B2	77	G	S
 			
 B3	152	G	L
-B3	52	M2	R
+B3	381	nuc	C
 			
 B5	255	G	A
 B5	258	G	G
 			
-B4	1949	nuc	A
+B4	1235	nuc	A
+B4	116	G	T
 			
 B6	1082	nuc	G
 B6	3325	nuc	C
