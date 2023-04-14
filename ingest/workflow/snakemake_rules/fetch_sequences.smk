@@ -20,7 +20,6 @@ rule fetch_from_genbank:
         URL_a = config['fetch']['genbank_url']['a'],
         URL_b = config['fetch']['genbank_url']['b'],
         URL_general = config['fetch']['genbank_url']['general']
-    conda: config["conda_environment"]
     shell:
         """
         curl "{params.URL_a}" --fail --silent --show-error --http1.1 \
