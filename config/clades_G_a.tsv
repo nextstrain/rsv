@@ -1,84 +1,82 @@
-clade	site	gene	alt
-GA1	141	G	A
-GA1	121	G	G
-GA1	244	G	I
-GA1	296	G	P
-
-GA2	111	G	P
-
-GA2.1	229	G	N
-
-GA2.2	122	G	A
-GA2.2	114	G	T
-GA2.2	115	G	P
-GA2.2	117	G	P
-
-GA2.3	122	G	A
-GA2.3	156	G	Q
-GA2.3	289	G	S
-GA2.3	269	G	T
-
-GA2.3.1	GA2.3	clade
-GA2.3.1	254	G	E
-GA2.3.1	252	G	I
-
-GA2.3.2	GA2.3	clade
-GA2.3.2	133	G	I
-
-GA2.3.2a	GA2.3.2	clade
-GA2.3.2a	242	G	S
-GA2.3.2a	225	G	I
-
-GA2.3.2b	GA2.3.2	clade
-GA2.3.2b	112	G	I
-GA2.3.2b	141	G	M
-GA2.3.2b	244	G	K
-
-GA2.3.3	GA2.3	clade
-GA2.3.3	111	G	S
-GA2.3.3	292	G	S
-
-GA2.3.4	GA2.3	clade
-GA2.3.4	273	G	Y
-GA2.3.4	210	G	L
-
-GA2.3.5	GA2.3	clade
-GA2.3.5	232	G	G
-GA2.3.5	253	G	K
-
-
-GA3	111	G	T
-GA3	250	G	N
-
-GA3.0.0	111	G	T
-GA3.0.0	250	G	N
-
-GA3.0.1	102	G	F
-GA3.0.1	193	G	S
-GA3.0.1	295	G	I
-
-GA3.0.2	GA3	clade
-GA3.0.2	113	G	A
-GA3.0.2	125	G	I
-GA3.0.2	274	G	T
-
-GA3.0.3	GA3	clade
-GA3.0.3	161	G	D
-GA3.0.3	297	G	D
-
-GA3.0.3a	GA3.0.3	clade
-GA3.0.3a	232	G	D
-
-GA3.0.4a	GA3.0.3a	clade
-GA3.0.4a	227	G	S
-
-GA3.0.3b	GA3.0.3	clade
-
-GA3.0.4b	GA3.0.3b	clade
-GA3.0.4b 	219	G	P
-GA3.0.4b 	224	G	P
-GA3.0.4b 	208	G	Q
-GA3.0.4b 	246	G	L
-
-GA3.0.5b	GA3.0.4b	clade
-GA3.0.5b	153	G	K
+clade	gene	site	alt
+GA1	G	141	A
+GA1	G	121	G
+GA1	G	244	I
+GA1	G	296	P
+			
+GA2	G	111	P
+			
+GA2.1	G	229	N
+			
+GA2.2	G	122	A
+GA2.2	G	114	T
+GA2.2	G	115	P
+			
+GA2.3	G	122	A
+GA2.3	G	156	Q
+GA2.3	G	289	S
+GA2.3	G	269	T
+			
+GA2.3.1	clade	GA2.3	
+GA2.3.1	G	254	E
+GA2.3.1	G	252	I
+			
+GA2.3.2	clade	GA2.3	
+GA2.3.2	G	133	I
+			
+GA2.3.2a	clade	GA2.3.2	
+GA2.3.2a	G	242	S
+GA2.3.2a	G	225	I
+			
+GA2.3.2b	clade	GA2.3.2	
+GA2.3.2b	G	112	I
+GA2.3.2b	G	141	M
+GA2.3.2b	G	244	K
+			
+GA2.3.3	clade	GA2.3	
+GA2.3.3	G	111	S
+GA2.3.3	G	292	S
+			
+GA2.3.4	clade	GA2.3	
+GA2.3.4	G	273	Y
+GA2.3.4	G	210	L
+			
+GA2.3.5	clade	GA2.3	
+GA2.3.5	G	232	G
+GA2.3.5	G	253	K
+			
+GA3	G	111	T
+GA3	G	250	N
+			
+GA3.0.0	G	111	T
+GA3.0.0	G	250	N
+			
+GA3.0.1	G	102	F
+GA3.0.1	G	193	S
+GA3.0.1	G	295	I
+			
+GA3.0.2	clade	GA3	
+GA3.0.2	G	113	A
+GA3.0.2	G	125	I
+GA3.0.2	G	274	T
+			
+GA3.0.3	clade	GA3	
+GA3.0.3	G	161	D
+GA3.0.3	G	297	D
+			
+GA3.0.3a	clade	GA3.0.3	
+GA3.0.3a	G	232	D
+			
+GA3.0.4a	clade	GA3.0.3a	
+GA3.0.4a	G	227	S
+			
+GA3.0.3b	clade	GA3.0.3	
+			
+GA3.0.4b	clade	GA3.0.3b	
+GA3.0.4b 	G	219	P
+GA3.0.4b 	G	224	P
+GA3.0.4b 	G	208	Q
+GA3.0.4b 	G	246	L
+			
+GA3.0.5b	clade	GA3.0.4b	
+GA3.0.5b	G	153	K
