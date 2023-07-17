@@ -40,12 +40,14 @@ rule export:
         auspice_json =  build_dir + "/{a_or_b}/{build_name}/tree.json",
         root_sequence = build_dir + "/{a_or_b}/{build_name}/tree_root-sequence.json"
     params:
-    	title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny"
+    	title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny",
+        strain_id=config["strain_id_field"],
     shell:
         """
         augur export v2 \
             --tree {input.tree} \
             --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
             --node-data {input.node_data} \
             --title {params.title:q} \
             --description {input.description} \
@@ -62,10 +64,12 @@ rule final_strain_name:
     output:
         auspice_json=build_dir + "/{a_or_b}/{build_name}/tree_renamed.json"
     params:
+        strain_id=config["strain_id_field"],
         display_strain_field=config.get("display_strain_field", "strain"),
     shell:
         """
         python3 scripts/set_final_strain_name.py --metadata {input.metadata} \
+                --metadata-id-columns {params.strain_id} \
                 --input-auspice-json {input.auspice_json} \
                 --display-strain-name {params.display_strain_field} \
                 --output {output.auspice_json}
