@@ -1,0 +1,25 @@
+# Files created by the pipeline, which we want to keep out of git
+# (or at least out of _this_ git repo).
+data/
+results/
+auspice/
+build/
+
+# Snakemake
+.snakemake/
+logs/
+
+# Python
+*.pyc
+.tox/
+.cache/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
