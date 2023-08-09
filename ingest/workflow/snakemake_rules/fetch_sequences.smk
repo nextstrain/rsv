@@ -22,12 +22,13 @@ rule fetch_from_genbank:
         URL_general = config['fetch']['genbank_url']['general']
     shell:
         """
-        curl "{params.URL_a}" --fail --silent --show-error --http1.1 \
-             --header 'User-Agent: https://github.com/nextstrain/rsv (hello@nextstrain.org)' >> {output}
-        curl "{params.URL_b}" --fail --silent --show-error --http1.1 \
-             --header 'User-Agent: https://github.com/nextstrain/rsv (hello@nextstrain.org)' >> {output}
-        curl "{params.URL_general}" --fail --silent --show-error --http1.1 \
-             --header 'User-Agent: https://github.com/nextstrain/rsv (hello@nextstrain.org)' >> {output}
+        set +o pipefail;
+        curl "{params.URL_a}" --fail --silent --http1.1 \
+             --header 'User-Agent: https://github.com/nextstrain/rsv (hello@nextstrain.org)' 2> /dev/null | head -n 10 >> {output}
+        curl "{params.URL_b}" --fail --silent --http1.1 \
+             --header 'User-Agent: https://github.com/nextstrain/rsv (hello@nextstrain.org)' 2> /dev/null | head -n 10 >> {output}
+        curl "{params.URL_general}" --fail --silent --http1.1 \
+             --header 'User-Agent: https://github.com/nextstrain/rsv (hello@nextstrain.org)' 2> /dev/null | head -n 10 >> {output}
         """
 
 rule csv_to_ndjson:
