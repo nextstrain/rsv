@@ -58,30 +58,12 @@ rule sort:
         metadata_a = expand("data/a/{time}_metadata.tsv", time=TIME)
     output:
         sequences_a = "data/a/sequences.fasta",
-        metadata_a = "data/a/metadata_notdedup.tsv",
+        metadata_a = "data/a/metadata_sorted.tsv",
         sequences_b = "data/b/sequences.fasta",
-        metadata_b = "data/b/metadata_notdedup.tsv"
+        metadata_b = "data/b/metadata_sorted.tsv"
     shell:
         """
         python bin/sort.py
-        """
-
-rule deduplication:
-    input:
-        metadata_a = rules.sort.output.metadata_a,
-        metadata_b = rules.sort.output.metadata_b
-    output:
-        dedup_metadata_a = "data/a/metadata_no_covg.tsv",
-        dedup_metadata_b = "data/b/metadata_no_covg.tsv"
-    shell:
-        """
-        python bin/metadata_dedup.py \
-            --metadata-original {input.metadata_a} \
-            --metadata-output {output.dedup_metadata_a}
-
-        python bin/metadata_dedup.py \
-            --metadata-original {input.metadata_b} \
-            --metadata-output {output.dedup_metadata_b}
         """
 
 rule coverage:
@@ -90,8 +72,8 @@ rule coverage:
         alignment_b = expand("data/b/{time}_sequences.aligned.fasta", time=TIME),
         metadata_b = expand("data/b/{time}_metadata.tsv", time=TIME),
         metadata_a = expand("data/a/{time}_metadata.tsv", time=TIME),
-        dedup_metadata_a = rules.deduplication.output.dedup_metadata_a,
-        dedup_metadata_b = rules.deduplication.output.dedup_metadata_b
+        sorted_metadata_a = "data/a/metadata_sorted.tsv",
+        sorted_metadata_b = "data/b/metadata_sorted.tsv"
     output:
         metadata_a = "data/a/metadata.tsv",
         metadata_b = "data/b/metadata.tsv"
