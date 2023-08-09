@@ -15,8 +15,6 @@ if __name__ == '__main__':
         help="Path to config YAML file to edit.")
     parser.add_argument("--s3-dst", required=True,
         help="The S3 destination to add to the config YAML file")
-    parser.add_argument("--send-slack-notifications", action="store_true",
-        help="Set the `send_slack_notifications` config to True")
 
     args = parser.parse_args()
 
@@ -24,6 +22,5 @@ if __name__ == '__main__':
         config = yaml.safe_load(config_fh)
 
         config['upload']['s3']['dst'] = args.s3_dst
-        config['send_slack_notifications'] = args.send_slack_notifications
 
         print(yaml.dump(config, default_flow_style=False, sort_keys=False))
