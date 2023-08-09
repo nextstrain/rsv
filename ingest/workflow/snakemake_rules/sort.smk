@@ -57,9 +57,9 @@ rule sort:
         metadata_b = expand("data/b/{time}_metadata.tsv", time=TIME),
         metadata_a = expand("data/a/{time}_metadata.tsv", time=TIME)
     output:
-        sequences_a = "data/a/sequences_notdedup.fasta",
+        sequences_a = "data/a/sequences.fasta",
         metadata_a = "data/a/metadata_notdedup.tsv",
-        sequences_b = "data/b/sequences_notdedup.fasta",
+        sequences_b = "data/b/sequences.fasta",
         metadata_b = "data/b/metadata_notdedup.tsv"
     shell:
         """
@@ -68,20 +68,13 @@ rule sort:
 
 rule deduplication:
     input:
-        sequences_a = rules.sort.output.sequences_a,
         metadata_a = rules.sort.output.metadata_a,
-        sequences_b = rules.sort.output.sequences_b,
         metadata_b = rules.sort.output.metadata_b
     output:
-        dedup_seq_a = "data/a/sequences.fasta",
         dedup_metadata_a = "data/a/metadata_no_covg.tsv",
-        dedup_seq_b = "data/b/sequences.fasta",
         dedup_metadata_b = "data/b/metadata_no_covg.tsv"
     shell:
         """
-        seqkit rmdup < {input.sequences_a} > {output.dedup_seq_a}
-        seqkit rmdup < {input.sequences_b} > {output.dedup_seq_b}
-
         python bin/metadata_dedup.py \
             --metadata-original {input.metadata_a} \
             --metadata-output {output.dedup_metadata_a}
