@@ -3,50 +3,50 @@ GB1	G	150	S
 GB1	G	280	I
 GB1	G	208	I
 GB1	G	222	M
-			
+
 GB2	G	118	T
 GB2	G	223	T
 GB2	G	257	L
-			
+
 GB3	G	136	I
 GB3	G	71	P
 GB3	G	109	L
-			
+
 GB4	G	222	A
 GB4	G	219	S
 GB4	G	258	D
-			
+
 GB5	G	143	N
 GB5	G	237	P
-			
+
 GB5.0.0	G	143	N
 GB5.0.0	G	237	P
-			
+
 GB5.0.1	clade	GB5	
 GB5.0.1	G	247	P
-			
+
 GB5.0.2	clade	GB5.0.1	
 GB5.0.2	G	223	P
 GB5.0.2	G	138	S
-			
+
 GB5.0.3	clade	GB5.0.2	
 GB5.0.3	G	269	A
-			
+
 GB5.0.4a	G	282	T
 GB5.0.4a	G	200	T
-			
+
 GB5.0.5a	clade	GB5.0.0	
 GB5.0.5a	G	136	T
-			
+
 GB5.0.4b	G	153	R
 GB5.0.4b	G	266	L
-			
+
 GB5.0.4c	clade	GB5.0.3	
 GB5.0.4c	G	285	D
-			
+
 GB7	G	242	K
 GB7	G	214	I
-			
+
 GB6	G	235	L
 GB6	G	126	K
 GB6	G	262	P
