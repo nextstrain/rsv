@@ -25,7 +25,7 @@ def _get_all_targets(wildcards):
             )
         elif len(remote_file_names) != len(set(remote_file_names)):
             print(f"Skipping file upload for {target!r} because there are duplicate remote file names.")
-        elif not params.get("dst"):
+        elif not config.get("s3_dst"):
             print(f"Skipping file upload for {target!r} because the destintion was not defined.")
         else:
             all_targets.extend(
@@ -37,10 +37,10 @@ def _get_all_targets(wildcards):
                 )
             )
     return all_targets
-    
+
 rule all:
     input: _get_all_targets
-        
+
 
 
 include: "workflow/snakemake_rules/fetch_sequences.smk"

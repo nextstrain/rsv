@@ -72,23 +72,3 @@ transform:
     'authors',
     'institution'
   ]
-
-upload:
-  s3:
-    # AWS S3 Bucket with prefix
-    dst: 's3://nextstrain-data/files/workflows/rsv'
-    # Files to upload to S3 that are in the `data` directory
-    files_to_upload: [
-      'a/metadata.tsv',
-      'a/sequences.fasta',
-      'b/metadata.tsv',
-      'b/sequences.fasta'
-    ]
-    # Remote file names for the files to upload, must be in the same order as local files above
-    remote_file_names: [
-      'a/metadata.tsv.gz',
-      'a/sequences.fasta.xz',
-      'b/metadata.tsv.gz',
-      'b/sequences.fasta.xz'
-    ]
-    cloudfront_domain: 'data.nextstrain.org'
