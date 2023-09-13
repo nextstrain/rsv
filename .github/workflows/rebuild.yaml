@@ -43,7 +43,7 @@ jobs:
           --memory 64gib \
           --env AWS_ACCESS_KEY_ID \
           --env AWS_SECRET_ACCESS_KEY \
-          .
+          . \
           deploy \
             --configfiles config/configfile.yaml config/nextstrain_automation.yaml \
             --printshellcmds
