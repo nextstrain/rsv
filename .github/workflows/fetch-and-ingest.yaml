@@ -26,36 +26,62 @@ on:
 
   # Manually triggered using GitHub's UI
   workflow_dispatch:
+    inputs:
+      trial_name:
+        description: 'Short name for a trial run. WARNING: without this we will overwrite files in s3://nextstrain-data/files/workflows/rsv'
 
 jobs:
-  fetch-and-ingest:
+  set_config_overrides:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_RUN_ID: ${{ github.run_id }}
     steps:
-    - uses: actions/checkout@v3
-    - uses: nextstrain/.github/actions/setup-nextstrain-cli@master
+      - id: s3_dst
+        run: |
+          S3_DST=s3://nextstrain-data/files/workflows/rsv
 
-    - name: run_pipeline
+          if [[ -n "$TRIAL_NAME" ]]; then
+            S3_DST+=/trial/"$TRIAL_NAME"
+          fi
+
+          echo "s3_dst=$S3_DST" >> "$GITHUB_OUTPUT"
+        env:
+          TRIAL_NAME: ${{ inputs.trial_name }}
+      - id: trigger_rebuild
+        run: |
+          TRIGGER_REBUILD=true
+
+          if [[ -n "$TRIAL_NAME" ]]; then
+            TRIGGER_REBUILD=false
+          fi
+
+          echo "trigger_rebuild=$TRIGGER_REBUILD" >> "$GITHUB_OUTPUT"
+    outputs:
+      s3_dst: ${{ steps.s3_dst.outputs.s3_dst }}
+      trigger_rebuild: ${{ steps.trigger_rebuild.outputs.trigger_rebuild }}
+
+  fetch-and-ingest:
+    needs: [set_config_overrides]
+    permissions:
+      id-token: write
+    uses: nextstrain/.github/.github/workflows/pathogen-repo-build.yaml@master
+    secrets: inherit
+    with:
+      runtime: aws-batch
       run: |
-        ./bin/write-envdir ingest/env.d \
-          AWS_DEFAULT_REGION \
-          GITHUB_RUN_ID \
-          PAT_GITHUB_DISPATCH
         nextstrain build \
           --aws-batch \
           --detach \
           --no-download \
           --cpus 8 \
           --memory 32gib \
-          --exec env \
+          --env AWS_ACCESS_KEY_ID \
+          --env AWS_SECRET_ACCESS_KEY \
+          --env PAT_GITHUB_DISPATCH="$GH_TOKEN_NEXTSTRAIN_BOT_WORKFLOW_DISPATCH" \
+          --env S3_DST \
+          --env TRIGGER_REBUILD \
           ingest \
-            envdir env.d snakemake \
-              --configfiles config/config.yaml config/optional.yaml \
-              --cores 8 \
-              --printshellcmds
-      env:
-        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        PAT_GITHUB_DISPATCH: ${{ secrets.GH_TOKEN_NEXTSTRAIN_BOT_WORKFLOW_DISPATCH }}
+            --configfiles config/config.yaml config/optional.yaml \
+            --config s3_dst="$S3_DST" trigger_rebuild="$TRIGGER_REBUILD" \
+            --printshellcmds
+      env: |
+        S3_DST: ${{ needs.set_config_overrides.outputs.s3_dst }}
+        TRIGGER_REBUILD: ${{ needs.set_config_overrides.outputs.trigger_rebuild }}
