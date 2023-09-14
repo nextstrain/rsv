@@ -62,7 +62,7 @@ rule final_strain_name:
     output:
         auspice_json=build_dir + "/{a_or_b}/{build_name}/tree_renamed.json"
     params:
-        display_strain_field=lambda w: config.get("display_strain_field", "strain"),
+        display_strain_field=config.get("display_strain_field", "strain"),
     shell:
         """
         python3 scripts/set_final_strain_name.py --metadata {input.metadata} \

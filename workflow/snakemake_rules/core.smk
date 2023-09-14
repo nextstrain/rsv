@@ -10,7 +10,7 @@ rule wrangle_metadata:
     output:
         metadata="data/{a_or_b}/metadata_by_accession.tsv",
     params:
-        strain_id=lambda w: config.get("strain_id_field", "strain"),
+        strain_id=config.get("strain_id_field", "strain"),
     shell:
         """
         python3 scripts/wrangle_metadata.py --metadata {input.metadata} \
