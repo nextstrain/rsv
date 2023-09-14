@@ -4,20 +4,6 @@ This part of the workflow expects input files
             metadata = "data/metadata.tsv"
 '''
 
-rule wrangle_metadata:
-    input:
-        metadata="data/{a_or_b}/metadata.tsv",
-    output:
-        metadata="data/{a_or_b}/metadata_by_accession.tsv",
-    params:
-        strain_id=lambda w: config.get("strain_id_field", "strain"),
-    shell:
-        """
-        python3 scripts/wrangle_metadata.py --metadata {input.metadata} \
-                    --strain-id {params.strain_id} \
-                    --output {output.metadata}
-        """
-
 rule index_sequences:
     message:
         """
@@ -64,7 +50,7 @@ rule filter:
     input:
         sequences = "data/{a_or_b}/sequences.fasta",
         reference = "config/{a_or_b}reference.gbk",
-        metadata = "data/{a_or_b}/metadata_by_accession.tsv",
+        metadata = "data/{a_or_b}/metadata.tsv",
         sequence_index = rules.index_sequences.output,
         exclude = config['exclude']
     output:
@@ -72,13 +58,15 @@ rule filter:
     params:
     	group_by = config["filter"]["group_by"],
     	min_coverage = lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
-    	subsample_max_sequences = lambda w: config["filter"]["subsample_max_sequences"].get(w.build_name, 1000)
+    	subsample_max_sequences = lambda w: config["filter"]["subsample_max_sequences"].get(w.build_name, 1000),
+        strain_id=config["strain_id_field"],
     shell:
         """
         augur filter \
             --sequences {input.sequences} \
             --sequence-index {input.sequence_index} \
             --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
             --output {output.sequences} \
             --group-by {params.group_by} \
@@ -196,13 +184,15 @@ rule refine:
     params:
     	coalescent = config["refine"]["coalescent"],
     	clock_filter_iqd = config["refine"]["clock_filter_iqd"],
-    	date_inference = config["refine"]["date_inference"]
+    	date_inference = config["refine"]["date_inference"],
+        strain_id=config["strain_id_field"],
     shell:
         """
         augur refine \
             --tree {input.tree} \
             --alignment {input.alignment} \
             --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
             --output-tree {output.tree} \
             --output-node-data {output.node_data} \
             --coalescent {params.coalescent} \
@@ -264,12 +254,14 @@ rule traits:
     log:
         "logs/{a_or_b}/traits_{build_name}_rsv.txt"
     params:
-    	columns = config["traits"]["columns"]
+    	columns = config["traits"]["columns"],
+        strain_id=config["strain_id_field"],
     shell:
         """
         augur traits \
             --tree {input.tree} \
             --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
             --output {output.node_data} \
             --columns {params.columns} \
             --confidence

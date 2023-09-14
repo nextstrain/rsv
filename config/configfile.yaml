@@ -9,7 +9,7 @@ exclude: "config/outliers.txt"
 description: "config/description.md"
 
 strain_id_field: "accession"
-display_strain_field: "strain_original"
+display_strain_field: "strain"
 
 subtypes: ['a', 'b']
 

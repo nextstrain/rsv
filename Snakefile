@@ -25,7 +25,7 @@ include: "workflow/snakemake_rules/glycosylation.smk"
 include: "workflow/snakemake_rules/clades.smk"
 
 
-if config.get("deploy_url"):
+if "deploy_url" in config:
     include: "workflow/snakemake_rules/nextstrain_automation.smk"
 
 rule clean:
