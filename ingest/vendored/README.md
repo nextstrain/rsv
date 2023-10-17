@@ -25,6 +25,13 @@ Any future updates of ingest scripts can be pulled in with:
 git subrepo pull ingest/vendored
 ```
 
+If you run into merge conflicts and would like to pull in a fresh copy of the
+latest ingest scripts, pull with the `--force` flag:
+
+```
+git subrepo pull ingest/vendored --force
+```
+
 > **Warning**
 > Beware of rebasing/dropping the parent commit of a `git subrepo` update
 
