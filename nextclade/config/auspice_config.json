@@ -1,0 +1,69 @@
+{
+  "title": "Nextclade dataset for RSV",
+  "build_url": "https://github.com/neherlab/nextclade_data_workflows",
+  "maintainers": [
+    { "name": "Cornelius Roemer", "url": "https://neherlab.org" },
+    { "name": "Richard Neher", "url": "https://neherlab.org" }
+  ],
+  "data_provenance": [
+    {
+      "name": "Genbank"
+    }
+  ],
+  "colorings": [
+    {
+      "key": "country",
+      "title": "Country",
+      "type": "categorical"
+    },
+    {
+      "key": "region",
+      "title": "Region",
+      "type": "categorical"
+    },
+    {
+      "key": "G_clade",
+      "title": "G Clades (Goya et al)",
+      "type": "categorical"
+    },
+    {
+      "key": "genome_clade",
+      "title": "Genome Clades (Ramaekers et al)",
+      "type": "categorical"
+    },
+    {
+      "key": "date",
+      "title": "Sample Date",
+      "type": "ordinal"
+    },
+    {
+      "key": "EPI_ISL",
+      "title": "EPI_ISL",
+      "type": "categorical"
+    }
+  ],
+  "filters": [
+    "region",
+    "country",
+    "clade_membership",
+    "G_clade"
+  ],
+  "display_defaults": {
+    "color_by": "clade_membership",
+    "distance_measure": "div",
+    "branch_label": "clade"
+  },
+  "panels": ["tree","entropy"],
+  "extensions": {
+    "nextclade": {
+      "clade_node_attrs": [
+        {
+          "name": "G_clade",
+          "displayName": "G_clade (Goya et al)",
+          "description": "Clades based on the G gene by Goya et al, IRV, 2019.",
+          "hideInWeb": false
+        }
+      ]
+    }
+  }
+}

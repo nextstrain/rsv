@@ -1,0 +1,35 @@
+strain_id_field: accession
+CDS: ["NS1", "NS2", "N", "P", "M", "SH", "G", "F", "M2-1", "M2-2", "L"]
+auspice_config: "config/auspice_config.json"
+color_schemes: "../config/color_schemes.tsv"
+
+builds:
+  a:
+    refs:
+      EPI_ISL_412866:
+        filter: "--min-date 1965 --probabilistic-sampling --group-by year --subsample-max-sequences 1500 --query 'genome_coverage>0.95'"
+        exclude_url: https://raw.githubusercontent.com/nextstrain/rsv/master/config/outliers.txt
+        reference_strain: hRSV/A/England/397/2017
+        reference_accession: EPI_ISL_412866
+    clade_systems:
+      consortium:
+        url: "https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineage.tsv"
+      G:
+        url: "https://raw.githubusercontent.com/nextstrain/rsv/master/config/clades_G_a.tsv"
+        key: G_clade
+        label_key: G_clade
+
+  b:
+    refs:
+      EPI_ISL_1653999:
+        filter: "--min-date 1965 --probabilistic-sampling --group-by year --subsample-max-sequences 1500 --query 'genome_coverage>0.95'"
+        exclude_url: https://raw.githubusercontent.com/nextstrain/rsv/master/config/outliers.txt
+        reference_strain: hRSV/B/Australia/VIC-RCH056/2019
+        reference_accession: EPI_ISL_1653999
+    clade_systems:
+      consortium:
+        url: https://raw.githubusercontent.com/rsv-lineages/lineage-designation-B/main/.auto-generated/lineage.tsv
+      G:
+        key: G_clade
+        label_key: G_clade
+        url: "https://raw.githubusercontent.com/nextstrain/rsv/master/config/clades_G_b.tsv"

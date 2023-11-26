@@ -1,0 +1,409 @@
+import datetime
+
+
+wildcard_constraints:
+    a_or_b="a|b",
+    year="\d\d\d\d",
+
+def all_builds(w):
+    builds = []
+    for a_or_b in config["builds"]:
+        for ref in config["builds"][a_or_b]['refs']:
+            builds.append(f"datasets/{a_or_b}/{ref}/tree.json")
+    return builds
+
+rule all:
+    input:
+        all_builds
+
+rule download:
+    message: "downloading sequences and metadata from data.nextstrain.org"
+    output:
+        metadata =  "data/{a_or_b}/metadata.tsv.gz",
+        sequences = "data/{a_or_b}/sequences.fasta.xz"
+    params:
+        metadata_url = "http://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata.tsv.gz",
+        sequence_url = "http://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences.fasta.xz"
+    shell:
+        """
+        curl -fsSL --compressed {params.metadata_url:q} --output {output.metadata}
+        curl -fsSL --compressed {params.sequence_url:q} --output {output.sequences}
+        """
+
+rule decompress:
+    message: "decompressing sequences and metadata"
+    input:
+        sequences = "data/{a_or_b}/sequences.fasta.xz",
+        additional_sequences = "config/rsv-{a_or_b}_additional.fasta",
+    output:
+        sequences = "data/{a_or_b}/sequences.fasta"
+    shell:
+        """
+        xz --decompress --keep {input.sequences} -c | cat - {input.additional_sequences} > {output.sequences}
+        """
+
+rule join_metadata:
+    input:
+        metadata = "data/{a_or_b}/metadata.tsv.gz",
+        additional_meta = "config/rsv-{a_or_b}_additional.tsv",
+    output:
+        metadata = "data/{a_or_b}/metadata.tsv"
+    run:
+        import pandas as pd
+        m1 = pd.read_csv(input.metadata, sep='\t')
+        m2 = pd.read_csv(input.additional_meta, sep='\t')
+        pd.concat((m1,m2)).to_csv(output.metadata, sep='\t')
+
+rule download_clades:
+    message:
+        "Downloading clade definitions for {wildcards.a_or_b} from {params.source_tsv} -> {output}"
+    output:
+        clade_tsv = "data/{clade}_{a_or_b}_{reference}_raw.tsv"
+    params:
+        source_tsv=lambda w: config["builds"][w.a_or_b]["clade_systems"][w.clade]['url'],
+    shell:
+        """
+        curl {params.source_tsv} > {output.clade_tsv}
+        """
+
+rule subsample:
+    input:
+        aligned_sequences=rules.decompress.output.sequences,
+        metadata=rules.join_metadata.output.metadata,
+        exclude="config/rsv-{a_or_b}_outliers.txt",
+        include="config/rsv-{a_or_b}_include.txt"
+    output:
+        sampled_sequences="build/{a_or_b}/{reference}/subsample.fasta",
+        sampled_strains="build/{a_or_b}/{reference}/subsample.txt",
+    params:
+        filter_arguments=lambda w: config["builds"][w.a_or_b]["refs"][
+            w.reference
+        ]["filter"],
+        reference_accession=lambda w: config["builds"][w.a_or_b]["refs"][
+            w.reference
+        ]["reference_accession"]
+    shell:
+        """
+        augur filter \
+            --sequences {input.aligned_sequences} \
+            --metadata {input.metadata} \
+            --metadata-id-columns accession \
+            --exclude {input.exclude} \
+            --include {input.include} \
+            {params.filter_arguments} \
+            --output {output.sampled_sequences} \
+            --output-strains {output.sampled_strains}
+        """
+
+rule align:
+    input:
+        sequences="build/{a_or_b}/{reference}/subsample.fasta",
+        annotation="dataset_config/{a_or_b}/{reference}/annotation.gff",
+        reference="dataset_config/{a_or_b}/{reference}/reference.fasta",
+    output:
+        alignment="build/{a_or_b}/{reference}/aligned.fasta"
+    params:
+        outdir=lambda w: f"build/{w.a_or_b}/{w.reference}/aligned.{{cds}}.fasta",
+        nextclade_bin = "./nextclade_v3"
+    threads: 3
+    shell:
+        """
+        {params.nextclade_bin} run \
+            --jobs={threads} \
+            --input-ref {input.reference} \
+            --input-annotation {input.annotation} \
+            --output-translations {params.outdir} \
+            --output-fasta {output.alignment} \
+            {input.sequences} \
+            2>&1
+        """
+
+
+rule tree:
+    input:
+        alignment=rules.align.output.alignment,
+    output:
+        tree="build/{a_or_b}/{reference}/tree_raw.nwk",
+    threads: 3
+    shell:
+        """
+        augur tree \
+            --alignment {input.alignment} \
+            --output {output.tree} \
+            --nthreads {threads} \
+            --tree-builder-args '-ninit 10 -n 4 -czb' \
+            > /dev/null
+        """
+
+# root using dates in treetime, use 1500 as sequence length (good enough, doesn't matter)
+rule root:
+    input:
+        tree=rules.tree.output.tree,
+        metadata = rules.join_metadata.output.metadata,
+    output:
+        tree="build/{a_or_b}/{reference}/tree_rooted.nwk",
+    params:
+        outdir = "build/{a_or_b}/{reference}/tt_out"
+    shell:
+        """
+        treetime clock \
+            --tree {input.tree} \
+            --sequence-length 15000 \
+            --dates {input.metadata} \
+            --name-column accession \
+            --clock-filter 5 \
+            --clock-filter-method residual \
+            --outdir {params.outdir}
+        cp {params.outdir}/rerooted.newick {output.tree}
+        """
+
+rule prune_outliers:
+    input:
+        tree = rules.root.output.tree
+    output:
+        tree="build/{a_or_b}/{reference}/tree_rooted_pruned.nwk"
+    params:
+        outliers = "build/{a_or_b}/{reference}/tt_out/outliers.tsv"
+    run:
+        import pandas as pd
+        from Bio import Phylo
+        outliers = pd.read_csv(params.outliers, sep='\t', index_col=0)
+        T = Phylo.read(input.tree, 'newick')
+
+        for n in outliers.index:
+            if outliers.loc[n,"given_date"]>1980 and ('-egg' not in n):
+                print("prune", n)
+                T.prune(n)
+        Phylo.write(T, output.tree, "newick")
+
+# refine while keeping the root
+rule refine:
+    input:
+        tree=rules.prune_outliers.output.tree,
+        alignment=rules.align.output.alignment,
+        enriched_metadata=rules.join_metadata.output.metadata,
+    output:
+        tree="build/{a_or_b}/{reference}/tree.nwk",
+        node_data="build/{a_or_b}/{reference}/branch_lengths.json",
+    threads: 1
+    shell:
+        """
+        augur refine \
+            --tree {input.tree} \
+            --alignment {input.alignment} \
+            --metadata {input.enriched_metadata} \
+            --metadata-id-columns accession \
+            --output-tree {output.tree} \
+            --output-node-data {output.node_data} \
+            --keep-root \
+            --divergence-unit mutations-per-site
+        """
+
+
+rule ancestral:
+    message:
+        """
+        Reconstructing ancestral sequences and mutations
+          - inferring ambiguous mutations
+        """
+    input:
+        tree=rules.refine.output.tree,
+        alignment=rules.align.output.alignment,
+        annotation="dataset_config/{a_or_b}/{reference}/reference.gbk",
+        reference="dataset_config/{a_or_b}/{reference}/reference.fasta",
+    output:
+        node_data="build/{a_or_b}/{reference}/muts.json",
+    params:
+        inference="joint",
+        genes=config['CDS'],
+        translations= "build/{a_or_b}/{reference}/aligned.%GENE.fasta",
+    shell:
+        """
+        augur ancestral \
+            --tree {input.tree} \
+            --alignment {input.alignment} \
+            --inference {params.inference} \
+            --infer-ambiguous \
+            --genes {params.genes} \
+            --annotation {input.annotation} \
+            --translations {params.translations:q} \
+            --root-sequence {input.reference} \
+            --output-node-data {output.node_data}
+        """
+
+rule clades:
+    message:
+        "Adding internal clade labels"
+    input:
+        tree=rules.refine.output.tree,
+        muts=rules.ancestral.output.node_data,
+        clades=rules.download_clades.output,
+    output:
+        node_data="build/{a_or_b}/{reference}/clade_{clade}.json",
+    params:
+        membership_key= lambda w: config["builds"][w.a_or_b]["clade_systems"][w.clade].get('key', 'clade_membership'),
+        label_key= lambda w: config["builds"][w.a_or_b]["clade_systems"][w.clade].get('key', 'clade')
+    shell:
+        """
+        augur clades --tree {input.tree} \
+            --mutations {input.muts} \
+            --clades {input.clades} \
+            --membership-name {params.membership_key} \
+            --label-name {params.label_key} \
+            --output-node-data {output.node_data} \
+            > /dev/null
+        """
+
+rule virus_specific_jsons:
+    input:
+        auspice_config= "config/auspice_config.json",
+        pathogen = "config/pathogen.json",
+        additional_pathogen="config/pathogen.json",
+    output:
+        pathogen = "build/{a_or_b}/{reference}/pathogen.json",
+        auspice = "build/{a_or_b}/{reference}/auspice_config.json",
+    params:
+        clades = lambda w: [config["builds"][w.a_or_b]["clade_systems"][clade].get('key', 'default')
+                            for clade in config["builds"][w.a_or_b]["clade_systems"]],
+        reference_name = lambda w: config["builds"][w.a_or_b]['refs'][w.reference]['reference_strain']
+    shell:
+        """
+        python3 scripts/merge_jsons.py --lineage {wildcards.a_or_b} \
+            --reference {wildcards.reference} \
+            --reference-name {params.reference_name} \
+            --clades {params.clades} \
+            --pathogen-jsons {input.pathogen} {input.additional_pathogen} \
+            --auspice-config {input.auspice_config} \
+            --output-pathogen {output.pathogen} \
+            --output-auspice {output.auspice}
+        """
+
+
+
+def get_node_data(w):
+    node_data = [
+        rules.refine.output.node_data,
+        "build/{a_or_b}/{reference}/muts.json".format(**w),
+    ]
+
+    for clade in config["builds"][w.a_or_b]["clade_systems"]:
+        node_data.append("build/{a_or_b}/{reference}/".format(**w) + f'clade_{clade}.json')
+
+    return node_data
+
+
+rule export:
+    message:
+        "Exporting data files for auspice"
+    input:
+        tree=rules.refine.output.tree,
+        metadata=rules.join_metadata.output.metadata,
+        node_data = get_node_data,
+        auspice_config= "build/{a_or_b}/{reference}/auspice_config.json"
+    output:
+        auspice_json="build/{a_or_b}/{reference}/auspice.json",
+    params:
+        fields="region strainName country date EPI_ISL",
+        date=datetime.datetime.utcnow().strftime("%Y-%m-%d"),
+    shell:
+        """
+        augur export v2 \
+            --tree {input.tree} \
+            --metadata {input.metadata} \
+            --metadata-id-columns accession \
+            --node-data {input.node_data}\
+            --auspice-config {input.auspice_config} \
+            --color-by-metadata {params.fields} \
+            --minify-json \
+            --title "Nextclade reference tree for RSV-{wildcards.a_or_b} with root {wildcards.reference} built on {params.date}" \
+            --output {output.auspice_json} 2>&1;
+        """
+
+rule rename_tips:
+    input:
+        auspice_json="build/{a_or_b}/{reference}/auspice.json",
+        metadata=rules.join_metadata.output.metadata
+    output:
+        auspice_json="build/{a_or_b}/{reference}/auspice_renamed.json"
+    run:
+        import pandas as pd
+        name_map = {d.accession: d.strain for d in pd.read_csv(input.metadata, sep='\t').itertuples()}
+
+        import json
+        with open(input.auspice_json) as fh:
+            data = json.load(fh)
+
+        def rename(n, name_map):
+            n["name"] = name_map.get(n["name"], n["name"])
+            if "children" in n:
+                for c in n["children"]: rename(c, name_map)
+        rename(data['tree'], name_map)
+
+        with open(output.auspice_json, 'w') as fh:
+            json.dump(data, fh)
+
+rule generate_sample_sequences:
+    input:
+        sequences="data/{a_or_b}/sequences.fasta",
+        metadata=rules.join_metadata.output.metadata,
+    output:
+        sequences="build/{a_or_b}/{reference}/sample_sequences.fasta",
+    shell:
+        """
+        augur filter \
+            --sequences {input.sequences} \
+            --metadata {input.metadata} \
+            --min-date 2010 --group-by year --subsample-max-sequences 50  \
+            --exclude-ambiguous-dates-by year \
+            --probabilistic-sampling \
+            --output {output.sequences}
+        """
+
+rule make_dataset:
+    input:
+        sequences="build/{a_or_b}/{reference}/sample_sequences.fasta",
+        auspice_json="build/{a_or_b}/{reference}/auspice_renamed.json",
+        annotation="dataset_config/{a_or_b}/{reference}/annotation.gff",
+        reference="dataset_config/{a_or_b}/{reference}/reference.fasta",
+        readme="dataset_config/{a_or_b}/{reference}/README.md",
+        dataset_changelog="dataset_config/{a_or_b}/{reference}/CHANGELOG.md",
+        pathogen_json="build/{a_or_b}/{reference}/pathogen.json",
+    output:
+        sequences="datasets/{a_or_b}/{reference}/sequences.fasta",
+        tree="datasets/{a_or_b}/{reference}/tree.json",
+        annotation="datasets/{a_or_b}/{reference}/genome_annotation.gff3",
+        reference="datasets/{a_or_b}/{reference}/reference.fasta",
+        readme="datasets/{a_or_b}/{reference}/README.md",
+        pathogen_json="datasets/{a_or_b}/{reference}/pathogen.json",
+        auspice="auspice/{a_or_b}_{reference}.json",
+        changelog="datasets/{a_or_b}/{reference}/CHANGELOG.md",
+    shell:
+        """
+        cp {input.sequences} {output.sequences}
+        cp {input.auspice_json} {output.tree}
+        cp {input.reference} {output.reference}
+        cp {input.readme} {output.readme}
+        cp {input.dataset_changelog} {output.changelog}
+        cp {input.annotation} {output.annotation}
+        cp {input.pathogen_json} {output.pathogen_json}
+        cp {input.auspice_json} {output.auspice}
+        """
+
+
+
+rule clean:
+    shell:
+        """
+        rm -rf build datasets auspice
+        """
+
+
+rule clean_all:
+    shell:
+        """
+        rm -rf build
+        rm -rf auspice
+        rm -rf datasets
+        rm -rf data/
+        """
+
