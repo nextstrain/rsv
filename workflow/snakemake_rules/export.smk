@@ -7,8 +7,9 @@ def get_node_data(w):
         node_data.append(rules.glycosylation.output.glycosylations)
     if w.build_name == "genome":
         node_data.append(rules.clades_genome.output.node_data)
+        node_data.append(rules.clades_consortium.output.node_data)
     if w.build_name in ["genome", "G"]:
-        node_data.append(rules.clades.output.node_data)
+        node_data.append(rules.clades_Goya.output.node_data)
     return node_data
 
 rule colors:
