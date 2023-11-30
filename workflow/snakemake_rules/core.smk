@@ -74,7 +74,7 @@ rule filter:
             --query '{params.min_coverage}'
         """
 
-rule nextalign:
+rule genome_align:
     message:
         """
         Aligning sequences to {input.reference}
@@ -87,15 +87,16 @@ rule nextalign:
     threads: 4
     shell:
         """
-        nextalign run -j {threads}\
-            --reference {input.reference} \
+        nextclade3 run -j {threads}\
+            --input-ref {input.reference} \
             --output-fasta {output.alignment} \
             {input.sequences}
         """
 
+# cut out the G-Gene for alignment refinement
 rule cut:
     input:
-        oldalignment = rules.nextalign.output.alignment,
+        oldalignment = rules.genome_align.output.alignment,
         reference = "config/{a_or_b}reference.gbk"
     output:
         slicedalignment = build_dir + "/{a_or_b}/{build_name}/{gene}_slicedalignment.fasta"
@@ -110,6 +111,7 @@ rule cut:
             --gene {params.gene}
         """
 
+# align the G gene with mafft
 rule realign:
     input:
         slicedalignment = rules.cut.output.slicedalignment,
@@ -128,7 +130,7 @@ rule realign:
 
 rule hybrid_align:
     input:
-        original = rules.nextalign.output.alignment,
+        original = rules.genome_align.output.alignment,
         G_alignment = build_dir + "/{a_or_b}/{build_name}/G_aligned.fasta",
         reference = "config/{a_or_b}reference.gbk"
     output:
