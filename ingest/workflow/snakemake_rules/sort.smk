@@ -21,8 +21,8 @@ rule align:
     threads: 2
     shell:
         """
-        nextalign run -j {threads} --silent \
-        --reference {input.reference} \
+        nextclade3 run -j {threads} --silent \
+        --input-ref {input.reference} \
         --output-fasta {output.alignment} \
         {input.sequences}
         """
