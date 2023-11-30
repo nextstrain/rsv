@@ -104,11 +104,10 @@ rule align:
         alignment="build/{a_or_b}/{reference}/aligned.fasta"
     params:
         outdir=lambda w: f"build/{w.a_or_b}/{w.reference}/aligned.{{cds}}.fasta",
-        nextclade_bin = "./nextclade_v3"
     threads: 3
     shell:
         """
-        {params.nextclade_bin} run \
+        nextclade3 run \
             --jobs={threads} \
             --input-ref {input.reference} \
             --input-annotation {input.annotation} \
