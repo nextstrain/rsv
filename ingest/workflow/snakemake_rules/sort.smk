@@ -61,7 +61,7 @@ rule nextclade:
     output:
         nextclade = "data/{type}/nextclade.tsv"
     params:
-        dataset = "rsv-a_nextclade",
+        dataset = "rsv-{type}_nextclade",
         output_columns = "clade qc.overallScore qc.overallStatus alignmentScore  alignmentStart  alignmentEnd  coverage dynamic"
     shell:
         """
@@ -86,19 +86,3 @@ rule extend_metadata:
                                        --output {output.metadata}
         """
 
-
-# rule coverage:
-#     input:
-#         alignment_a = expand("data/a/{time}_sequences.aligned.fasta", time=TIME),
-#         alignment_b = expand("data/b/{time}_sequences.aligned.fasta", time=TIME),
-#         metadata_b = expand("data/b/{time}_metadata.tsv", time=TIME),
-#         metadata_a = expand("data/a/{time}_metadata.tsv", time=TIME),
-#         dedup_metadata_a = rules.deduplication.output.dedup_metadata_a,
-#         dedup_metadata_b = rules.deduplication.output.dedup_metadata_b
-#     output:
-#         metadata_a = "data/a/metadata.tsv",
-#         metadata_b = "data/b/metadata.tsv"
-#     shell:
-#         """
-#         python bin/gene-coverage.py
-#         """
