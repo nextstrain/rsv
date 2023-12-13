@@ -68,6 +68,7 @@ rule filter:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
+            --exclude-where 'qc.overallStatus=bad' \
             --output {output.sequences} \
             --group-by {params.group_by} \
             --subsample-max-sequences {params.subsample_max_sequences} \

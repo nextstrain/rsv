@@ -10,9 +10,6 @@ It produces output files as
 
 """
 
-TIME = ['1', '2','3']
-
-
 rule sort:
     input:
         sequences = rules.transform.output.sequences

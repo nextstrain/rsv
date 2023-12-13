@@ -6,10 +6,8 @@ def get_node_data(w):
     if w.build_name in config["genesforglycosylation"]:
         node_data.append(rules.glycosylation.output.glycosylations)
     if w.build_name == "genome":
-        node_data.append(rules.clades_genome.output.node_data)
         node_data.append(rules.clades_consortium.output.node_data)
-    if w.build_name in ["genome", "G"]:
-        node_data.append(rules.clades_Goya.output.node_data)
+
     return node_data
 
 rule colors:
@@ -43,11 +41,12 @@ rule export:
     params:
     	title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny",
         strain_id=config["strain_id_field"],
+        metadata_colors = lambda w: '' if w.build_name=='genome' else f"--color-by-metadata clade"
     shell:
         """
         augur export v2 \
             --tree {input.tree} \
-            --metadata {input.metadata} \
+            --metadata {input.metadata} {params.metadata_colors} \
             --metadata-id-columns {params.strain_id} \
             --node-data {input.node_data} \
             --title {params.title:q} \
