@@ -10,99 +10,76 @@ It produces output files as
 
 """
 
-TIME = ['1', '2','3']
-
-rule align:
-    input:
-        sequences = rules.transform.output.sequences,
-        reference = "config/{type}_{time}_reference.fasta"
-    output:
-        alignment = "data/{type}/{time}_sequences.aligned.fasta"
-    threads: 2
-    shell:
-        """
-        nextalign run -j {threads} --silent \
-        --reference {input.reference} \
-        --output-fasta {output.alignment} \
-        {input.sequences}
-        """
-
-rule metadataandsequences:
-    input:
-        alignment = rules.align.output.alignment,
-        metadata = rules.transform.output.metadata,
-        sequences = rules.transform.output.sequences
-    output:
-        metadata = "data/{type}/{time}_metadata.tsv",
-        sequences = "data/{type}/{time}_sequences.fasta"
-
-    shell:
-        """
-        python bin/sequencesandmetadata.py \
-        --sortedalignment {input.alignment} \
-        --allmetadata {input.metadata} \
-        --allsequences {input.sequences} \
-        --metadata {output.metadata} \
-        --sequences {output.sequences}
-        """
-
 rule sort:
     input:
-        allsequences = "data/sequences.fasta",
-        metadata = "data/metadata.tsv",
-        alignment_a = expand("data/a/{time}_sequences.aligned.fasta", time=TIME),
-        alignment_b = expand("data/b/{time}_sequences.aligned.fasta", time=TIME),
-        reference_a = expand("config/a_{time}_reference.fasta", time=TIME),
-        reference_b = expand("config/b_{time}_reference.fasta", time=TIME),
-        metadata_b = expand("data/b/{time}_metadata.tsv", time=TIME),
-        metadata_a = expand("data/a/{time}_metadata.tsv", time=TIME)
+        sequences = rules.transform.output.sequences
     output:
-        sequences_a = "data/a/sequences_notdedup.fasta",
-        metadata_a = "data/a/metadata_notdedup.tsv",
-        sequences_b = "data/b/sequences_notdedup.fasta",
-        metadata_b = "data/b/metadata_notdedup.tsv"
+        "data/a/sequences.fasta",
+        "data/b/sequences.fasta"
     shell:
-        """
-        python bin/sort.py
-        """
+        '''
+        nextclade3 sort {input.sequences} --output-dir tmp
+        seqkit rmdup tmp/nextstrain/rsv/b/sequences.fasta > data/b/sequences.fasta
+        seqkit rmdup tmp/nextstrain/rsv/a/sequences.fasta > data/a/sequences.fasta
+        rm -r tmp
+        '''
 
-rule deduplication:
+rule metadata:
     input:
-        sequences_a = rules.sort.output.sequences_a,
-        metadata_a = rules.sort.output.metadata_a,
-        sequences_b = rules.sort.output.sequences_b,
-        metadata_b = rules.sort.output.metadata_b
+        metadata = rules.transform.output.metadata,
+        sequences = "data/{type}/sequences.fasta"
     output:
-        dedup_seq_a = "data/a/sequences.fasta",
-        dedup_metadata_a = "data/a/metadata_no_covg.tsv",
-        dedup_seq_b = "data/b/sequences.fasta",
-        dedup_metadata_b = "data/b/metadata_no_covg.tsv"
+        metadata = "data/{type}/metadata_raw.tsv"
+    run:
+        import pandas as pd
+        from Bio import SeqIO
+
+        strains = [s.id for s in SeqIO.parse(input.sequences, 'fasta')]
+        d = pd.read_csv(input.metadata, sep='\t', index_col='accession').loc[strains].drop_duplicates()
+        d.to_csv(output.metadata, sep='\t')
+
+rule nextclade_dataset:
+    output:
+        ref_a = "rsv-a_nextclade/reference.fasta",
+        ref_b = "rsv-b_nextclade/reference.fasta"
+    params:
+        dataset_a = "nextstrain/rsv/a/EPI_ISL_412866",
+        dataset_b = "nextstrain/rsv/b/EPI_ISL_1653999"
     shell:
         """
-        seqkit rmdup < {input.sequences_a} > {output.dedup_seq_a}
-        seqkit rmdup < {input.sequences_b} > {output.dedup_seq_b}
-
-        python bin/metadata_dedup.py \
-            --metadata-original {input.metadata_a} \
-            --metadata-output {output.dedup_metadata_a}
-
-        python bin/metadata_dedup.py \
-            --metadata-original {input.metadata_b} \
-            --metadata-output {output.dedup_metadata_b}
+        nextclade3 dataset get -n {params.dataset_a} --output-dir rsv-a_nextclade
+        nextclade3 dataset get -n {params.dataset_b} --output-dir rsv-b_nextclade
         """
 
-rule coverage:
+rule nextclade:
     input:
-        alignment_a = expand("data/a/{time}_sequences.aligned.fasta", time=TIME),
-        alignment_b = expand("data/b/{time}_sequences.aligned.fasta", time=TIME),
-        metadata_b = expand("data/b/{time}_metadata.tsv", time=TIME),
-        metadata_a = expand("data/a/{time}_metadata.tsv", time=TIME),
-        dedup_metadata_a = rules.deduplication.output.dedup_metadata_a,
-        dedup_metadata_b = rules.deduplication.output.dedup_metadata_b
+        sequences = "data/{type}/sequences.fasta",
+        ref = "rsv-a_nextclade/reference.fasta"
     output:
-        metadata_a = "data/a/metadata.tsv",
-        metadata_b = "data/b/metadata.tsv"
+        nextclade = "data/{type}/nextclade.tsv"
+    params:
+        dataset = "rsv-{type}_nextclade",
+        output_columns = "clade qc.overallScore qc.overallStatus alignmentScore  alignmentStart  alignmentEnd  coverage dynamic"
     shell:
         """
-        python bin/gene-coverage.py
+        nextclade3 run -D {params.dataset}  \
+                          --output-columns-selection {params.output_columns} \
+                          --output-tsv {output.nextclade} \
+                          {input.sequences}
         """
+
+rule extend_metadata:
+    input:
+        nextclade = "data/{type}/nextclade.tsv",
+        metadata = "data/{type}/metadata_raw.tsv"
+    output:
+        metadata = "data/{type}/metadata.tsv"
+    shell:
+        """
+        python3 bin/extend-metadata.py --metadata {input.metadata} \
+                                       --id-field accession \
+                                       --virus-type {wildcards.type} \
+                                       --nextclade {input.nextclade} \
+                                       --output {output.metadata}
+        """
+
