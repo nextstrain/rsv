@@ -10,7 +10,7 @@ Input metadata and sequences for RSV-A and RSV-B are available via <https://data
 - [RSV-A metadata](https://data.nextstrain.org/files/workflows/rsv/a/metadata.tsv.gz)
 
 - [RSV-B sequences](https://data.nextstrain.org/files/workflows/rsv/b/sequences.fasta.xz)
-- [RSV-B metadata](https://data.nextstrain.org/files/workflows/rsv/a/metadata.tsv.gz)
+- [RSV-B metadata](https://data.nextstrain.org/files/workflows/rsv/b/metadata.tsv.gz)
 
 These data are generously shared by labs around the world and deposited in NCBI genbank by the authors.
 Please contact these labs first if you plan to publish using these data.
