@@ -21,7 +21,7 @@ def cut(oldalignment, newalignment, referencefile, gene, min_length=0):
         alignment =SeqIO.parse(oldalignment, 'fasta')
         for entry in alignment:
             newrecord = SeqRecord(Seq(entry.seq[startofgene:endofgene]), id=entry.id, description=entry.description)
-            if len(newrecord.seq.ungap('-')) >= min_length:
+            if len(newrecord.seq.replace('-', '')) >= min_length:
                 list1.append(newrecord)
 
         for record in list1:
