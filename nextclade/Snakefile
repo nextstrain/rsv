@@ -257,7 +257,7 @@ rule virus_specific_jsons:
     input:
         auspice_config= "config/auspice_config.json",
         pathogen = "config/pathogen.json",
-        additional_pathogen="config/pathogen.json",
+        additional_pathogen="dataset_config/{a_or_b}/{reference}/pathogen.json",
     output:
         pathogen = "build/{a_or_b}/{reference}/pathogen.json",
         auspice = "build/{a_or_b}/{reference}/auspice_config.json",
