@@ -52,7 +52,7 @@ rule join_metadata:
         import pandas as pd
         m1 = pd.read_csv(input.metadata, sep='\t')
         m2 = pd.read_csv(input.additional_meta, sep='\t')
-        pd.concat((m1,m2)).to_csv(output.metadata, sep='\t')
+        pd.concat((m1,m2)).drop(columns=['clade', 'G_clade']).to_csv(output.metadata, sep='\t')
 
 rule download_clades:
     message:
@@ -318,7 +318,7 @@ rule export:
     output:
         auspice_json="build/{a_or_b}/{reference}/auspice.json",
     params:
-        fields="region strainName country date EPI_ISL",
+        fields="region country date",
         date=datetime.datetime.utcnow().strftime("%Y-%m-%d"),
     shell:
         """
