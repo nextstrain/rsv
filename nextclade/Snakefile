@@ -19,7 +19,7 @@ rule all:
 rule download:
     message: "downloading sequences and metadata from data.nextstrain.org"
     output:
-        metadata =  "data/{a_or_b}/metadata.tsv.gz",
+        metadata = "data/{a_or_b}/metadata.tsv.gz",
         sequences = "data/{a_or_b}/sequences.fasta.xz"
     params:
         metadata_url = "http://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata.tsv.gz",
@@ -66,6 +66,21 @@ rule download_clades:
         curl {params.source_tsv} > {output.clade_tsv}
         """
 
+rule download_changelog:
+    message:
+        "Downloading changelog for RSV-{wildcards.a_or_b}, reference {wildcards.reference}"
+    output:
+        "datasets/{a_or_b}/{reference}/CHANGELOG.md"
+    params:
+        url="https://raw.githubusercontent.com/nextstrain/nextclade_data/master/data_output/nextstrain/rsv/{a_or_b}/{reference}/unreleased/CHANGELOG.md"
+    shell:
+        """
+        echo "## Unreleased \n\n <TO BE POPULATED> \n\n" > {output}
+        curl {params.url} >> {output}
+        """
+
+
+
 rule subsample:
     input:
         aligned_sequences=rules.decompress.output.sequences,
@@ -85,6 +100,7 @@ rule subsample:
     shell:
         """
         augur filter \
+            --metadata-id-columns accession \
             --sequences {input.aligned_sequences} \
             --metadata {input.metadata} \
             --metadata-id-columns accession \
@@ -350,6 +366,7 @@ rule generate_sample_sequences:
     shell:
         """
         augur filter \
+            --metadata-id-columns accession \
             --sequences {input.sequences} \
             --metadata {input.metadata} \
             --min-date 2010 --group-by year --subsample-max-sequences 50  \
@@ -365,7 +382,6 @@ rule make_dataset:
         annotation="dataset_config/{a_or_b}/{reference}/annotation.gff",
         reference="dataset_config/{a_or_b}/{reference}/reference.fasta",
         readme="dataset_config/{a_or_b}/{reference}/README.md",
-        dataset_changelog="dataset_config/{a_or_b}/{reference}/CHANGELOG.md",
         pathogen_json="build/{a_or_b}/{reference}/pathogen.json",
     output:
         sequences="datasets/{a_or_b}/{reference}/sequences.fasta",
@@ -375,14 +391,12 @@ rule make_dataset:
         readme="datasets/{a_or_b}/{reference}/README.md",
         pathogen_json="datasets/{a_or_b}/{reference}/pathogen.json",
         auspice="auspice/{a_or_b}_{reference}.json",
-        changelog="datasets/{a_or_b}/{reference}/CHANGELOG.md",
     shell:
         """
         cp {input.sequences} {output.sequences}
         cp {input.auspice_json} {output.tree}
         cp {input.reference} {output.reference}
         cp {input.readme} {output.readme}
-        cp {input.dataset_changelog} {output.changelog}
         cp {input.annotation} {output.annotation}
         cp {input.pathogen_json} {output.pathogen_json}
         cp {input.auspice_json} {output.auspice}
