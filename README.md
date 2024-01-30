@@ -48,3 +48,11 @@ Example data should be updated every time metadata schema is changed. To update,
 ```sh
 nextstrain build --docker . update_example_data -F
 ```
+
+
+## Sending data to the `nextclade_data` repo
+
+From within the destination directory, run
+```
+rsync -a <path-to>/rsv/nextclade/datasets/ .
+```
