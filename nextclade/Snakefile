@@ -10,6 +10,7 @@ def all_builds(w):
     for a_or_b in config["builds"]:
         for ref in config["builds"][a_or_b]['refs']:
             builds.append(f"datasets/{a_or_b}/{ref}/tree.json")
+            builds.append(f"datasets/{a_or_b}/{ref}/CHANGELOG.md")
     return builds
 
 rule all:
