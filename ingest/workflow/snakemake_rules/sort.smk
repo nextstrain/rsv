@@ -20,8 +20,8 @@ rule sort:
         '''
         seqkit rmdup {input.sequences} | \
         nextclade3 sort - --output-dir tmp
-        mv tmp/nextstrain/rsv/b/sequences.fasta > data/b/sequences.fasta
-        mv tmp/nextstrain/rsv/a/sequences.fasta > data/a/sequences.fasta
+        mv tmp/nextstrain/rsv/b/sequences.fasta  data/b/sequences.fasta
+        mv tmp/nextstrain/rsv/a/sequences.fasta  data/a/sequences.fasta
         rm -r tmp
         '''
 
