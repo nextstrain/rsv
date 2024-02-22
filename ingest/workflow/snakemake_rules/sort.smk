@@ -18,9 +18,10 @@ rule sort:
         "data/b/sequences.fasta"
     shell:
         '''
-        nextclade3 sort {input.sequences} --output-dir tmp
-        seqkit rmdup tmp/nextstrain/rsv/b/sequences.fasta > data/b/sequences.fasta
-        seqkit rmdup tmp/nextstrain/rsv/a/sequences.fasta > data/a/sequences.fasta
+        seqkit rmdup {input.sequences} | \
+        nextclade3 sort - --output-dir tmp
+        mv tmp/nextstrain/rsv/b/sequences.fasta > data/b/sequences.fasta
+        mv tmp/nextstrain/rsv/a/sequences.fasta > data/a/sequences.fasta
         rm -r tmp
         '''
 
