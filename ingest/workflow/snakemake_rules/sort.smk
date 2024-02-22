@@ -61,9 +61,10 @@ rule nextclade:
     params:
         dataset = "rsv-{type}_nextclade",
         output_columns = "clade qc.overallScore qc.overallStatus alignmentScore  alignmentStart  alignmentEnd  coverage dynamic"
+    threads: 8
     shell:
         """
-        nextclade3 run -D {params.dataset}  \
+        nextclade3 run -D {params.dataset}  -j {threads} \
                           --output-columns-selection {params.output_columns} \
                           --output-tsv {output.nextclade} \
                           {input.sequences}
