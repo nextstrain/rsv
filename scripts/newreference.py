@@ -3,6 +3,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation, Seq
 import shutil
 import argparse
+import sys
 
 def new_reference(referencefile, outgenbank, outfasta, gene):
     ref = SeqIO.read(referencefile, "genbank")
@@ -16,6 +17,12 @@ def new_reference(referencefile, outgenbank, outfasta, gene):
             if a == gene:
                 startofgene = int(list(feature.location)[0])
                 endofgene =  int(list(feature.location)[-1])+1
+
+    # If user provides a --gene 'some name' is not found, print a warning and use the entire genome.
+    # Otherwise do not print a warning.
+    if(gene is not None and startofgene is None and endofgene is None):
+        print(f"ERROR: No '{gene}' was found under 'gene' or 'CDS' features in the GenBank file.", file=sys.stderr)
+        sys.exit(1)
 
     record = ref[startofgene:endofgene]
     source_feature =  SeqFeature(FeatureLocation(start=0, end=len(record)), type='source',
