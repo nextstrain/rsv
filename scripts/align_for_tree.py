@@ -1,4 +1,4 @@
-from Bio import SeqIO
+from Bio import SeqIO, AlignIO
 from Bio.SeqRecord import SeqRecord
 import shutil
 import argparse
@@ -8,27 +8,28 @@ def alignfortree(realign, align, reference, newoutput, build):
     if build != "genome":
         shutil.copy(realign, newoutput)
     else:
-        realigned = {s.id:s for s in SeqIO.parse(realign, "fasta")}
+        realigned_aln = AlignIO.read(realign, 'fasta')
+        insert_length = realigned_aln.get_alignment_length()
+        realigned = {s.id:s for s in realigned_aln}
         original = SeqIO.parse(align, "fasta")
         ref = SeqIO.read(reference, "genbank")
-
+        
         for feature in ref.features:
-                if feature.type =='gene':
-                    a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
-                    if a == "G":
-                        startofgene = int(list(feature.location)[0])
-                        endofgene =  int(list(feature.location)[-1])+1
-                        break
+            if feature.type =='gene' or feature.type=='CDS':
+                a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
+                if a == "G":
+                    startofgene = int(list(feature.location)[0])
+                    endofgene =  int(list(feature.location)[-1])+1
 
         for record_original in original:
             sequence_to_insert = realigned.get(record_original.id, None)
             if sequence_to_insert is None:
-                sequence_to_insert = '-' * (endofgene - startofgene)
+                sequence_to_insert = '-' * insert_length
             else:
                 sequence_to_insert = sequence_to_insert.seq
 
-            record_for_tree = record_original.seq.replace(record_original.seq[startofgene:endofgene], sequence_to_insert)
-            newrecord = SeqRecord(record_for_tree, id=record_original.id, description=record_original.description)
+            newseq = record_original.seq[:startofgene] + sequence_to_insert + record_original.seq[endofgene:]
+            newrecord = SeqRecord(newseq, id=record_original.id, description=record_original.description)
             records.append(newrecord)
 
         SeqIO.write(records, newoutput, "fasta")

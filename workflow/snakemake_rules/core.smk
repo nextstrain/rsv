@@ -56,9 +56,9 @@ rule filter:
     output:
     	sequences = build_dir + "/{a_or_b}/{build_name}/filtered.fasta"
     params:
-    	group_by = config["filter"]["group_by"],
-    	min_coverage = lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
-    	subsample_max_sequences = lambda w: config["filter"]["subsample_max_sequences"].get(w.build_name, 1000),
+        group_by = config["filter"]["group_by"],
+        min_coverage = lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
+        subsample_max_sequences = lambda w: config["filter"]["subsample_max_sequences"].get(w.build_name, 1000),
         strain_id=config["strain_id_field"],
     shell:
         """
@@ -185,9 +185,9 @@ rule refine:
         tree = build_dir + "/{a_or_b}/{build_name}/tree.nwk",
         node_data = build_dir + "/{a_or_b}/{build_name}/branch_lengths.json"
     params:
-    	coalescent = config["refine"]["coalescent"],
-    	clock_filter_iqd = config["refine"]["clock_filter_iqd"],
-    	date_inference = config["refine"]["date_inference"],
+        coalescent = config["refine"]["coalescent"],
+        clock_filter_iqd = config["refine"]["clock_filter_iqd"],
+        date_inference = config["refine"]["date_inference"],
         strain_id=config["strain_id_field"],
     shell:
         """
@@ -257,7 +257,7 @@ rule traits:
     log:
         "logs/{a_or_b}/traits_{build_name}_rsv.txt"
     params:
-    	columns = config["traits"]["columns"],
+        columns = config["traits"]["columns"],
         strain_id=config["strain_id_field"],
     shell:
         """
