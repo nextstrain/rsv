@@ -1,4 +1,4 @@
-from Bio import SeqIO
+from Bio import SeqIO, AlignIO
 from Bio.SeqRecord import SeqRecord
 import shutil
 import argparse
@@ -8,10 +8,12 @@ def alignfortree(realign, align, reference, newoutput, build):
     if build != "genome":
         shutil.copy(realign, newoutput)
     else:
-        realigned = {s.id:s for s in SeqIO.parse(realign, "fasta")}
+        realigned_aln = AlignIO.read(realign, 'fasta')
+        insert_length = realigned_aln.get_alignment_length()
+        realigned = {s.id:s for s in realigned_aln}
         original = SeqIO.parse(align, "fasta")
         ref = SeqIO.read(reference, "genbank")
-
+        
         for feature in ref.features:
             if feature.type =='gene' or feature.type=='CDS':
                 a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
@@ -22,7 +24,7 @@ def alignfortree(realign, align, reference, newoutput, build):
         for record_original in original:
             sequence_to_insert = realigned.get(record_original.id, None)
             if sequence_to_insert is None:
-                sequence_to_insert = '-' * (endofgene - startofgene)
+                sequence_to_insert = '-' * insert_length
             else:
                 sequence_to_insert = sequence_to_insert.seq
 
