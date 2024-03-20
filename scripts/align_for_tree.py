@@ -13,12 +13,11 @@ def alignfortree(realign, align, reference, newoutput, build):
         ref = SeqIO.read(reference, "genbank")
 
         for feature in ref.features:
-                if feature.type =='gene':
-                    a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
-                    if a == "G":
-                        startofgene = int(list(feature.location)[0])
-                        endofgene =  int(list(feature.location)[-1])+1
-                        break
+            if feature.type =='gene' or feature.type=='CDS':
+                a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
+                if a == "G":
+                    startofgene = int(list(feature.location)[0])
+                    endofgene =  int(list(feature.location)[-1])+1
 
         for record_original in original:
             sequence_to_insert = realigned.get(record_original.id, None)
@@ -27,8 +26,8 @@ def alignfortree(realign, align, reference, newoutput, build):
             else:
                 sequence_to_insert = sequence_to_insert.seq
 
-            record_for_tree = record_original.seq.replace(record_original.seq[startofgene:endofgene], sequence_to_insert)
-            newrecord = SeqRecord(record_for_tree, id=record_original.id, description=record_original.description)
+            newseq = record_original.seq[:startofgene] + sequence_to_insert + record_original.seq[endofgene:]
+            newrecord = SeqRecord(newseq, id=record_original.id, description=record_original.description)
             records.append(newrecord)
 
         SeqIO.write(records, newoutput, "fasta")
