@@ -213,7 +213,8 @@ rule ancestral:
         """
     input:
         tree = rules.refine.output.tree,
-        alignment = get_alignment
+        alignment = get_alignment,
+        root_sequence = build_dir + "/{a_or_b}/{build_name}/{build_name}_reference.gbk"
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/nt_muts.json"
     params:
@@ -224,6 +225,7 @@ rule ancestral:
             --tree {input.tree} \
             --alignment {input.alignment} \
             --output-node-data {output.node_data} \
+            --root-sequence {input.root_sequence} \
             --inference {params.inference}
         """
 
