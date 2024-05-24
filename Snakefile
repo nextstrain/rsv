@@ -1,5 +1,8 @@
 configfile: "config/configfile.yaml"
 
+wildcard_constraints:
+    a_or_b = r"a|b"
+
 build_dir = 'results'
 auspice_dir = 'auspice'
 
@@ -8,9 +11,6 @@ rule all:
         expand("auspice/rsv_{subtype}_{build}.json",
                subtype = config.get("subtypes",['a']),
                build = config.get("buildstorun", ['genome'])),
-        expand("auspice/rsv_{subtype}_{build}_root-sequence.json",
-               subtype = config.get("subtypes",['a']),
-               build = config.get("buildstorun", ['genome']))
 
 include: "workflow/snakemake_rules/chores.smk"
 

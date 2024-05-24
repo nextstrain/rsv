@@ -330,6 +330,7 @@ rule export:
             --node-data {input.node_data}\
             --auspice-config {input.auspice_config} \
             --color-by-metadata {params.fields} \
+            --include-root-sequence-inline \
             --minify-json \
             --title "Nextclade reference tree for RSV-{wildcards.a_or_b} with root {wildcards.reference} built on {params.date}" \
             --output {output.auspice_json} 2>&1;

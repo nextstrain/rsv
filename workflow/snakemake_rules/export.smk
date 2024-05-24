@@ -36,8 +36,7 @@ rule export:
         auspice_config = config["files"]["auspice_config"],
         description = config["description"]
     output:
-        auspice_json =  build_dir + "/{a_or_b}/{build_name}/tree.json",
-        root_sequence = build_dir + "/{a_or_b}/{build_name}/tree_root-sequence.json"
+        auspice_json =  build_dir + "/{a_or_b}/{build_name}/tree.json"
     params:
         title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny",
         strain_id=config["strain_id_field"],
@@ -53,7 +52,7 @@ rule export:
             --description {input.description} \
             --colors {input.colors} \
             --auspice-config {input.auspice_config} \
-            --include-root-sequence \
+            --include-root-sequence-inline \
             --output {output.auspice_json}
         """
 
@@ -76,18 +75,23 @@ rule final_strain_name:
         """
 
 
-rule rename_clade_labels:
+rule rename_and_ready_for_nextclade:
     input:
         auspice_json= rules.final_strain_name.output.auspice_json,
-        root_sequence= rules.export.output.root_sequence
+        pathogen_json= "nextclade/config/pathogen.json"
     output:
-        auspice_json= "auspice/rsv_{a_or_b}_{build_name}.json",
-        root_sequence= "auspice/rsv_{a_or_b}_{build_name}_root-sequence.json"
+        auspice_json= "auspice/rsv_{a_or_b}_{build_name}.json"
+    params:
+        accession= lambda w: config["nextclade_attributes"][w.a_or_b]["accession"],
+        name= lambda w: config["nextclade_attributes"][w.a_or_b]["name"],
+        ref_name= lambda w: config["nextclade_attributes"][w.a_or_b]["reference_name"]
     shell:
         """
-        python3 scripts/clade_names.py  \
+        python3 scripts/rename_and_nextclade.py  \
                 --input-auspice-json {input.auspice_json} \
+                --pathogen-json {input.pathogen_json} \
+                --reference {params.ref_name:q} \
+                --build-name {params.name:q} \
+                --reference-accession {params.accession:q} \
                 --output {output.auspice_json}
-
-        cp {input.root_sequence} {output.root_sequence}
         """

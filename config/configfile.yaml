@@ -39,3 +39,13 @@ ancestral:
 
 traits:
   columns: "country"
+
+nextclade_attributes:
+  a:
+    name: "RSV-A NextClade using real-time tree"
+    reference_name: "hRSV/A/England/397/2017"
+    accession: "EPI_ISL_412866"
+  b:
+    name: "RSV-B NextClade using real-time tree"
+    reference_name: "hRSV/B/Australia/VIC-RCH056/2019"
+    accession: "EPI_ISL_1653999"
