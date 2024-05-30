@@ -201,6 +201,7 @@ rule refine:
             --coalescent {params.coalescent} \
             --date-inference {params.date_inference} \
             --timetree \
+            --stochastic-resolve \
             --use-fft \
             --clock-filter-iqd {params.clock_filter_iqd}
         """
