@@ -73,8 +73,6 @@ jobs:
           --no-download \
           --cpus 8 \
           --memory 32gib \
-          --env AWS_ACCESS_KEY_ID \
-          --env AWS_SECRET_ACCESS_KEY \
           --env PAT_GITHUB_DISPATCH="$GH_TOKEN_NEXTSTRAIN_BOT_WORKFLOW_DISPATCH" \
           --env S3_DST \
           --env TRIGGER_REBUILD \
