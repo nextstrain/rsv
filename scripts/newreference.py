@@ -18,8 +18,8 @@ def new_reference(referencefile, outgenbank, outfasta, gene):
                 startofgene = int(list(feature.location)[0])
                 endofgene =  int(list(feature.location)[-1])+1
 
-    # If user provides a --gene 'some name' is not found, print a warning and use the entire genome.
-    # Otherwise do not print a warning.
+    # If user provides a --gene 'some name' that is not found, error out as this may indicate that
+    # the gene name is misspelled or the user may be using the wrong GenBank file.
     if(gene is not None and startofgene is None and endofgene is None):
         print(f"ERROR: No '{gene}' was found under 'gene' or 'CDS' features in the GenBank file.", file=sys.stderr)
         sys.exit(1)
