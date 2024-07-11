@@ -41,7 +41,6 @@ rule newreference:
             --gene {params.gene}
         """
 
-
 rule filter:
     message:
         """
@@ -75,6 +74,20 @@ rule filter:
             --query '{params.min_coverage}'
         """
 
+rule get_nextclade_dataset:
+    message:
+        """
+        fetching nextclade dataset
+        """
+    output:
+        dataset="nextclade_rsv-{a_or_b}.zip"
+    params:
+        ds_name = lambda w: "nextstrain/rsv/a/EPI_ISL_412866" if w.a_or_b=='a' else "nextstrain/rsv/b/EPI_ISL_1653999"
+    shell:
+        """
+        nextclade3 dataset get -n {params.ds_name} --output-zip {output.dataset}
+        """
+
 rule genome_align:
     message:
         """
@@ -82,14 +95,14 @@ rule genome_align:
         """
     input:
         sequences = rules.filter.output.sequences,
-        reference = build_dir + "/{a_or_b}/{build_name}/genome_reference.fasta"
+        reference = rule.get_nextclade_dataset.dataset
     output:
         alignment = build_dir + "/{a_or_b}/{build_name}/sequences.aligned.fasta"
     threads: 4
     shell:
         """
         nextclade3 run -j {threads}\
-            --input-ref {input.reference} \
+            -D {input.dataset} \
             --output-fasta {output.alignment} \
             {input.sequences}
         """
