@@ -4,7 +4,7 @@ genesforglycosylation: ["G", "F"]
 
 builds_to_run: ["genome", "G", "F"]
 
-resolutions_to_run: ["all-time", "6y"]
+resolutions_to_run: ["all-time", "6y", "3y"]
 
 exclude: "config/outliers.txt"
 
