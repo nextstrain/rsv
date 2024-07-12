@@ -32,6 +32,9 @@ filter:
     6y:
       min_date: 6Y
       background_min_date: 100Y
+    3y:
+      min_date: 3Y
+      background_min_date: 100Y
 
   subsample_max_sequences:
     genome: 3000
