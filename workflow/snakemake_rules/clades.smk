@@ -7,9 +7,9 @@ rule clades_genome:
         nuc_muts = rules.ancestral.output.node_data,
         clades = "config/clades_genome_{a_or_b}.tsv"
     output:
-        node_data = build_dir + "/{a_or_b}/{build_name}/clades_genome.json"
+        node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/clades_genome.json"
     log:
-        "logs/{a_or_b}/clades_genome_{build_name}.txt"
+        "logs/{a_or_b}/clades_genome_{build_name}_{resolution}.txt"
     shell:
         """
         augur clades --tree {input.tree} \
@@ -29,9 +29,9 @@ rule clades_Goya:
         nuc_muts = rules.ancestral.output.node_data,
         clades = "config/clades_G_{a_or_b}.tsv"
     output:
-        node_data = build_dir + "/{a_or_b}/{build_name}/clades_G.json"
+        node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/clades_G.json"
     log:
-        "logs/{a_or_b}/clades_{build_name}.txt"
+        "logs/{a_or_b}/clades_{build_name}_{resolution}.txt"
     shell:
         """
         augur clades --tree {input.tree} \
@@ -50,9 +50,9 @@ rule clades_consortium:
         nuc_muts = rules.ancestral.output.node_data,
         clades = "config/clades_consortium_{a_or_b}.tsv"
     output:
-        node_data = build_dir + "/{a_or_b}/{build_name}/clades_consortium.json"
+        node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/clades_consortium.json"
     log:
-        "logs/{a_or_b}/clades_{build_name}.txt"
+        "logs/{a_or_b}/clades_{build_name}_{resolution}.txt"
     shell:
         """
         augur clades --tree {input.tree} \

@@ -12,7 +12,7 @@ rule index_sequences:
     input:
         sequences = "data/{a_or_b}/sequences.fasta"
     output:
-        sequence_index = build_dir + "/{a_or_b}/{build_name}/sequence_index.tsv"
+        sequence_index = build_dir + "/{a_or_b}/{build_name}/{resolution}/sequence_index.tsv"
     shell:
         """
         augur index \
@@ -28,8 +28,8 @@ rule newreference:
     input:
         oldreference = "config/{a_or_b}reference.gbk"
     output:
-        newreferencegbk = build_dir + "/{a_or_b}/{build_name}/{gene}_reference.gbk",
-        newreferencefasta = build_dir + "/{a_or_b}/{build_name}/{gene}_reference.fasta",
+        newreferencegbk = build_dir + "/{a_or_b}/{build_name}/{resolution}/{gene}_reference.gbk",
+        newreferencefasta = build_dir + "/{a_or_b}/{build_name}/{resolution}/{gene}_reference.fasta",
     params:
         gene = lambda w: w.gene,
     shell:
@@ -41,7 +41,7 @@ rule newreference:
             --gene {params.gene}
         """
 
-rule filter:
+rule filter_recent:
     message:
         """
         filtering sequences
@@ -53,12 +53,14 @@ rule filter:
         sequence_index = rules.index_sequences.output,
         exclude = config['exclude']
     output:
-    	sequences = build_dir + "/{a_or_b}/{build_name}/filtered.fasta"
+    	sequences = build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered_recent.fasta"
     params:
         group_by = config["filter"]["group_by"],
         min_coverage = lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
+        min_length = lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
         subsample_max_sequences = lambda w: config["filter"]["subsample_max_sequences"].get(w.build_name, 1000),
         strain_id=config["strain_id_field"],
+        min_date=lambda w: config['filter']['resolutions'][w.resolution]["min_date"]
     shell:
         """
         augur filter \
@@ -67,11 +69,62 @@ rule filter:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' \
+            --exclude-where 'qc.overallStatus=bad' 'qc.overallStatus=mediocre' \
+            --min-date {params.min_date} \
+            --min-length {params.min_length} \
             --output {output.sequences} \
             --group-by {params.group_by} \
             --subsample-max-sequences {params.subsample_max_sequences} \
             --query '{params.min_coverage}'
+        """
+
+rule filter_background:
+    message:
+        """
+        filtering sequences
+        """
+    input:
+        sequences = "data/{a_or_b}/sequences.fasta",
+        reference = "config/{a_or_b}reference.gbk",
+        metadata = "data/{a_or_b}/metadata.tsv",
+        sequence_index = rules.index_sequences.output,
+        exclude = config['exclude']
+    output:
+    	sequences = build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered_background.fasta"
+    params:
+        group_by = config["filter"]["group_by"],
+        min_coverage = lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
+        min_length = lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
+        subsample_max_sequences = lambda w: int(config["filter"]["subsample_max_sequences"].get(w.build_name, 1000))//10,
+        strain_id=config["strain_id_field"],
+        max_date=lambda w: config['filter']['resolutions'][w.resolution]["min_date"],
+        min_date=lambda w: config['filter']['resolutions'][w.resolution]["background_min_date"]
+    shell:
+        """
+        augur filter \
+            --sequences {input.sequences} \
+            --sequence-index {input.sequence_index} \
+            --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
+            --exclude {input.exclude} \
+            --exclude-where 'qc.overallStatus=bad' 'qc.overallStatus=mediocre' \
+            --min-date {params.min_date} \
+            --max-date {params.max_date} \
+            --min-length {params.min_length} \
+            --output {output.sequences} \
+            --group-by {params.group_by} \
+            --subsample-max-sequences {params.subsample_max_sequences} \
+            --query '{params.min_coverage}'
+        """
+
+rule combine_samples:
+    input:
+        subsamples = lambda w: [rules.filter_recent.output.sequences, rules.filter_background.output.sequences] if 'background_min_date' in config['filter']['resolutions'][w.resolution] else [rules.filter_recent.output.sequences]
+    output:
+        sequences = build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered.fasta"
+    shell:
+        """
+        cat {input.subsamples} | seqkit rmdup > {output}
         """
 
 rule get_nextclade_dataset:
@@ -91,13 +144,13 @@ rule get_nextclade_dataset:
 rule genome_align:
     message:
         """
-        Aligning sequences to {input.reference}
+        Aligning sequences to the reference
         """
     input:
-        sequences = rules.filter.output.sequences,
-        reference = rule.get_nextclade_dataset.dataset
+        sequences = rules.combine_samples.output.sequences,
+        dataset = rules.get_nextclade_dataset.output.dataset
     output:
-        alignment = build_dir + "/{a_or_b}/{build_name}/sequences.aligned.fasta"
+        alignment = build_dir + "/{a_or_b}/{build_name}/{resolution}/sequences.aligned.fasta"
     threads: 4
     shell:
         """
@@ -113,7 +166,7 @@ rule cut:
         oldalignment = rules.genome_align.output.alignment,
         reference = "config/{a_or_b}reference.gbk"
     output:
-        slicedalignment = build_dir + "/{a_or_b}/{build_name}/{gene}_slicedalignment.fasta"
+        slicedalignment = build_dir + "/{a_or_b}/{build_name}/{resolution}/{gene}_slicedalignment.fasta"
     params:
         gene = lambda w: w.gene
     shell:
@@ -129,9 +182,9 @@ rule cut:
 rule realign:
     input:
         slicedalignment = rules.cut.output.slicedalignment,
-        reference = build_dir + "/{a_or_b}/{build_name}/{gene}_reference.fasta"
+        reference = build_dir + "/{a_or_b}/{build_name}/{resolution}/{gene}_reference.fasta"
     output:
-        realigned = build_dir + "/{a_or_b}/{build_name}/{gene}_aligned.fasta"
+        realigned = build_dir + "/{a_or_b}/{build_name}/{resolution}/{gene}_aligned.fasta"
     threads: 4
     shell:
         """
@@ -145,10 +198,10 @@ rule realign:
 rule hybrid_align:
     input:
         original = rules.genome_align.output.alignment,
-        G_alignment = build_dir + "/{a_or_b}/{build_name}/G_aligned.fasta",
+        G_alignment = build_dir + "/{a_or_b}/{build_name}/{resolution}/G_aligned.fasta",
         reference = "config/{a_or_b}reference.gbk"
     output:
-        hybrid_alignment = build_dir + "/{a_or_b}/{build_name}/hybrid_alignment.fasta"
+        hybrid_alignment = build_dir + "/{a_or_b}/{build_name}/{resolution}/hybrid_alignment.fasta"
     params:
         gene = lambda w: w.build_name
     shell:
@@ -165,20 +218,21 @@ def get_alignment(w):
     if w.build_name == "genome":
         return rules.hybrid_align.output.hybrid_alignment
     else:
-        return build_dir + f"/{w.a_or_b}/{w.build_name}/{w.build_name}_aligned.fasta"
+        return build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/{w.build_name}_aligned.fasta"
 
 rule tree:
     message: "Building tree"
     input:
         alignment = get_alignment
     output:
-        tree = build_dir + "/{a_or_b}/{build_name}/tree_raw.nwk"
+        tree = build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_raw.nwk"
     threads: 4
     shell:
         """
         augur tree \
             --alignment {input.alignment} \
             --output {output.tree} \
+            --tree-builder-args '-ninit 10 -n 4 -czb' \
             --nthreads {threads}
         """
 
@@ -193,10 +247,10 @@ rule refine:
     input:
         tree = rules.tree.output.tree,
         alignment =get_alignment,
-        metadata = rules.filter.input.metadata
+        metadata = "data/{a_or_b}/metadata.tsv"
     output:
-        tree = build_dir + "/{a_or_b}/{build_name}/tree.nwk",
-        node_data = build_dir + "/{a_or_b}/{build_name}/branch_lengths.json"
+        tree = build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.nwk",
+        node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/branch_lengths.json"
     params:
         coalescent = config["refine"]["coalescent"],
         clock_filter_iqd = config["refine"]["clock_filter_iqd"],
@@ -228,9 +282,9 @@ rule ancestral:
     input:
         tree = rules.refine.output.tree,
         alignment = get_alignment,
-        root_sequence = build_dir + "/{a_or_b}/{build_name}/{build_name}_reference.gbk"
+        root_sequence = build_dir + "/{a_or_b}/{build_name}/{resolution}/{build_name}_reference.gbk"
     output:
-        node_data = build_dir + "/{a_or_b}/{build_name}/nt_muts.json"
+        node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/nt_muts.json"
     params:
     	inference = config["ancestral"]["inference"]
     shell:
@@ -248,11 +302,11 @@ rule translate:
     input:
         tree = rules.refine.output.tree,
         node_data = rules.ancestral.output.node_data,
-        reference = build_dir + "/{a_or_b}/{build_name}/{build_name}_reference.gbk",
+        reference = build_dir + "/{a_or_b}/{build_name}/{resolution}/{build_name}_reference.gbk",
     output:
-        node_data = build_dir + "/{a_or_b}/{build_name}/aa_muts.json"
+        node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/aa_muts.json"
     params:
-    	alignment_file_mask = build_dir + "/{a_or_b}/{build_name}/aligned_%GENE.fasta"
+    	alignment_file_mask = build_dir + "/{a_or_b}/{build_name}/{resolution}/aligned_%GENE.fasta"
     shell:
         """
         augur translate \
@@ -266,11 +320,11 @@ rule translate:
 rule traits:
     input:
         tree = rules.refine.output.tree,
-        metadata = rules.filter.input.metadata
+        metadata = "data/{a_or_b}/metadata.tsv"
     output:
-        node_data = build_dir + "/{a_or_b}/{build_name}/traits.json"
+        node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/traits.json"
     log:
-        "logs/{a_or_b}/traits_{build_name}_rsv.txt"
+        "logs/{a_or_b}/traits_{build_name}_{resolution}_rsv.txt"
     params:
         columns = config["traits"]["columns"],
         strain_id=config["strain_id_field"],

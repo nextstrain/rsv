@@ -16,7 +16,7 @@ rule colors:
         color_orderings = "config/color_orderings.tsv",
         metadata = "data/{a_or_b}/metadata.tsv",
     output:
-        colors = "results/{a_or_b}/{build_name}/colors.tsv"
+        colors = "results/{a_or_b}/{build_name}/{resolution}/colors.tsv"
     shell:
         """
         python scripts/assign-colors.py \
@@ -30,13 +30,13 @@ rule export:
     message: "Exporting data files for auspice"
     input:
         tree = rules.refine.output.tree,
-        metadata = rules.filter.input.metadata,
+        metadata = "data/{a_or_b}/metadata.tsv",
         node_data = get_node_data,
         colors = rules.colors.output.colors,
         auspice_config = config["files"]["auspice_config"],
         description = config["description"]
     output:
-        auspice_json =  build_dir + "/{a_or_b}/{build_name}/tree.json"
+        auspice_json =  build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json"
     params:
         title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny",
         strain_id=config["strain_id_field"],
@@ -59,9 +59,9 @@ rule export:
 rule final_strain_name:
     input:
         auspice_json= rules.export.output.auspice_json,
-        metadata = rules.filter.input.metadata,
+        metadata = "data/{a_or_b}/metadata.tsv",
     output:
-        auspice_json=build_dir + "/{a_or_b}/{build_name}/tree_renamed.json"
+        auspice_json=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_renamed.json"
     params:
         strain_id=config["strain_id_field"],
         display_strain_field=config.get("display_strain_field", "strain"),
@@ -80,7 +80,7 @@ rule rename_and_ready_for_nextclade:
         auspice_json= rules.final_strain_name.output.auspice_json,
         pathogen_json= "nextclade/config/pathogen.json"
     output:
-        auspice_json= "auspice/rsv_{a_or_b}_{build_name}.json"
+        auspice_json= "auspice/rsv_{a_or_b}_{build_name}_{resolution}.json"
     params:
         accession= lambda w: config["nextclade_attributes"][w.a_or_b]["accession"],
         name= lambda w: config["nextclade_attributes"][w.a_or_b]["name"],
