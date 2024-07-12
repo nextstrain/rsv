@@ -69,7 +69,7 @@ rule filter_recent:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' 'qc.overallStatus=mediocre' \
+            --exclude-where 'qc.overallStatus=bad' \
             --min-date {params.min_date} \
             --min-length {params.min_length} \
             --output {output.sequences} \
