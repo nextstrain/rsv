@@ -2,7 +2,9 @@ conda_environment: "workflow/envs/nextstrain.yaml"
 
 genesforglycosylation: ["G", "F"]
 
-buildstorun: ["genome", "G", "F"]
+builds_to_run: ["genome", "G", "F"]
+
+resolutions_to_run: ["all-time", "6y", "3y"]
 
 exclude: "config/outliers.txt"
 
@@ -20,8 +22,22 @@ filter:
     G: 0.3
     F: 0.3
 
+  min_length:
+    genome: 10000
+    G: 600
+    F: 1200
+  resolutions:
+    all-time:
+      min_date: 100Y
+    6y:
+      min_date: 6Y
+      background_min_date: 100Y
+    3y:
+      min_date: 3Y
+      background_min_date: 100Y
+
   subsample_max_sequences:
-    genome: 2000
+    genome: 3000
     G: 3000
     F: 3000
 
