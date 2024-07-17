@@ -42,7 +42,7 @@ rule transform:
         all_geolocation_rules = "data/all-geolocation-rules.tsv",
         annotations = config['transform']['annotations'],
     output:
-        metadata = "data/metadata.tsv",
+        metadata = "data/curated_metadata.tsv",
         sequences = "data/sequences.fasta"
     log:
         "logs/transform.txt"
@@ -60,7 +60,6 @@ rule transform:
         authors_default_value = config['transform']['authors_default_value'],
         abbr_authors_field = config['transform']['abbr_authors_field'],
         annotations_id = config['transform']['annotations_id'],
-        metadata_columns = config['transform']['metadata_columns'],
         id_field = config['transform']['id_field'],
         sequence_field = config['transform']['sequence_field']
     shell:
@@ -90,10 +89,21 @@ rule transform:
             | augur curate apply-record-annotations \
                 --annotations {input.annotations} \
                 --id-field {params.annotations_id} \
-            | ./bin/ndjson-to-tsv-and-fasta \
-                --fasta {output.sequences} \
-                --metadata-columns {params.metadata_columns} \
-                --metadata {output.metadata} \
-                --id-field {params.id_field} \
-                --sequence-field {params.sequence_field} ) 2>> {log}
+                --output-fasta {output.sequences} \
+                --output-metadata {output.metadata} \
+                --output-id-field {params.id_field} \
+                --output-seq-field {params.sequence_field} ) 2>> {log}
+        """
+
+rule subset_metadata:
+    input:
+        metadata = "data/curated_metadata.tsv",
+    output:
+        subset_metadata="data/metadata.tsv",
+    params:
+        metadata_fields=",".join(config["transform"]["metadata_columns"]),
+    shell:
+        """
+        tsv-select -H -f {params.metadata_fields} \
+            {input.metadata} > {output.subset_metadata}
         """

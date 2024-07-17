@@ -27,7 +27,7 @@ rule sort:
 
 rule metadata:
     input:
-        metadata = rules.transform.output.metadata,
+        metadata = rules.subset_metadata.output.subset_metadata,
         sequences = "data/{type}/sequences.fasta"
     output:
         metadata = "data/{type}/metadata_raw.tsv"
