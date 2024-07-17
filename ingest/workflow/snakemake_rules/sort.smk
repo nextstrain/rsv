@@ -12,7 +12,7 @@ It produces output files as
 
 rule sort:
     input:
-        sequences = rules.transform.output.sequences
+        sequences = rules.curate.output.sequences
     output:
         "data/a/sequences.fasta",
         "data/b/sequences.fasta"
