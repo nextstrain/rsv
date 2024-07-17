@@ -52,6 +52,7 @@ rule transform:
         strain_backup_fields = config['transform']['strain_backup_fields'],
         date_fields = config['transform']['date_fields'],
         expected_date_formats = config['transform']['expected_date_formats'],
+        genbank_location_field=config["transform"]["genbank_location_field"],
         articles = config['transform']['titlecase']['articles'],
         abbreviations = config['transform']['titlecase']['abbreviations'],
         titlecase_fields = config['transform']['titlecase']['fields'],
@@ -65,27 +66,28 @@ rule transform:
     shell:
         """
         (cat {input.sequences_ndjson} \
-            | ./vendored/transform-field-names \
+            | augur curate rename \
                 --field-map {params.field_map} \
             | augur curate normalize-strings \
-            | ./vendored/transform-strain-names \
+            | augur curate transform-strain-name \
                 --strain-regex {params.strain_regex} \
                 --backup-fields {params.strain_backup_fields} \
             | augur curate format-dates \
                 --date-fields {params.date_fields} \
                 --expected-date-formats {params.expected_date_formats} \
-            | ./vendored/transform-genbank-location \
+            | augur curate parse-genbank-location \
+                --location-field {params.genbank_location_field} \
             | augur curate titlecase \
                 --titlecase-fields {params.titlecase_fields} \
                 --articles {params.articles} \
                 --abbreviations {params.abbreviations} \
-            | ./vendored/transform-authors \
+            | augur curate abbreviate-authors \
                 --authors-field {params.authors_field} \
                 --default-value {params.authors_default_value} \
                 --abbr-authors-field {params.abbr_authors_field} \
-            | ./vendored/apply-geolocation-rules \
+            | augur curate apply-geolocation-rules \
                 --geolocation-rules {input.all_geolocation_rules} \
-            | ./vendored/merge-user-metadata \
+            | augur curate apply-record-annotations \
                 --annotations {input.annotations} \
                 --id-field {params.annotations_id} \
             | ./bin/ndjson-to-tsv-and-fasta \
