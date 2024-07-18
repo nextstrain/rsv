@@ -7,8 +7,8 @@ ncbi_taxon_id:
   b: "208895"
   general: "11250"
 
-# Params for the transform rulegeneral
-transform:
+# Params for the curate rule
+curate:
   # Fields to rename.
   # This is the first step in the pipeline, so any references to field names
   # in the configs below should use the new field names
@@ -24,6 +24,8 @@ transform:
   # These date formats should use directives expected by datetime
   # See https://docs.python.org/3.9/library/datetime.html#strftime-and-strptime-format-codes
   expected_date_formats: ['%Y', '%Y-%m', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ']
+  # The expected field that contains the GenBank geo_loc_name
+  genbank_location_field: location
   # Titlecase rules
   titlecase:
     # Abbreviations not cast to titlecase, keeps uppercase
@@ -68,7 +70,6 @@ transform:
     'date_submitted',
     'sra_accession',
     'abbr_authors',
-    'reverse',
     'authors',
-    'institution'
+    'institution',
   ]
