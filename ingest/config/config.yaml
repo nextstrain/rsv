@@ -7,7 +7,7 @@ ncbi_taxon_id:
   b: "208895"
   general: "11250"
 
-# Params for the transform rulegeneral
+# Params for the curate rule
 curate:
   # Fields to rename.
   # This is the first step in the pipeline, so any references to field names
