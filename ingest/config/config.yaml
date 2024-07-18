@@ -71,4 +71,5 @@ curate:
     'sra_accession',
     'abbr_authors',
     'authors',
+    'institution',
   ]
