@@ -41,7 +41,8 @@
     }  ],
   "geo_resolutions": [
     "country",
-    "region"
+    "region",
+    "division"
   ],
   "panels": [
      "tree",
@@ -56,6 +57,8 @@
   "filters": [
     "country",
     "region",
+    "division", 
+    "location",
     "clade_membership"
   ]
 }
