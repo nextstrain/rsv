@@ -69,9 +69,61 @@ rule filter:
             --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
             --exclude-where 'qc.overallStatus=bad' \
-            --query "{params.min_coverage} & division == 'Washington'" \
             --output {output.sequences} \
-            
+            --group-by {params.group_by} \
+            --subsample-max-sequences {params.subsample_max_sequences} \
+        """
+
+# 1. Sample 100 sequences from Washington state
+# 2. Sample 50 sequences from the rest of the United States
+rule intermediate_sample:
+    input:
+        metadata = "data/{a_or_b}/metadata.tsv",
+        exclude = config['exclude']
+    output:
+        strains = "results/sample_strains_{a_or_b}/{build_name}.txt",
+    params:
+        augur_filter_args = lambda wildcards: config.get("subsampling", {}).get(wildcards.sample_name, ""),
+        strain_id=config["strain_id_field"],
+        group_by = config["filter"]["group_by"],
+    shell:
+        """
+        augur filter \
+            --metadata {input.metadata} \
+            {params.augur_filter_args} \
+            --metadata-id-columns {params.strain_id} \
+            --exclude {input.exclude} \
+            --exclude-where 'qc.overallStatus=bad' \
+            --group-by {params.group_by} \
+            --output-strains {output.strains}
+        """
+
+# 3. Combine using augur filter
+rule combine_intermediate_samples:
+    input:
+        sequences = "data/{a_or_b}/sequences.fasta",
+        metadata = "data/{a_or_b}/metadata.tsv",
+        sequence_index = rules.index_sequences.output,
+#       intermediate_sample_strains = expand("results/sample_strains_{sample_name}.txt", sample_name=list(config.get("subsampling", {}).keys()))
+        intermediate_sample_strains = expand("results/sample_strains_{sample_name}/{build_name}.txt",sample_name=list(config.get("subsampling", {}).keys()), build_name=("F", "G", "Genome"))
+    output:
+         strains = "results/sample_strains_{a_or_b}.txt",
+#        sequences = build_dir + "/{a_or_b}/{build_name}/filtered.fasta",
+ #       metadata = "results/subsampled_metadata.tsv",
+    params:
+        augur_filter_args = lambda wildcards: config.get("subsampling", {}).get(wildcards.sample_name, ""),
+        strain_id=config["strain_id_field"],
+    shell:
+        """
+        augur filter \
+            --sequences {input.sequences} \
+            --sequence-index {input.sequence_index} \
+            --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
+            --exclude-all \
+            --include {input.intermediate_sample_strains} \
+            --output-sequences {output.sequences} \
+            --output-metadata {output.metadata}
         """
 
 rule genome_align:
@@ -80,7 +132,7 @@ rule genome_align:
         Aligning sequences to {input.reference}
         """
     input:
-        sequences = rules.filter.output.sequences,
+        sequences = "results/sample_strains_{a_or_b}.txt", # = rules.filter.output.sequences,
         reference = build_dir + "/{a_or_b}/{build_name}/genome_reference.fasta"
     output:
         alignment = build_dir + "/{a_or_b}/{build_name}/sequences.aligned.fasta"
@@ -179,7 +231,7 @@ rule refine:
     input:
         tree = rules.tree.output.tree,
         alignment =get_alignment,
-        metadata = rules.filter.input.metadata
+        metadata = "data/{a_or_b}/metadata.tsv" #rules.filter.input.metadata
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree.nwk",
         node_data = build_dir + "/{a_or_b}/{build_name}/branch_lengths.json"
@@ -249,7 +301,7 @@ rule translate:
 rule traits:
     input:
         tree = rules.refine.output.tree,
-        metadata = rules.filter.input.metadata
+        metadata = "data/{a_or_b}/metadata.tsv" #rules.filter.input.metadata
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/traits.json"
     log:

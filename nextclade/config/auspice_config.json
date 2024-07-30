@@ -45,8 +45,6 @@
   "filters": [
     "region",
     "country",
-    "division",
-    "location",
     "clade_membership",
     "G_clade"
   ],

@@ -71,7 +71,6 @@ rule filter:
             --exclude-where 'qc.overallStatus=bad' \
             --query "{params.min_coverage} & division == 'Washington'" \
             --output {output.sequences} \
-            
         """
 
 rule genome_align:

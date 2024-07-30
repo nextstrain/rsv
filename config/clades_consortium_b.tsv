@@ -1,0 +1,58 @@
+clade	gene	site	alt
+B	F	103	A
+B	L	1742	T
+B	L	2162	L
+B.1	clade	B	
+B.1	F	103	V
+B.1	F	312	H
+B.1	N	125	A
+B.2	clade	B	
+B.2	L	1742	M
+B.2	G	118	T
+B.3	clade	B	
+B.3	L	2162	I
+B.3	G	77	S
+B.4	clade	B	
+B.4	NS1	105	I
+B.4	G	116	T
+B.D	clade	B	
+B.D	G	252	T
+B.D	G	32	K
+B.D	L	374	D
+B.D.1	clade	B.D	
+B.D.1	NS2	82	S
+B.D.1	M	89	I
+B.D.1	L	1593	S
+B.D.1.1	clade	B.D.1	
+B.D.1.1	F	19	T
+B.D.2	clade	B.D	
+B.D.2	N	97	V
+B.D.2	P	145	V
+B.D.2	F	23	A
+B.D.3	clade	B.D	
+B.D.3	F	123	G
+B.D.3	F	124	S
+B.D.4	clade	B.D	
+B.D.4	F	172	Q
+B.D.4	F	103	V
+B.D.4.1	clade	B.D.4	
+B.D.4.1	F	173	L
+B.D.4.1	L	715	V
+B.D.4.1	G	252	I
+B.D.4.1.1	clade	B.D.4.1	
+B.D.4.1.1	F	191	R
+B.D.4.1.1	F	206	M
+B.D.4.1.1	F	209	R
+B.D.E.1	clade	B.D.4.1.1	
+B.D.E.1	F	190	N
+B.D.E.1	F	389	P
+B.D.E.1	G	252	T
+B.D.E.2	clade	B.D.4.1.1	
+B.D.E.2	G	176	S
+B.D.E.2	nuc	808	C
+B.D.E.3	clade	B.D.4.1.1	
+B.D.E.3	F	19	V
+B.D.E.3	F	526	V
+B.D.E.4	clade	B.D.4.1.1	
+B.D.E.4	P	61	T
+B.D.E.4	L	164	M

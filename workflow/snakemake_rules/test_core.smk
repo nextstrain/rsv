@@ -69,9 +69,32 @@ rule filter:
             --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
             --exclude-where 'qc.overallStatus=bad' \
-            --query "{params.min_coverage} & division == 'Washington'" \
-            --output {output.sequences} \
+            --output sample_strains_state.txt \
+            --group-by {params.group_by} \
+            --subsample-max-sequences 500 \
+            --query "{params.min_coverage} & division == 'Washington'"
             
+        augur filter \
+            --sequences {input.sequences} \
+            --sequence-index {input.sequence_index} \
+            --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
+            --exclude {input.exclude} \
+            --exclude-where 'qc.overallStatus=bad' \
+            --output sample_strains_country.txt \
+            --group-by {params.group_by} \
+            --subsample-max-sequences {params.subsample_max_sequences} \
+            --query "{params.min_coverage} & division != 'Washington'"
+            
+        augur filter \
+            --sequences {input.sequences} \
+            --sequence-index {input.sequence_index} \
+            --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
+            --exclude-all \
+            --include sample_strains_state.txt \
+                      sample_strains_country.txt \
+            --output {output.sequences} \
         """
 
 rule genome_align:

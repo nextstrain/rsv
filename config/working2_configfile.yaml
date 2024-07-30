@@ -24,9 +24,6 @@ filter:
     genome: 2000
     G: 3000
     F: 3000
-subsampling:
-  state: --query "state == 'WA'" --subsample-max-sequences 5000
-  country: --query "state != 'WA'" --subsample-max-sequences 5000
 
 files:
   color_schemes: "config/colors.tsv"
