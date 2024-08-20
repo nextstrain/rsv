@@ -3,6 +3,7 @@ conda_environment: "workflow/envs/nextstrain.yaml"
 genesforglycosylation: ["G", "F"]
 
 buildstorun: ["genome", "G", "F"]
+#buildstorun: ["genome"]
 
 exclude: "config/outliers.txt"
 
@@ -24,9 +25,14 @@ filter:
     genome: 2000
     G: 3000
     F: 3000
+    
 subsampling:
-  state: --query "state == 'WA'" --subsample-max-sequences 5000
-  country: --query "state != 'WA'" --subsample-max-sequences 5000
+  state: --query "division == 'Washington'" --subsample-max-sequences 500 
+  # "min_coverage = lambda w: f'{w.build_name}_coverage > 0.3'"
+  country: --query "division != 'Washington'" "{w.build_name}_coverage > 0.3" --subsample-max-sequences 200
+   #country: --query "division != 'Washington'" "min_coverage = lambda w: f'{w.build_name}_coverage > 0.3'" --subsample-max-sequences 200
+  #country: --query "min_coverage = lambda w: f'{w.build_name}_coverage<{config["filter"]["min_coverage"].get(w.build_name, 0.3)}"  --subsample-max-sequences 200
+  # "min_coverage = lambda w: f'{w.build_name}_coverage<{config["filter"]["min_coverage"].get(w.build_name, 0.3)}'"
 
 files:
   color_schemes: "config/colors.tsv"

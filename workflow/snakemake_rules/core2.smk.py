@@ -12,6 +12,7 @@ rule index_sequences:
     input:
         sequences = "data/{a_or_b}/sequences.fasta"
     output:
+#        sequence_index = build_dir + "/{a_or_b}/{build_name}/sequence_index.tsv"
         sequence_index = build_dir + "/{a_or_b}/{build_name}/sequence_index.tsv"
     shell:
         """
@@ -30,6 +31,8 @@ rule newreference:
     output:
         newreferencegbk = build_dir + "/{a_or_b}/{build_name}/{gene}_reference.gbk",
         newreferencefasta = build_dir + "/{a_or_b}/{build_name}/{gene}_reference.fasta",
+        # newreferencegbk = build_dir + "/{a_or_b}/{gene}_reference.gbk",
+        # newreferencefasta = build_dir + "/{a_or_b}/{gene}_reference.fasta",
     params:
         gene = lambda w: w.gene,
     shell:
@@ -41,78 +44,24 @@ rule newreference:
             --gene {params.gene}
         """
 
-# 
-# rule filter:
-#     message:
-#         """
-#         filtering sequences
-#         """
-#     input:
-#         sequences = "data/{a_or_b}/sequences.fasta",
-#         reference = "config/{a_or_b}reference.gbk",
-#         metadata = "data/{a_or_b}/metadata.tsv",
-#         sequence_index = rules.index_sequences.output,
-#         exclude = config['exclude']
-#     output:
-#     	sequences = build_dir + "/{a_or_b}/{build_name}/filtered.fasta"
-#     params:
-#         group_by = config["filter"]["group_by"],
-#         min_coverage = lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
-#         subsample_max_sequences = lambda w: config["filter"]["subsample_max_sequences"].get(w.build_name, 1000),
-#         strain_id=config["strain_id_field"],
-#     shell:
-#         """
-#         augur filter \
-#             --sequences {input.sequences} \
-#             --sequence-index {input.sequence_index} \
-#             --metadata {input.metadata} \
-#             --metadata-id-columns {params.strain_id} \
-#             --exclude {input.exclude} \
-#             --exclude-where 'qc.overallStatus=bad' \
-#             --output {output.sequences} \
-#             --group-by {params.group_by} \
-#             --subsample-max-sequences {params.subsample_max_sequences} \
-#         """
 
-# 1. Sample 100 sequences from Washington state
-# 2. Sample 50 sequences from the rest of the United States
-rule intermediate_sample:
-    input:
-        metadata = "data/{a_or_b}/metadata.tsv",
-        exclude = config['exclude']
-    output:
-        strains = "results/{a_or_b}/{build_name}/sample_strains_{sample_name}.txt",
-    params:
-        augur_filter_args = lambda wildcards: config.get("subsampling", {}).get(wildcards.sample_name, ""),
-#        min_coverage = lambda w: f'{w.build_name}_coverage<{config["filter"]["min_coverage"].get(w.build_name, 0.3)}',
-        strain_id=config["strain_id_field"],
-        group_by = config["filter"]["group_by"],
-    shell:
+rule filter:
+    message:
         """
-        augur filter \
-            --metadata {input.metadata} \
-            {params.augur_filter_args} \
-            --metadata-id-columns {params.strain_id} \
-            --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' \
-            --group-by {params.group_by} \
-            --output-strains {output.strains}
+        filtering sequences
         """
-
-# 3. Combine using augur filter
-rule combine_intermediate_samples:
     input:
         sequences = "data/{a_or_b}/sequences.fasta",
+        reference = "config/{a_or_b}reference.gbk",
         metadata = "data/{a_or_b}/metadata.tsv",
         sequence_index = rules.index_sequences.output,
-        # intermediate_sample_strains = rules.intermediate_sample.output.strains
-        intermediate_sample_strains = expand("results/{a_or_b}/{build_name}/sample_strains_{sample_name}.txt", sample_name=list(config.get("subsampling", {}).keys()), a_or_b="{a_or_b}", build_name="{build_name}")
-        # intermediate_sample_strains = expand("results/sample_strains_{sample_name}/{build_name}.txt",sample_name=list(config.get("subsampling", {}).keys()), build_name=("F", "G", "Genome"))
+        exclude = config['exclude']
     output:
-#         strains = "results/sample_strains_{a_or_b}.txt",
-        sequences = build_dir + "/{a_or_b}/{build_name}/filtered.fasta",
-#        metadata = "results/subsampled_metadata.tsv",
+    	sequences = build_dir + "/{a_or_b}/{build_name}/filtered.fasta"
     params:
+        group_by = config["filter"]["group_by"],
+        min_coverage = lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
+        subsample_max_sequences = lambda w: config["filter"]["subsample_max_sequences"].get(w.build_name, 1000),
         strain_id=config["strain_id_field"],
     shell:
         """
@@ -121,46 +70,28 @@ rule combine_intermediate_samples:
             --sequence-index {input.sequence_index} \
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
-            --exclude-all \
-            --include {input.intermediate_sample_strains} \
+            --exclude {input.exclude} \
+            --exclude-where 'qc.overallStatus=bad' \
+            --query "{params.min_coverage} & division == 'Washington'" \
             --output {output.sequences} \
- 
+            
         """
- #             --output-sequences {output.sequences} \ 
- #             --output-metadata {output.metadata}
- 
-rule get_nextclade_dataset:
-    message:
-        """
-        fetching nextclade dataset
-        """
-    output:
-        dataset="nextclade_rsv-{a_or_b}.zip"
-    params:
-        ds_name = lambda w: "nextstrain/rsv/a/EPI_ISL_412866" if w.a_or_b=='a' else "nextstrain/rsv/b/EPI_ISL_1653999"
-    shell:
-        """
-        nextclade3 dataset get -n {params.ds_name} --output-zip {output.dataset}
-        """
- 
- 
+
 rule genome_align:
     message:
         """
-        Aligning sequences to the reference
+        Aligning sequences to {input.reference}
         """
     input:
-        # sequences = "results/sample_strains_{a_or_b}.txt", # = rules.filter.output.sequences,
-        #reference = build_dir + "/{a_or_b}/{build_name}/reference.fasta",
-        sequences = rules.combine_intermediate_samples.output.sequences,
-        dataset = rules.get_nextclade_dataset.output.dataset
+        sequences = rules.filter.output.sequences,
+        reference = build_dir + "/{a_or_b}/{build_name}/genome_reference.fasta"
     output:
         alignment = build_dir + "/{a_or_b}/{build_name}/sequences.aligned.fasta"
     threads: 4
     shell:
         """
         nextclade3 run -j {threads}\
-            -D {input.dataset} \
+            --input-ref {input.reference} \
             --output-fasta {output.alignment} \
             {input.sequences}
         """
@@ -251,7 +182,7 @@ rule refine:
     input:
         tree = rules.tree.output.tree,
         alignment =get_alignment,
-        metadata = "data/{a_or_b}/metadata.tsv" #rules.filter.input.metadata
+        metadata = rules.filter.input.metadata
     output:
         tree = build_dir + "/{a_or_b}/{build_name}/tree.nwk",
         node_data = build_dir + "/{a_or_b}/{build_name}/branch_lengths.json"
@@ -321,7 +252,7 @@ rule translate:
 rule traits:
     input:
         tree = rules.refine.output.tree,
-        metadata = "data/{a_or_b}/metadata.tsv" #rules.filter.input.metadata
+        metadata = rules.filter.input.metadata
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/traits.json"
     log:
