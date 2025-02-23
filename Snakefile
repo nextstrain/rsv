@@ -43,4 +43,5 @@ rule clobber:
     shell:
         """
         rm -rf {params.targets}
+        rm config/clades*tsv
         """
