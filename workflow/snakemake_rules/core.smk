@@ -346,7 +346,7 @@ rule frequencies:
     output:
         frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     params:
-        min_date_arg = lambda w: f"--min-date {config['filter']['resolutions'][w.resolution]["min_date"]}" if w.resolution in config["filter"].get('resolutions', {}) else "",
+        min_date_arg = lambda w: f"--min-date {config['filter']['resolutions'][w.resolution]['min_date']}" if w.resolution in config["filter"].get('resolutions', {}) else "",
     shell:
         """
         augur frequencies \
