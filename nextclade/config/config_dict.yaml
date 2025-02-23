@@ -13,7 +13,7 @@ builds:
         reference_accession: EPI_ISL_412866
     clade_systems:
       consortium:
-        url: "https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineage.tsv"
+        url: "https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineages.tsv"
       G:
         url: "https://raw.githubusercontent.com/nextstrain/rsv/master/config/clades_G_a.tsv"
         key: G_clade
@@ -28,7 +28,7 @@ builds:
         reference_accession: EPI_ISL_1653999
     clade_systems:
       consortium:
-        url: https://raw.githubusercontent.com/rsv-lineages/lineage-designation-B/main/.auto-generated/lineage.tsv
+        url: https://raw.githubusercontent.com/rsv-lineages/lineage-designation-B/main/.auto-generated/lineages.tsv
       G:
         key: G_clade
         label_key: G_clade

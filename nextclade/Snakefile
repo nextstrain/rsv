@@ -418,6 +418,7 @@ rule clean_all:
         rm -rf build
         rm -rf auspice
         rm -rf datasets
-        rm -rf data/
+        rm -rf data
+        rm -rf .snakemake
         """
 
