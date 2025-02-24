@@ -28,13 +28,13 @@ filter:
     F: 1200
   resolutions:
     all-time:
-      min_date: 100Y
+      min_date: 1975-01-01
     6y:
       min_date: 6Y
-      background_min_date: 100Y
+      background_min_date: 1975-01-01
     3y:
       min_date: 3Y
-      background_min_date: 100Y
+      background_min_date: 1975-01-01
 
   subsample_max_sequences:
     genome: 3000
