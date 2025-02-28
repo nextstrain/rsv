@@ -22,16 +22,6 @@
       "type": "categorical"
     },
     {
-      "key": "G_clade",
-      "title": "G Clades (Goya et al)",
-      "type": "categorical"
-    },
-    {
-      "key": "genome_clade",
-      "title": "Genome Clades (Ramaekers et al)",
-      "type": "categorical"
-    },
-    {
       "key": "date",
       "title": "Sample Date",
       "type": "ordinal"
@@ -56,15 +46,7 @@
   "panels": ["tree","entropy"],
   "extensions": {
     "nextclade": {
-      "clade_node_attrs": [
-        {
-          "name": "G_clade",
-          "displayName": "G_clade (Goya et al)",
-          "description": "Clades based on the G gene by Goya et al, IRV, 2019.",
-          "hideInWeb": false,
-          "skipAsReference": true
-        }
-      ]
+      "clade_node_attrs": []
     }
   }
 }

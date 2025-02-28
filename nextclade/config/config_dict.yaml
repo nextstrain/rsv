@@ -14,10 +14,6 @@ builds:
     clade_systems:
       consortium:
         url: "https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineages.tsv"
-      G:
-        url: "https://raw.githubusercontent.com/nextstrain/rsv/master/config/clades_G_a.tsv"
-        key: G_clade
-        label_key: G_clade
 
   b:
     refs:
@@ -29,7 +25,3 @@ builds:
     clade_systems:
       consortium:
         url: https://raw.githubusercontent.com/rsv-lineages/lineage-designation-B/main/.auto-generated/lineages.tsv
-      G:
-        key: G_clade
-        label_key: G_clade
-        url: "https://raw.githubusercontent.com/nextstrain/rsv/master/config/clades_G_b.tsv"

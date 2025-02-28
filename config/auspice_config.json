@@ -1,9 +1,8 @@
 {
   "title": "Genomic epidemiology of RSV",
   "maintainers": [
-    {"name": "Laura Urbanska", "url": "http://nextstrain.org"},
+    {"name": "Nextstrain team", "url": "http://nextstrain.org"},
     {"name": "Richard Neher", "url": "http://nextstrain.org"}
-
   ],
   "data_provenance": [
     {
