@@ -42,7 +42,6 @@ filter:
     F: 3000
 
 files:
-  color_schemes: "config/colors.tsv"
   auspice_config: "config/auspice_config.json"
 
 refine:
