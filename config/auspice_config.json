@@ -1,9 +1,14 @@
 {
   "title": "Genomic epidemiology of RSV",
   "maintainers": [
-    {"name": "Laura Urbanska", "url": "http://nextstrain.org"},
-    {"name": "Richard Neher", "url": "http://nextstrain.org"}
-
+    {
+      "name": "Laura Urbanska",
+      "url": "http://nextstrain.org"
+    },
+    {
+      "name": "Richard Neher",
+      "url": "http://nextstrain.org"
+    }
   ],
   "data_provenance": [
     {
@@ -12,7 +17,6 @@
     }
   ],
   "build_url": "https://github.com/nextstrain/rsv",
-
   "colorings": [
     {
       "key": "gt",
@@ -38,21 +42,67 @@
       "key": "glyc",
       "title": "Glycosylation",
       "type": "ordinal"
-    }  ],
+    },
+    {
+      "key": "epi_00",
+      "title": "Epitope 0",
+      "type": "continuous"
+    },
+    {
+      "key": "epi_01",
+      "title": "Epitope 1",
+      "type": "continuous"
+    },
+    {
+      "key": "epi_02",
+      "title": "Epitope 2",
+      "type": "continuous"
+    },
+    {
+      "key": "epi_03",
+      "title": "Epitope 3",
+      "type": "continuous"
+    },
+    {
+      "key": "epi_04",
+      "title": "Epitope 4",
+      "type": "continuous"
+    },
+    {
+      "key": "epi_05",
+      "title": "Epitope 5",
+      "type": "continuous"
+    },
+    {
+      "key": "epi_all",
+      "title": "All Epitopes",
+      "type": "continuous"
+    },
+    {
+      "key": "surface_residues_postf",
+      "title": "Postfusion Surface Residues",
+      "type": "continuous"
+    },
+    {
+      "key": "surface_residues_pref",
+      "title": "Prefusion Surface Residues",
+      "type": "continuous"
+    }
+  ],
   "geo_resolutions": [
     "country",
     "region"
   ],
   "panels": [
-     "tree",
-     "map",
-     "entropy"
+    "tree",
+    "map",
+    "entropy"
   ],
   "display_defaults": {
     "map_triplicate": true,
-    "color_by" : "clade_membership",
+    "color_by": "clade_membership",
     "transmission_lines": false
-    },
+  },
   "filters": [
     "country",
     "region",
