@@ -15,13 +15,14 @@ distance_map_config = pd.read_table("config/distance_maps.tsv")
 
 rule all:
     input:
-        expand(
-            "auspice/rsv_{subtype}_{build}_{resolution}.json",
-            subtype=config.get("subtypes", ["a"]),
-            build=config.get("builds_to_run", ["genome"]),
-            resolution=config.get("resolutions_to_run", ["all-time"]),
-        ),
-
+        expand("auspice/rsv_{subtype}_{build}_{resolution}.json",
+               subtype = config.get("subtypes",['a']),
+               build = config.get("builds_to_run", ['genome']),
+               resolution = config.get("resolutions_to_run", ["all-time"])),
+        expand("auspice/rsv_{subtype}_{build}_{resolution}_tip-frequencies.json",
+               subtype = config.get("subtypes",['a']),
+               build = config.get("builds_to_run", ['genome']),
+               resolution = config.get("resolutions_to_run", ["all-time"])),
 
 include: "workflow/snakemake_rules/chores.smk"
 
@@ -53,4 +54,5 @@ rule clobber:
     shell:
         """
         rm -rf {params.targets}
+        rm config/clades*tsv
         """
