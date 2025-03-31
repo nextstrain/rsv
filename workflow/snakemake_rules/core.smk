@@ -78,13 +78,13 @@ rule filter_recent:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' 'totalMissing>500' \
+            --exclude-where 'qc.overallStatus=bad' \
             --min-date {params.min_date} \
             --min-length {params.min_length} \
             --output {output.sequences} \
             --group-by {params.group_by} \
             --subsample-max-sequences {params.subsample_max_sequences} \
-            --query '{params.min_coverage}'
+            --query '({params.min_coverage}) & missing_data<1000'
         """
 
 
@@ -123,14 +123,14 @@ rule filter_background:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' 'qc.overallStatus=mediocre' 'totalMissing>500' \
+            --exclude-where 'qc.overallStatus=bad' 'qc.overallStatus=mediocre'\
             --min-date {params.min_date} \
             --max-date {params.max_date} \
             --min-length {params.min_length} \
             --output {output.sequences} \
             --group-by {params.group_by} \
             --subsample-max-sequences {params.subsample_max_sequences} \
-            --query '{params.min_coverage}'
+            --query '({params.min_coverage}) & missing_data<1000'
         """
 
 
@@ -348,7 +348,7 @@ def _get_distance_maps_by_lineage_and_segment(wildcards):
     distance_config = _get_build_distance_map_config(wildcards)
     if wildcards.build_name != "G":
         return [
-            "config/distance_maps/{wildcards.build_name}/{distance_map}.json".format(wildcards=wildcards, distance_map=distance_map) 
+            "config/distance_maps/{wildcards.build_name}/{distance_map}.json".format(wildcards=wildcards, distance_map=distance_map)
             for distance_map in distance_config.loc[:, "distance_map"].values
         ]
     else:
