@@ -180,11 +180,8 @@ rule genome_align:
         sequences=rules.combine_samples.output.sequences,
         dataset=rules.get_nextclade_dataset.output.dataset,
     output:
-        alignment=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/sequences.aligned.fasta",
-        translations=directory(
-            build_dir + "/{a_or_b}/{build_name}/{resolution}/translations"
-        ),
+        alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/sequences.aligned.fasta",
+        translations=directory(build_dir + "/{a_or_b}/{build_name}/{resolution}/translations"),
     params:
         genes=lambda w: config["cds"][w.build_name],
     threads: 4
@@ -337,7 +334,6 @@ def _get_build_distance_map_config(wildcards):
     else:
         return None
 
-
 def _get_distance_comparisons_by_lineage_and_segment(wildcards):
     config = _get_build_distance_map_config(wildcards)
     return " ".join(config.loc[:, "compare_to"].values)
@@ -350,24 +346,25 @@ def _get_distance_attributes_by_lineage_and_segment(wildcards):
 
 def _get_distance_maps_by_lineage_and_segment(wildcards):
     distance_config = _get_build_distance_map_config(wildcards)
-    return [
-        "config/distance_maps/{wildcards.build_name}/{distance_map}.json".format(wildcards=wildcards, distance_map=distance_map) for distance_map in distance_config.loc[:, "distance_map"].values
-    ]
+    if wildcards.build_name != "G":
+        return [
+            "config/distance_maps/{wildcards.build_name}/{distance_map}.json".format(wildcards=wildcards, distance_map=distance_map) 
+            for distance_map in distance_config.loc[:, "distance_map"].values
+        ]
+    else:
+        return ""
 
 
 rule distances:
     input:
         tree=rules.refine.output.tree,
-        distance_maps=_get_distance_maps_by_lineage_and_segment,
+        distance_maps = _get_distance_maps_by_lineage_and_segment,
         translations_done=build_dir + "/{a_or_b}/{build_name}/{resolution}/translations.done",
     output:
-        distances=build_dir + "/{a_or_b}/{build_name}/{resolution}/distances.json",
+        distances= build_dir + "/{a_or_b}/{build_name}/{resolution}/distances.json"
     params:
         genes=lambda w: config["cds"][w.build_name],
-        alignments=lambda w: [
-            f"{build_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/{gene}_withInternalNodes.fasta"
-            for gene in config["cds"][w.build_name]
-        ],
+        alignments=lambda w: [f"{build_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/{gene}_withInternalNodes.fasta" for gene in config["cds"][w.build_name]],
         comparisons=_get_distance_comparisons_by_lineage_and_segment,
         attribute_names=_get_distance_attributes_by_lineage_and_segment,
     resources:
@@ -385,7 +382,6 @@ rule distances:
             --output {output.distances} 2>&1 | tee {log}
         """
 
-
 rule ancestral:
     message:
         """
@@ -396,19 +392,15 @@ rule ancestral:
         tree=rules.refine.output.tree,
         alignment=get_alignment,
         translations=rules.genome_align.output.translations,
-        root_sequence=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/{build_name}_reference.gbk",
+        root_sequence=build_dir + "/{a_or_b}/{build_name}/{resolution}/{build_name}_reference.gbk",
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/nt_muts.json",
-        translations_done=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/translations.done",
+        translations_done=build_dir + "/{a_or_b}/{build_name}/{resolution}/translations.done",
     params:
         inference=config["ancestral"]["inference"],
         genes=lambda w: config["cds"][w.build_name],
-        output_translations=lambda w: build_dir
-        + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE_withInternalNodes.fasta",
-        input_translations=lambda w: build_dir
-        + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE.fasta",
+        output_translations=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE_withInternalNodes.fasta",
+        input_translations=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE.fasta",
     log:
         "logs/ancestral_{a_or_b}_{build_name}_{resolution}.txt",
     shell:
@@ -432,13 +424,11 @@ rule translate:
     input:
         tree=rules.refine.output.tree,
         node_data=rules.ancestral.output.node_data,
-        reference=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/{build_name}_reference.gbk",
+        reference=build_dir + "/{a_or_b}/{build_name}/{resolution}/{build_name}_reference.gbk",
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/aa_muts.json",
     params:
-        alignment_file_mask=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/aligned_%GENE.fasta",
+        alignment_file_mask=build_dir + "/{a_or_b}/{build_name}/{resolution}/aligned_%GENE.fasta",
     shell:
         """
         augur translate \

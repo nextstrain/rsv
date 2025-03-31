@@ -23,7 +23,7 @@ rule all:
         ),
 
 
-# include: "workflow/snakemake_rules/chores.smk"
+include: "workflow/snakemake_rules/chores.smk"
 
 
 include: "workflow/snakemake_rules/core.smk"
