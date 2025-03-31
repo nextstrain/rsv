@@ -78,7 +78,7 @@ rule filter_recent:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' \
+            --exclude-where 'qc.overallStatus=bad' 'totalMissing>500' \
             --min-date {params.min_date} \
             --min-length {params.min_length} \
             --output {output.sequences} \
@@ -123,7 +123,7 @@ rule filter_background:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' 'qc.overallStatus=mediocre' \
+            --exclude-where 'qc.overallStatus=bad' 'qc.overallStatus=mediocre' 'totalMissing>500' \
             --min-date {params.min_date} \
             --max-date {params.max_date} \
             --min-length {params.min_length} \
