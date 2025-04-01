@@ -39,48 +39,48 @@
     },
     {
       "key": "epi_00",
-      "title": "Epitope 0",
-      "type": "continuous"
+      "title": "F Protein Epitope 0",
+      "type": "ordinal"
     },
     {
       "key": "epi_01",
-      "title": "Epitope 1",
-      "type": "continuous"
+      "title": "F Protein Epitope 1",
+      "type": "ordinal"
     },
     {
       "key": "epi_02",
-      "title": "Epitope 2",
-      "type": "continuous"
+      "title": "F Protein Epitope 2",
+      "type": "ordinal"
     },
     {
       "key": "epi_03",
-      "title": "Epitope 3",
-      "type": "continuous"
+      "title": "F Protein Epitope 3",
+      "type": "ordinal"
     },
     {
       "key": "epi_04",
-      "title": "Epitope 4",
-      "type": "continuous"
+      "title": "F Protein Epitope 4",
+      "type": "ordinal"
     },
     {
       "key": "epi_05",
-      "title": "Epitope 5",
-      "type": "continuous"
+      "title": "F Protein Epitope 5",
+      "type": "ordinal"
     },
     {
       "key": "epi_all",
-      "title": "All Epitopes",
-      "type": "continuous"
+      "title": "All F Protein Epitopes",
+      "type": "ordinal"
     },
     {
       "key": "surface_residues_postf",
-      "title": "Postfusion Surface Residues",
-      "type": "continuous"
+      "title": "F Protein Postfusion Surface Residues",
+      "type": "ordinal"
     },
     {
       "key": "surface_residues_pref",
-      "title": "Prefusion Surface Residues",
-      "type": "continuous"
+      "title": "F Protein Prefusion Surface Residues",
+      "type": "ordinal"
     }
   ],
   "geo_resolutions": [
