@@ -1,24 +1,16 @@
 name: nextstrain
 channels:
+  - conda-forge
   - bioconda
-  - defaults
+  - nodefaults
 dependencies:
-  - cvxopt
-  - datrie
-  - fasttree
   - iqtree
-  - mafft=7.471
-  - nextclade>=3
-  - pandas
-  - psutil
-  - python=3.7*
-  - nodejs=10
-  - raxml
-  - vcftools
-  - git
-  - pip
-  - pip:
-      - awscli==1.18.45
-      - nextstrain-augur==22.2.0
-      - nextstrain-cli==1.16.5
-      - rethinkdb==2.3.0.post6
+  - mafft
+  - nextclade
+  - augur
+  - auspice
+  - snakemake
+  - seqkit
+  - tsv-utils
+  - ncbi-datasets-cli
+

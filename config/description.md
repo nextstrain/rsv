@@ -1,6 +1,6 @@
 We gratefully acknowledge the authors, originating and submitting laboratories of the genetic sequences and metadata for sharing their work. Please note that although data generators have generously shared data in an open fashion, that does not mean there should be free license to publish on this data. Data generators should be cited where possible and collaborations should be sought in some circumstances. Please try to avoid scooping someone else's work. Reach out if uncertain.
 
-We maintain three views of human respiratory syncytial virus evolution for each RSV subtype:
+We maintain three views of human respiratory syncytial virus evolution for 3 time spans of each RSV subtype:
 
 The first is ['rsv/a/genome'](https://nextstrain.org/staging/rsv/a/genome) and ['rsv/b/genome'](https://nextstrain.org/staging/rsv/b/genome), which show evolution of full genome sequences.
 
@@ -15,6 +15,7 @@ Our bioinformatic processing workflow can be found at [github.com/nextstrain/rsv
 - sequence alignment by a combination of [Nextclade](https://docs.nextstrain.org/projects/nextclade/en/stable/user/nextclade-cli.html) and [MAFFT](https://mafft.cbrc.jp/alignment/software/).
 - phylogenetic reconstruction using [IQTREE](http://www.iqtree.org/)
 - ancestral state reconstruction and temporal inference using [TreeTime](https://github.com/neherlab/treetime)
+- reconstruction of amino acid mutations in the [F protein epitopes](https://pmc.ncbi.nlm.nih.gov/articles/PMC10421620/#R12)
 - clade assignment via clade definitions defined here:
   [RSV-A](https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineage.tsv)
   [RSV-B](https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineage.tsv)

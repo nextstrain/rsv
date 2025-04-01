@@ -7,6 +7,8 @@ def get_node_data(w):
         node_data.append(rules.glycosylation.output.glycosylations)
     if w.build_name == "genome":
         node_data.append(rules.clades_consortium.output.node_data)
+    if w.build_name in ["F", "genome"]:
+        node_data.append(rules.distances.output.distances)
 
     return node_data
 

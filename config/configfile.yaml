@@ -52,6 +52,11 @@ refine:
 ancestral:
   inference: "joint"
 
+cds:
+  F: "F"
+  G: "G"
+  genome: "F"
+
 traits:
   columns: "country"
 

@@ -11,7 +11,6 @@
     }
   ],
   "build_url": "https://github.com/nextstrain/rsv",
-
   "colorings": [
     {
       "key": "gt",
@@ -37,7 +36,53 @@
       "key": "glyc",
       "title": "Glycosylation",
       "type": "ordinal"
-    }  ],
+    },
+    {
+      "key": "epi_00",
+      "title": "F Protein Epitope 0",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_01",
+      "title": "F Protein Epitope 1",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_02",
+      "title": "F Protein Epitope 2",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_03",
+      "title": "F Protein Epitope 3",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_04",
+      "title": "F Protein Epitope 4",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_05",
+      "title": "F Protein Epitope 5",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_all",
+      "title": "All F Protein Epitopes",
+      "type": "ordinal"
+    },
+    {
+      "key": "surface_residues_postf",
+      "title": "F Protein Postfusion Surface Residues",
+      "type": "ordinal"
+    },
+    {
+      "key": "surface_residues_pref",
+      "title": "F Protein Prefusion Surface Residues",
+      "type": "ordinal"
+    }
+  ],
   "geo_resolutions": [
     "country",
     "region"
@@ -50,9 +95,9 @@
   ],
   "display_defaults": {
     "map_triplicate": true,
-    "color_by" : "clade_membership",
+    "color_by": "clade_membership",
     "transmission_lines": false
-    },
+  },
   "filters": [
     "country",
     "region",
