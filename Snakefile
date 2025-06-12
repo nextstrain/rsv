@@ -56,3 +56,7 @@ rule clobber:
         rm -rf {params.targets}
         rm config/clades*tsv
         """
+
+if "custom_rules" in config:
+    for rule_file in config["custom_rules"]:
+        include: rule_file
