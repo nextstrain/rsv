@@ -1,7 +1,7 @@
 conda_environment: "workflow/envs/nextstrain.yaml"
 
 custom_rules:
-  - profiles/wadoh/testing_wa_filter.smk
+  - profiles/wadoh/wa_filter.smk
 
 genesforglycosylation: ["G", "F"]
 
