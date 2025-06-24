@@ -1,0 +1,83 @@
+conda_environment: "workflow/envs/nextstrain.yaml"
+
+custom_rules:
+  - profiles/wadoh/testing_wa_filter.smk
+
+genesforglycosylation: ["G", "F"]
+
+#builds_to_run: ["genome", "G", "F"]
+builds_to_run: ["genome"]
+
+#resolutions_to_run: ["all-time", "6y", "3y"]
+resolutions_to_run: ["all-time"]
+
+exclude: "config/outliers.txt"
+
+description: "config/description.md"
+
+strain_id_field: "accession"
+display_strain_field: "strain"
+
+subtypes: ['a', 'b']
+
+
+filter:
+  group_by: "year country division"
+  min_coverage:
+    genome: 0.3
+    G: 0.3
+    F: 0.3
+
+  min_length:
+    genome: 10000
+    G: 600
+    F: 1200
+  resolutions:
+    all-time:
+      min_date: 1975-01-01
+      background_min_date: 1975-01-01
+    6y:
+      min_date: 6Y
+      background_min_date: 1975-01-01
+    3y:
+      min_date: 3Y
+      background_min_date: 1975-01-01
+
+  subsample_max_sequences:
+    genome: 10000
+    #genome: 10000
+    G: 3000
+    F: 3000
+
+  subsampling:
+    state: 'division == "Washington" '
+    country: 'division != "Washington" '
+
+files:
+  auspice_config: "profiles/wadoh/auspice_config_wa.json"
+
+refine:
+  coalescent: "opt"
+  date_inference: "marginal"
+  clock_filter_iqd: 4
+
+ancestral:
+  inference: "joint"
+
+cds:
+  F: "F"
+  G: "G"
+  genome: "F"
+
+traits:
+  columns: "country"
+
+nextclade_attributes:
+  a:
+    name: "RSV-A NextClade using real-time tree"
+    reference_name: "hRSV/A/England/397/2017"
+    accession: "EPI_ISL_412866"
+  b:
+    name: "RSV-B NextClade using real-time tree"
+    reference_name: "hRSV/B/Australia/VIC-RCH056/2019"
+    accession: "EPI_ISL_1653999"
