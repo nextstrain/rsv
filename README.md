@@ -74,7 +74,8 @@ nextstrain build . --configfile profiles/wadoh/configfile_wadoh.yaml
 ```
 
 #### Run the Build with Test Data
-This build does not currently have test data available. This feature is coming soon.
+
+To test the pipeline with the provided example data located in ```example_data/```, you will need to copy over the contents of this folder, including the ```a/``` and ```b/``` subfolders, into the ```data/``` folder. The Snakefile will pull ingest the contents of the ```data/``` folder into the build.
 
 ### Repository File Structure Overview
 The file structure of the repository is as follows with `*`" folders denoting folders that are the build's expected outputs.
@@ -96,6 +97,7 @@ The file structure of the repository is as follows with `*`" folders denoting fo
 ├── README.md
 ├── auspice*
 ├── results*
+├── data*
 └── Snakefile
 ```
 
@@ -117,6 +119,7 @@ The file structure of the repository is as follows with `*`" folders denoting fo
 - `workflow/`:
     - `snakemake_rules/`: contains a variety of snakemake rules. Most notably:
         - `core.smk`: The sequence of rules that will get followed in running the build, this includes indexing and aligning sequences, and filtering based on the criteria found in the config files.     
+- `data/ `:
 - `Snakefile`: A list of rules in the order they will be run in when the workflow is run.
 
 ### Ingest pipeline
