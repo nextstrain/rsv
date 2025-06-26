@@ -74,6 +74,7 @@ nextstrain build . --configfile profiles/wadoh/configfile_wadoh.yaml
 ```
 
 #### Run the Build with Test Data
+
 To test the pipeline with the provided example data located in ```example_data/```, you will need to copy over the contents of this folder, including the ```a/``` and ```b/``` subfolders, into the ```data/``` folder. The Snakefile will pull ingest the contents of the ```data/``` folder into the build.
 
 ### Repository File Structure Overview
