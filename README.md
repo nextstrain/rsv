@@ -24,7 +24,7 @@
 - [Update Example Data](#update_example_data)
 - [Sending data to the nextclade_data repo](#sending_data_to_the_nextclade_data_repo)
 
-## Getting Started
+### Getting Started
 Some high-level features and capabilities specific to this build include:
 
 - **Scope:** This repository will generate two views, a whole genome build for  RSV A and RSV B showing the evolution of the entire genome.
@@ -60,23 +60,23 @@ To check that Nextstrain is installed:
 ```
 nextstrain check-setup
 ```
-### Clone the repository:
+#### Clone the repository:
 
 ```
 git clone https://github.com/NW-PaGe/rsv.git
 cd rsv
 ```
 
-## Running the Build
+#### Running the Build
 From within the repository the build can be run with:
 ```
-nextstrain build .
+nextstrain build . --configfile profiles/wadoh/configfile_wadoh.yaml
 ```
 
-### Run the Build with Test Data
+#### Run the Build with Test Data
 This build does not currently have test data available. This feature is coming soon.
 
-## Repository File Structure Overview
+### Repository File Structure Overview
 The file structure of the repository is as follows with `*`" folders denoting folders that are the build's expected outputs.
 
 ```
