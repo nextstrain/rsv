@@ -23,6 +23,7 @@ curate:
   # in the configs below should use the new field names
   field_map: ['collected=date', 'submitted=date_submitted', 'genbank_accession=accession']
   ppx_field_map: ['sampleCollectionDate=date',
+                  'displayName=strain',
                   'earliestReleaseDate=date_submitted',
                   'insdcAccessionBase=genbank_accession',
                   'insdcAccessionFull=genbank_accession_rev',
@@ -108,6 +109,9 @@ curate:
     'sra_accession',
     'authors',
     'institution',
+    'dataUseTerms',
+    'dataUseTermsRestrictedUntil',
+    'dataUseTermsUrl'
   ]
 
 

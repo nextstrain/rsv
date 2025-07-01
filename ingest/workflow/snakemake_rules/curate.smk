@@ -74,8 +74,6 @@ rule curate:
             | augur curate format-dates \
                 --date-fields {params.date_fields} \
                 --expected-date-formats {params.expected_date_formats} \
-            | augur curate parse-genbank-location \
-                --location-field {params.genbank_location_field} \
             | augur curate titlecase \
                 --titlecase-fields {params.titlecase_fields} \
                 --articles {params.articles} \
