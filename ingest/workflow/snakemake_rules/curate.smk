@@ -47,7 +47,7 @@ rule curate:
     log:
         "logs/curate.txt"
     params:
-        field_map = config['curate']['field_map'],
+        field_map = config['curate']['ppx_field_map'],
         strain_regex = config['curate']['strain_regex'],
         strain_backup_fields = config['curate']['strain_backup_fields'],
         date_fields = config['curate']['date_fields'],
