@@ -1,5 +1,5 @@
 # Sources of sequences to include in the ingest run
-sources: ['genbank']
+sources: ['ppx']
 conda_environment: "workflow/envs/nextstrain.yaml"
 
 ncbi_taxon_id:
@@ -7,12 +7,31 @@ ncbi_taxon_id:
   b: "208895"
   general: "11250"
 
+ppx_fetch:
+  a:
+    seqs: https://lapis.pathoplexus.org/rsv-a/sample/unalignedNucleotideSequences
+    meta: https://lapis.pathoplexus.org/rsv-a/sample/details?dataFormat=csv
+  b:
+    seqs: https://lapis.pathoplexus.org/rsv-b/sample/unalignedNucleotideSequences
+    meta: https://lapis.pathoplexus.org/rsv-b/sample/details?dataFormat=csv
+
+
 # Params for the curate rule
 curate:
   # Fields to rename.
   # This is the first step in the pipeline, so any references to field names
   # in the configs below should use the new field names
   field_map: ['collected=date', 'submitted=date_submitted', 'genbank_accession=accession']
+  ppx_field_map: ['sampleCollectionDate=date',
+                  'earliestReleaseDate=date_submitted',
+                  'insdcAccessionBase=genbank_accession',
+                  'insdcAccessionFull=genbank_accession_rev',
+                  'geoLocCountry=country',
+                  'geoLocAdmin1=division',
+                  'geoLocAdmin2=location',
+                  'hostNameCommon=host',
+                  'insdcRawReadsAccession=sra_accession',
+                  'authorAffiliations=institution',]
   # Standardized strain name regex
   # Currently accepts any characters because we do not have a clear standard for strain names
   strain_regex: '^.+$'
@@ -73,3 +92,90 @@ curate:
     'authors',
     'institution',
   ]
+  ppx_metadata_columns: [
+    'accession',
+    'accessionVersion',
+    'genbank_accession',
+    'genbank_accession_rev',
+    'displayName',
+    'date',
+    'region',
+    'country',
+    'division',
+    'location',
+    'host',
+    'date_submitted',
+    'sra_accession',
+    'authors',
+    'institution',
+  ]
+
+
+ppx_metadata_fields:
+ - "accessionVersion"
+ - "accession"
+ - "version"
+ - "submitter"
+ - "groupName"
+ - "submittedDate"
+ - "releasedDate"
+ - "dataUseTerms"
+ - "dataUseTermsRestrictedUntil"
+ - "dataUseTermsUrl"
+ - "assemblyReferenceGenomeAccession"
+ - "authorAffiliations"
+ - "authors"
+ - "bioprojectAccession"
+ - "biosampleAccession"
+ - "completeness"
+ - "displayName"
+ - "earliestReleaseDate"
+ - "frameShifts"
+ - "geoLocAdmin1"
+ - "geoLocAdmin2"
+ - "geoLocCity"
+ - "geoLocCountry"
+ - "geoLocLatitude"
+ - "geoLocLongitude"
+ - "geoLocSite"
+ - "hostAge"
+ - "hostAgeBin"
+ - "hostDisease"
+ - "hostGender"
+ - "hostHealthOutcome"
+ - "hostHealthState"
+ - "hostNameCommon"
+ - "hostOriginCountry"
+ - "hostVaccinationStatus"
+ - "insdcAccessionBase"
+ - "insdcAccessionFull"
+ - "insdcRawReadsAccession"
+ - "insdcVersion"
+ - "isLabHost"
+ - "length"
+ - "lineage"
+ - "ncbiReleaseDate"
+ - "ncbiSourceDb"
+ - "ncbiSubmitterCountry"
+ - "ncbiUpdateDate"
+ - "ncbiVirusName"
+ - "ncbiVirusTaxId"
+ - "purposeOfSampling"
+ - "purposeOfSequencing"
+ - "qualityControlDetails"
+ - "qualityControlDetermination"
+ - "qualityControlIssues"
+ - "qualityControlMethodName"
+ - "qualityControlMethodVersion"
+ - "sampleCollectionDate"
+ - "sampleCollectionDateRangeLower"
+ - "sampleCollectionDateRangeUpper"
+ - "sampleType"
+ - "subtype"
+ - "totalAmbiguousNucs"
+ - "totalDeletedNucs"
+ - "totalFrameShifts"
+ - "totalInsertedNucs"
+ - "totalSnps"
+ - "totalUnknownNucs"
+ - "travelHistory"
