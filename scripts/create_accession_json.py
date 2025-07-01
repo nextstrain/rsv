@@ -25,7 +25,7 @@ if __name__ == "__main__":
             node_data[tip] = {
                 'PPX_accession': {'value': row.get('accessionVersion', ''), 'url': f"https://pathoplexus.org/seq/{tip}"},
                 'dataUseTerms': {'value': row.get('dataUseTerms', ''), 'url': row.get('dataUseTermsUrl', '')},
-                'dataUseTermsUrl': row.get('dataUseTermsUrl', '')
+                'dataUseTerms_URL': {"value": f"'{row.get('dataUseTermsUrl', '')}'"}
             }
             if not pd.isna(row['genbank_accession']):
                 node_data[tip]['insdcAccession'] = {"value": row['genbank_accession'], 'url': f"https://www.ncbi.nlm.nih.gov/nuccore/{row['genbank_accession']}"}
