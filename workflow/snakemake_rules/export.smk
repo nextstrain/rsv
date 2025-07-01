@@ -28,6 +28,21 @@ rule colors:
             --output {output.colors}
         """
 
+rule create_accession_json:
+    input:
+        metadata = "data/{a_or_b}/metadata.tsv",
+        tree = rules.refine.output.tree,
+    output:
+        accession_json = build_dir + "/{a_or_b}/{build_name}/{resolution}/accession.json"
+    shell:
+        """
+        python3 scripts/create_accession_json.py \
+            --metadata {input.metadata} \
+            --tree {input.tree} \
+            --output {output.accession_json}
+        """
+
+
 rule export:
     message: "Exporting data files for auspice"
     input:
@@ -38,7 +53,7 @@ rule export:
         auspice_config = config["files"]["auspice_config"],
         description = config["description"]
     output:
-        auspice_json =  build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json"
+        auspice_json =  build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_prelim.json"
     params:
         title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny",
         strain_id=config["strain_id_field"],
@@ -55,8 +70,42 @@ rule export:
             --colors {input.colors} \
             --auspice-config {input.auspice_config} \
             --include-root-sequence-inline \
+            --validation warn \
             --output {output.auspice_json}
         """
+
+rule patch_exported_tree:
+    input:
+        auspice_json = rules.export.output.auspice_json,
+        accessions = rules.create_accession_json.output.accession_json,
+    output:
+        auspice_json = build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json",
+    run:
+        import json
+
+        with open(input.auspice_json) as f:
+            tree = json.load(f)
+
+        with open(input.accessions) as f:
+            accessions = json.load(f)['nodes']
+
+
+        def update_node_data(node):
+            name = node["name"]
+            if name in accessions:
+                node["node_attrs"] |= accessions[name]
+            if "children" in node:
+                for child in node["children"]:
+                    update_node_data(child)
+
+        update_node_data(tree["tree"])
+
+        with open(output.auspice_json, "w") as f:
+            json.dump(tree, f, indent=2)
+
+
+
+
 
 rule final_strain_name:
     input:

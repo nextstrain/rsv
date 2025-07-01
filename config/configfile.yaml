@@ -37,7 +37,7 @@ filter:
       background_min_date: 1975-01-01
 
   subsample_max_sequences:
-    genome: 3000
+    genome: 100
     G: 3000
     F: 3000
 
