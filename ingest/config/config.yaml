@@ -98,7 +98,7 @@ curate:
     'accessionVersion',
     'genbank_accession',
     'genbank_accession_rev',
-    'displayName',
+    'strain',
     'date',
     'region',
     'country',
