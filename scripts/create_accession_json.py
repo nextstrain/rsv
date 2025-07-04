@@ -25,7 +25,7 @@ if __name__ == "__main__":
             node_data[tip] = {
                 'PPX_accession': {'value': row.get('accessionVersion', ''), 'url': f"https://pathoplexus.org/seq/{tip}"},
                 'dataUseTerms': {'value': row.get('dataUseTerms', ''), 'url': row.get('dataUseTermsUrl', '')},
-                'dataUseTerms_URL': {"value": f"'{row.get('dataUseTermsUrl', '')}'"}
+                'dataUseTerms_URL': {"value": f"{row.get('dataUseTermsUrl', '')}"}
             }
             if row.get('dataUseTerms') == "RESTRICTED":
                 node_data[tip]['restrictedUntil'] = {"value": row.get('dataUseTermsRestrictedUntil', '')}
