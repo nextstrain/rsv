@@ -29,7 +29,7 @@ if __name__ == "__main__":
             }
             if row.get('dataUseTerms') == "RESTRICTED":
                 node_data[tip]['restrictedUntil'] = {"value": row.get('dataUseTermsRestrictedUntil', '')}
-            if not pd.isna(row['genbank_accession']):
+            if not pd.isna(row.get('genbank_accession')):
                 node_data[tip]['insdcAccession'] = {"value": row['genbank_accession'], 'url': f"https://www.ncbi.nlm.nih.gov/nuccore/{row['genbank_accession']}"}
 
 
