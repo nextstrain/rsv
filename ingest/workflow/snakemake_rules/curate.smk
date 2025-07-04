@@ -103,7 +103,7 @@ rule subset_metadata:
     input:
         metadata = "data/curated_metadata.tsv",
     output:
-        subset_metadata="data/metadata.tsv",
+        subset_metadata="data/metadata_subset.tsv",
     params:
         metadata_fields=",".join(config["curate"]["ppx_metadata_columns"]),
     shell:
@@ -111,3 +111,20 @@ rule subset_metadata:
         tsv-select -H -f {params.metadata_fields} \
             {input.metadata} > {output.subset_metadata}
         """
+
+rule add_region_fields:
+    input:
+        metadata = "data/metadata_subset.tsv",
+        country_region_map = "config/country_region.tsv"
+    output:
+        metadata = "data/metadata.tsv"
+    run:
+        import pandas as pd
+
+        metadata = pd.read_csv(input.metadata, sep="\t", dtype=str)
+        country_region_map = pd.read_csv(input.country_region_map, sep="\t", dtype=str, index_col='country').to_dict()['region']
+        # Fill NaN values in region with 'Unknown'
+        metadata['region'] = metadata['country'].apply(lambda x: country_region_map.get(x, 'Unknown'))
+
+        # Save the updated metadata
+        metadata.to_csv(output.metadata, sep="\t", index=False)
