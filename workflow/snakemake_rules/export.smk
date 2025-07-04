@@ -74,9 +74,11 @@ rule export:
             --output {output.auspice_json}
         """
 
+# add PPX specific fields to the exported tree that augur export v2 does not support
+# for genbank only, rename output file of rule export to tree.json
 rule patch_exported_tree:
     input:
-        auspice_json = rules.export.output.auspice_json,
+        auspice_json = build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_prelim.json",
         accessions = rules.create_accession_json.output.accession_json,
     output:
         auspice_json = build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json",
@@ -105,11 +107,9 @@ rule patch_exported_tree:
 
 
 
-
-
 rule final_strain_name:
     input:
-        auspice_json= rules.export.output.auspice_json,
+        auspice_json= build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json",
         metadata = "data/{a_or_b}/metadata.tsv",
         frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     output:
@@ -132,7 +132,7 @@ rule final_strain_name:
 
 rule rename_and_ready_for_nextclade:
     input:
-        auspice_json= rules.final_strain_name.output.auspice_json,
+        auspice_json= build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_renamed.json",
         pathogen_json= "nextclade/config/pathogen.json",
     output:
         auspice_json= "auspice/rsv_{a_or_b}_{build_name}_{resolution}.json",
