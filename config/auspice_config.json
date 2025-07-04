@@ -32,6 +32,11 @@
       "type": "categorical"
     },
     {
+      "key": "dataUseTerms",
+      "title": "Data use terms",
+      "type": "categorical"
+    },
+    {
       "key": "region",
       "title": "Region",
       "type": "categorical"
