@@ -20,24 +20,26 @@ ppx_fetch:
 curate:
   # Fields to rename.
   # This is the first step in the pipeline, so any references to field names
-  # in the configs below should use the new field names
-  field_map: ['collected=date', 'submitted=date_submitted', 'genbank_accession=accession']
+  # in the configs below should use the new field names.
+  # Format is <ppx key> = <renamed key from `augur curate rename`>
   ppx_field_map: ['sampleCollectionDate=date',
                   'displayName=strain',
                   'earliestReleaseDate=date_submitted',
-                  'insdcAccessionBase=genbank_accession',
-                  'insdcAccessionFull=genbank_accession_rev',
+                  'accessionVersion=PPX_accession',
+                  'insdcAccessionFull=INSDC_accession',
                   'geoLocCountry=country',
                   'geoLocAdmin1=division',
                   'geoLocAdmin2=location',
                   'hostNameCommon=host',
                   'insdcRawReadsAccession=sra_accession',
+                  'dataUseTermsRestrictedUntil=restrictedUntil',
+                  'dataUseTermsUrl=dataUseTerms__url',
                   'authorAffiliations=institution',]
   # Standardized strain name regex
   # Currently accepts any characters because we do not have a clear standard for strain names
   strain_regex: '^.+$'
   # Back up strain name field if 'strain' doesn't match regex above
-  strain_backup_fields: ['accession']
+  strain_backup_fields: ['accession'] # unversioned PPX accession
   # List of date fields to standardize
   date_fields: ['date', 'date_submitted']
   # Expected date formats present in date fields
@@ -71,35 +73,20 @@ curate:
   # User annotations file
   annotations: 'source-data/annotations.tsv'
   # ID field used to merge annotations
-  annotations_id: 'accession'
+  annotations_id: 'accession' # unversioned PPX accession
   # Field to use as the sequence ID in the FASTA file
-  id_field: 'accession'
+  id_field: 'accession' # unversioned PPX accession
   # Field to use as the sequence in the FASTA file
   sequence_field: 'sequence'
   # Final output columns for the metadata TSV
-  metadata_columns: [
-    'accession',
-    'genbank_accession_rev',
-    'strain',
-    'date',
-    'region',
-    'country',
-    'division',
-    'location',
-    'host',
-    'date_submitted',
-    'sra_accession',
-    'abbr_authors',
-    'authors',
-    'institution',
-  ]
   ppx_metadata_columns: [
-    'accession',
-    'accessionVersion',
-    'genbank_accession',
-    'genbank_accession_rev',
     'strain',
     'date',
+    'accession', # unversioned PPX accession
+    'PPX_accession',
+    'PPX_accession__url',
+    'INSDC_accession',
+    'INSDC_accession__url',
     'region',
     'country',
     'division',
@@ -110,12 +97,11 @@ curate:
     'authors',
     'institution',
     'dataUseTerms',
-    'dataUseTermsRestrictedUntil',
-    'dataUseTermsUrl'
+    'dataUseTerms__url',
+    'restrictedUntil',
   ]
 
-
-ppx_metadata_fields:
+ppx_metadata_fields: # Used to create the URL to download PPX metadata
  - "accessionVersion"
  - "accession"
  - "version"

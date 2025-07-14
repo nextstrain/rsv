@@ -90,6 +90,7 @@ rule curate:
                 --abbr-authors-field {params.abbr_authors_field} \
             | augur curate apply-geolocation-rules \
                 --geolocation-rules {input.all_geolocation_rules} \
+            | python ./bin/curate-urls.py \
             | augur curate apply-record-annotations \
                 --annotations {input.annotations} \
                 --id-field {params.annotations_id} \
