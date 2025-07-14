@@ -21,17 +21,18 @@ curate:
   # Fields to rename.
   # This is the first step in the pipeline, so any references to field names
   # in the configs below should use the new field names
-  field_map: ['collected=date', 'submitted=date_submitted', 'genbank_accession=accession']
   ppx_field_map: ['sampleCollectionDate=date',
                   'displayName=strain',
                   'earliestReleaseDate=date_submitted',
-                  'insdcAccessionBase=genbank_accession',
-                  'insdcAccessionFull=genbank_accession_rev',
+                  'insdcAccessionBase=insdcAccession',
+                  # 'insdcAccessionFull=genbank_accession_rev',
+                  'accessionVersion=PPX_accession',
                   'geoLocCountry=country',
                   'geoLocAdmin1=division',
                   'geoLocAdmin2=location',
                   'hostNameCommon=host',
                   'insdcRawReadsAccession=sra_accession',
+                  'dataUseTermsRestrictedUntil=restrictedUntil',
                   'authorAffiliations=institution',]
   # Standardized strain name regex
   # Currently accepts any characters because we do not have a clear standard for strain names
@@ -77,27 +78,11 @@ curate:
   # Field to use as the sequence in the FASTA file
   sequence_field: 'sequence'
   # Final output columns for the metadata TSV
-  metadata_columns: [
-    'accession',
-    'genbank_accession_rev',
-    'strain',
-    'date',
-    'region',
-    'country',
-    'division',
-    'location',
-    'host',
-    'date_submitted',
-    'sra_accession',
-    'abbr_authors',
-    'authors',
-    'institution',
-  ]
   ppx_metadata_columns: [
     'accession',
-    'accessionVersion',
-    'genbank_accession',
-    'genbank_accession_rev',
+    'PPX_accession',  # includes URL
+    'insdcAccession', # includes URL
+    'insdcAccessionFull', # versioned accession
     'strain',
     'date',
     'region',
@@ -109,13 +94,11 @@ curate:
     'sra_accession',
     'authors',
     'institution',
-    'dataUseTerms',
-    'dataUseTermsRestrictedUntil',
-    'dataUseTermsUrl'
+    'dataUseTerms', # includes URL
+    'restrictedUntil',
   ]
 
-
-ppx_metadata_fields:
+ppx_metadata_fields: # Used to create the URL to download PPX metadata
  - "accessionVersion"
  - "accession"
  - "version"
