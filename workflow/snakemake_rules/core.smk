@@ -158,7 +158,7 @@ rule get_nextclade_dataset:
         fetching nextclade dataset
         """
     output:
-        dataset="nextclade_rsv-{a_or_b}.zip",
+        dataset="results/nextclade_rsv-{a_or_b}.zip",
     params:
         ds_name=lambda w: (
             "nextstrain/rsv/a/EPI_ISL_412866"
