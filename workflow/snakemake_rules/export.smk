@@ -28,21 +28,6 @@ rule colors:
             --output {output.colors}
         """
 
-rule create_accession_json:
-    input:
-        metadata = "data/{a_or_b}/metadata.tsv",
-        tree = rules.refine.output.tree,
-    output:
-        accession_json = build_dir + "/{a_or_b}/{build_name}/{resolution}/accession.json"
-    shell:
-        """
-        python3 scripts/create_accession_json.py \
-            --metadata {input.metadata} \
-            --tree {input.tree} \
-            --output {output.accession_json}
-        """
-
-
 rule export:
     message: "Exporting data files for auspice"
     input:
@@ -53,11 +38,11 @@ rule export:
         auspice_config = config["files"]["auspice_config"],
         description = config["description"]
     output:
-        auspice_json =  build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_prelim.json"
+        auspice_json =  build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json"
     params:
         title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny",
         strain_id=config["strain_id_field"],
-        metadata_colors = lambda w: '' if w.build_name=='genome' else f"--color-by-metadata clade"
+        metadata_colors = lambda w: '' if w.build_name=='genome' else f"--color-by-metadata clade",
     shell:
         """
         augur export v2 \
@@ -74,42 +59,10 @@ rule export:
             --output {output.auspice_json}
         """
 
-# add PPX specific fields to the exported tree that augur export v2 does not support
-# for genbank only, rename output file of rule export to tree.json
-rule patch_exported_tree:
-    input:
-        auspice_json = build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_prelim.json",
-        accessions = rules.create_accession_json.output.accession_json,
-    output:
-        auspice_json = build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json",
-    run:
-        import json
-
-        with open(input.auspice_json) as f:
-            tree = json.load(f)
-
-        with open(input.accessions) as f:
-            accessions = json.load(f)['nodes']
-
-
-        def update_node_data(node):
-            name = node["name"]
-            if name in accessions:
-                node["node_attrs"] |= accessions[name]
-            if "children" in node:
-                for child in node["children"]:
-                    update_node_data(child)
-
-        update_node_data(tree["tree"])
-
-        with open(output.auspice_json, "w") as f:
-            json.dump(tree, f, indent=2)
-
-
 
 rule final_strain_name:
     input:
-        auspice_json= build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json",
+        auspice_json= rules.export.output.auspice_json,
         metadata = "data/{a_or_b}/metadata.tsv",
         frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     output:
@@ -132,7 +85,7 @@ rule final_strain_name:
 
 rule rename_and_ready_for_nextclade:
     input:
-        auspice_json= build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_renamed.json",
+        auspice_json= rules.final_strain_name.output.auspice_json,
         pathogen_json= "nextclade/config/pathogen.json",
     output:
         auspice_json= "auspice/rsv_{a_or_b}_{build_name}_{resolution}.json",
