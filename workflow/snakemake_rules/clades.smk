@@ -48,7 +48,7 @@ rule clades_consortium:
         tree = rules.refine.output.tree,
         aa_muts = rules.translate.output.node_data,
         nuc_muts = rules.ancestral.output.node_data,
-        clades = "config/clades_consortium_{a_or_b}.tsv"
+        clades = "results/clades_consortium_{a_or_b}.tsv"
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/clades_consortium.json"
     log:
@@ -63,7 +63,7 @@ rule clades_consortium:
 
 rule download_clades:
     output:
-        clades = "config/clades_consortium_{a_or_b}.tsv"
+        clades = "results/clades_consortium_{a_or_b}.tsv"
     params:
         url = lambda w: f"https://raw.githubusercontent.com/rsv-lineages/lineage-designation-{w.a_or_b.upper()}/main/.auto-generated/lineages.tsv"
     shell:

@@ -92,6 +92,10 @@
       "type": "ordinal"
     }
   ],
+  "metadata_columns": [
+    "PPX_accession",
+    "insdcAccession"
+  ],
   "geo_resolutions": [
     "country",
     "region"
