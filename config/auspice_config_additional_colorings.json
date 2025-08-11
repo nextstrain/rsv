@@ -1,0 +1,9 @@
+{
+  "colorings": [
+    {
+      "key": "clade",
+      "title": "Clade",
+      "type": "categorical"
+    }
+  ]
+}
