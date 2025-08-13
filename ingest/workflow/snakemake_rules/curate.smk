@@ -113,6 +113,7 @@ rule subset_metadata:
             {input.metadata} > {output.subset_metadata}
         """
 
+# can be removed once we can switch to an augur version that infers regions via geo-location-rules
 rule add_region_fields:
     input:
         metadata = "data/metadata_subset.tsv",

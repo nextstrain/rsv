@@ -84,3 +84,20 @@ rule extend_metadata:
                                        --nextclade {input.nextclade} \
                                        --output {output.metadata}
         """
+
+
+rule extract_open_data:
+    input:
+        metadata = "data/{type}/metadata.tsv",
+        sequences = "data/{type}/sequences.fasta"
+    output:
+        metadata = "data/{type}/metadata_open.tsv",
+        sequences = "data/{type}/sequences_open.fasta"
+    shell:
+        """
+        augur filter --metadata {input.metadata} \
+                     --sequences {input.sequences} \
+                     --exclude-where "dataUseTerms==RESTRICTED" \
+                     --output-metadata {output.metadata} \
+                     --output-sequences {output.sequences}
+        """
