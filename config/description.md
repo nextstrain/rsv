@@ -19,15 +19,18 @@ Our bioinformatic processing workflow can be found at [github.com/nextstrain/rsv
 - clade assignment via clade definitions defined here:
   [RSV-A](https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineage.tsv)
   [RSV-B](https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineage.tsv)
-  These clade definitions are based on the not-yet-published nomenclature of the RSV Genotyping Consensus Consortium.
+  These clade definitions are based on the [nomenclature proposal by the RSV Genotyping Consensus Consortium](https://wwwnc.cdc.gov/eid/article/30/8/24-0209_article).
 
 #### Underlying data
 
 We source sequence data and metadata from [Pathoplexus](https://pathoplexus.org) which ingests data from INSDC and provides data from INSDC together with data that were submitted directly to Pathoplexus. See our [ingest configuration file](https://github.com/nextstrain/rsv/blob/master/ingest/config/config.yaml).
-Curated sequences and metadata are available as flat files at the links below. Note that these data are subject to [data use terms by Pathoplexus](https://pathoplexus.org/about/terms-of-use/data-use-terms). In the metadata files below, each sequence contains a field specifying the data use terms of this sequence and a link to the data use terms. If you use these data, please pay particularly close attention to the terms associated with RESTRICTED sequences.
+Curated sequences and metadata are available as flat files at the links below.
+The data in the files provided below is the subset of data from Pathoplexus under the OPEN [data use terms](https://pathoplexus.org/about/terms-of-use/data-use-terms). In the metadata files below, each sequence contains a field specifying the data use terms of this sequence and a link to the data use terms.
 
 - [RSV-A sequences](https://data.nextstrain.org/files/workflows/rsv/a/sequences.fasta.xz)
 - [RSV-A metadata](https://data.nextstrain.org/files/workflows/rsv/a/metadata.tsv.gz)
 
 - [RSV-B sequences](https://data.nextstrain.org/files/workflows/rsv/b/sequences.fasta.xz)
 - [RSV-B metadata](https://data.nextstrain.org/files/workflows/rsv/b/metadata.tsv.gz)
+
+ If you are interested in the RESTRICTED USE data, we ask you to obtain those directly from Pathoplexus.
