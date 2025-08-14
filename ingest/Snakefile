@@ -8,7 +8,11 @@ def _get_all_targets(wildcards):
         "data/a/sequences.fasta",
         "data/a/metadata.tsv",
         "data/b/sequences.fasta",
-        "data/b/metadata.tsv"
+        "data/b/metadata.tsv",
+        "data/a/sequences_open.fasta",
+        "data/a/metadata_open.tsv",
+        "data/b/sequences_open.fasta",
+        "data/b/metadata_open.tsv"
     ]
 
     # Add additional targets based on upload config

@@ -6,6 +6,11 @@ def replace_name_recursive(node, lookup):
     if node["name"] in lookup:
         node["name"] = lookup[node["name"]]
 
+    # drop the 'accession' which augur export automagically adds, as we use
+    # custom PPX_accession and INDSC_accession fields, each with URLs attached
+    if 'accession' in node.get('node_attrs', {}):
+        del node['node_attrs']['accession']
+
     if "children" in node:
         for child in node["children"]:
             replace_name_recursive(child, lookup)

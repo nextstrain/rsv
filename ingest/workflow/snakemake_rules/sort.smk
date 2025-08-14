@@ -27,7 +27,7 @@ rule sort:
 
 rule metadata:
     input:
-        metadata = rules.subset_metadata.output.subset_metadata,
+        metadata = "data/metadata.tsv",
         sequences = "data/{type}/sequences.fasta"
     output:
         metadata = "data/{type}/metadata_raw.tsv"
@@ -83,4 +83,22 @@ rule extend_metadata:
                                        --virus-type {wildcards.type} \
                                        --nextclade {input.nextclade} \
                                        --output {output.metadata}
+        """
+
+
+rule extract_open_data:
+    input:
+        metadata = "data/{type}/metadata.tsv",
+        sequences = "data/{type}/sequences.fasta"
+    output:
+        metadata = "data/{type}/metadata_open.tsv",
+        sequences = "data/{type}/sequences_open.fasta"
+    shell:
+        """
+        augur filter --metadata {input.metadata} \
+                     --sequences {input.sequences} \
+                     --metadata-id-columns accession \
+                     --exclude-where "dataUseTerms=RESTRICTED" \
+                     --output-metadata {output.metadata} \
+                     --output-sequences {output.sequences}
         """
