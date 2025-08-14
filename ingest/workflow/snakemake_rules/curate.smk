@@ -12,28 +12,6 @@ This will produce output files as
 Parameters are expected to be defined in `config.transform`.
 """
 
-rule fetch_general_geolocation_rules:
-    output:
-        general_geolocation_rules = "data/general-geolocation-rules.tsv"
-    params:
-        geolocation_rules_url = config['curate']['geolocation_rules_url']
-    shell:
-        """
-        curl {params.geolocation_rules_url} > {output.general_geolocation_rules}
-        """
-
-rule concat_geolocation_rules:
-    input:
-        general_geolocation_rules = "data/general-geolocation-rules.tsv",
-        local_geolocation_rules = config['curate']['local_geolocation_rules']
-    output:
-        all_geolocation_rules = "data/all-geolocation-rules.tsv"
-    shell:
-        """
-        cat {input.general_geolocation_rules} {input.local_geolocation_rules} >> {output.all_geolocation_rules}
-        """
-
-
 
 # curate rule is slightly different from the previous genbank version.
 # field_map now uses the ppx_field_map from config
@@ -45,7 +23,7 @@ rule concat_geolocation_rules:
 rule curate:
     input:
         sequences_ndjson = "data/sequences.ndjson",
-        all_geolocation_rules = "data/all-geolocation-rules.tsv",
+        geolocation_rules=config["curate"]["local_geolocation_rules"],
         annotations = config['curate']['annotations'],
     output:
         metadata = "data/curated_metadata.tsv",
@@ -89,7 +67,7 @@ rule curate:
                 --default-value {params.authors_default_value} \
                 --abbr-authors-field {params.abbr_authors_field} \
             | augur curate apply-geolocation-rules \
-                --geolocation-rules {input.all_geolocation_rules} \
+                --geolocation-rules {input.geolocation_rules} \
             | python ./bin/curate-urls.py \
             | augur curate apply-record-annotations \
                 --annotations {input.annotations} \
@@ -104,7 +82,7 @@ rule subset_metadata:
     input:
         metadata = "data/curated_metadata.tsv",
     output:
-        subset_metadata="data/metadata_subset.tsv",
+        subset_metadata="data/metadata.tsv",
     params:
         metadata_fields=",".join(config["curate"]["ppx_metadata_columns"]),
     shell:
@@ -112,21 +90,3 @@ rule subset_metadata:
         tsv-select -H -f {params.metadata_fields} \
             {input.metadata} > {output.subset_metadata}
         """
-
-# can be removed once we can switch to an augur version that infers regions via geo-location-rules
-rule add_region_fields:
-    input:
-        metadata = "data/metadata_subset.tsv",
-        country_region_map = "config/country_region.tsv"
-    output:
-        metadata = "data/metadata.tsv"
-    run:
-        import pandas as pd
-
-        metadata = pd.read_csv(input.metadata, sep="\t", dtype=str)
-        country_region_map = pd.read_csv(input.country_region_map, sep="\t", dtype=str, index_col='country').to_dict()['region']
-        # Fill NaN values in region with 'Unknown'
-        metadata['region'] = metadata['country'].apply(lambda x: country_region_map.get(x, 'Unknown'))
-
-        # Save the updated metadata
-        metadata.to_csv(output.metadata, sep="\t", index=False)
