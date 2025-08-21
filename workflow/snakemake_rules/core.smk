@@ -98,6 +98,7 @@ rule filter_background:
         reference="config/{a_or_b}reference.gbk",
         metadata="data/{a_or_b}/metadata.tsv",
         sequence_index=rules.index_sequences.output,
+        include="config/include_{a_or_b}.txt",
         exclude=config["exclude"],
     output:
         sequences=build_dir
@@ -122,6 +123,7 @@ rule filter_background:
             --sequence-index {input.sequence_index} \
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
+            --include {input.include} \
             --exclude {input.exclude} \
             --exclude-where 'qc.overallStatus=bad' 'qc.overallStatus=mediocre'\
             --min-date {params.min_date} \
