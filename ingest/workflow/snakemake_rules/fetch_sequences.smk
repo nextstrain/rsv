@@ -13,7 +13,6 @@ Produces final output as
 
 """
 
-
 rule fetch_ncbi_dataset_package:
     params:
         ncbi_taxon_id=lambda w: config["ncbi_taxon_id"][w.subtype],
@@ -98,6 +97,47 @@ rule format_ncbi_dataset_report:
             > {output.ncbi_dataset_tsv}
         """
 
+rule download_ppx_seqs:
+    output:
+        sequences= "data/{subtype}/ppx_sequences.fasta",
+    params:
+        sequences_url=lambda w: config["ppx_fetch"][w.subtype]["seqs"],
+    shell:
+        """
+        curl  {params.sequences_url:q} -o {output.sequences}
+        """
+
+rule download_ppx_meta:
+    output:
+        metadata= "data/{subtype}/ppx_metadata.csv"
+    params:
+        metadata_url=lambda w: config["ppx_fetch"][w.subtype]["meta"],
+        fields = ",".join(config["ppx_metadata_fields"])
+    shell:
+        """
+        curl  '{params.metadata_url}&fields={params.fields}' -o {output.metadata}
+        """
+
+rule format_ppx_ndjson:
+    input:
+        sequences="data/{subtype}/ppx_sequences.fasta",
+        metadata="data/{subtype}/ppx_metadata.csv"
+    output:
+        ndjson="data/{subtype}/ppx.ndjson"
+    log:
+        "logs/{subtype}/format_ppx_ndjson.txt"
+    shell:
+        """
+        augur curate passthru \
+            --metadata {input.metadata} \
+            --fasta {input.sequences} \
+            --seq-id-column accessionVersion \
+            --seq-field sequence \
+            --unmatched-reporting warn \
+            --duplicate-reporting warn \
+            2> logs/{wildcards.subtype}/format_ppx_ndjson.txt > {output.ndjson}
+        """
+
 
 rule format_ncbi_datasets_ndjson:
     input:
@@ -133,6 +173,20 @@ rule fetch_all_genbank_sequences:
         """
         cat {input.all_taxon_ids} > {output.sequences_ndjson}
         """
+
+rule fetch_all_ppx_sequences:
+    input:
+        "data/a/ppx.ndjson",
+        "data/b/ppx.ndjson",
+    output:
+        sequences_ndjson="data/ppx.ndjson",
+    shell:
+        """
+        cat {input} > {output.sequences_ndjson}
+        """
+
+
+
 
 def _get_all_sources(wildcards):
     return [f"data/{source}.ndjson" for source in config["sources"]]

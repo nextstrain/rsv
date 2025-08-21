@@ -12,34 +12,18 @@ This will produce output files as
 Parameters are expected to be defined in `config.transform`.
 """
 
-rule fetch_general_geolocation_rules:
-    output:
-        general_geolocation_rules = "data/general-geolocation-rules.tsv"
-    params:
-        geolocation_rules_url = config['curate']['geolocation_rules_url']
-    shell:
-        """
-        curl {params.geolocation_rules_url} > {output.general_geolocation_rules}
-        """
 
-rule concat_geolocation_rules:
-    input:
-        general_geolocation_rules = "data/general-geolocation-rules.tsv",
-        local_geolocation_rules = config['curate']['local_geolocation_rules']
-    output:
-        all_geolocation_rules = "data/all-geolocation-rules.tsv"
-    shell:
-        """
-        cat {input.general_geolocation_rules} {input.local_geolocation_rules} >> {output.all_geolocation_rules}
-        """
-
-
-
-
+# curate rule is slightly different from the previous genbank version.
+# field_map now uses the ppx_field_map from config
+# the geo_loc parsing from genbank is omitted
+#
+#        | augur curate parse-genbank-location \
+#                --location-field {params.genbank_location_field} \
+#
 rule curate:
     input:
         sequences_ndjson = "data/sequences.ndjson",
-        all_geolocation_rules = "data/all-geolocation-rules.tsv",
+        geolocation_rules=config["curate"]["local_geolocation_rules"],
         annotations = config['curate']['annotations'],
     output:
         metadata = "data/curated_metadata.tsv",
@@ -47,7 +31,7 @@ rule curate:
     log:
         "logs/curate.txt"
     params:
-        field_map = config['curate']['field_map'],
+        field_map = config['curate']['ppx_field_map'],
         strain_regex = config['curate']['strain_regex'],
         strain_backup_fields = config['curate']['strain_backup_fields'],
         date_fields = config['curate']['date_fields'],
@@ -74,8 +58,6 @@ rule curate:
             | augur curate format-dates \
                 --date-fields {params.date_fields} \
                 --expected-date-formats {params.expected_date_formats} \
-            | augur curate parse-genbank-location \
-                --location-field {params.genbank_location_field} \
             | augur curate titlecase \
                 --titlecase-fields {params.titlecase_fields} \
                 --articles {params.articles} \
@@ -85,7 +67,8 @@ rule curate:
                 --default-value {params.authors_default_value} \
                 --abbr-authors-field {params.abbr_authors_field} \
             | augur curate apply-geolocation-rules \
-                --geolocation-rules {input.all_geolocation_rules} \
+                --geolocation-rules {input.geolocation_rules} \
+            | python ./bin/curate-urls.py \
             | augur curate apply-record-annotations \
                 --annotations {input.annotations} \
                 --id-field {params.annotations_id} \
@@ -101,7 +84,7 @@ rule subset_metadata:
     output:
         subset_metadata="data/metadata.tsv",
     params:
-        metadata_fields=",".join(config["curate"]["metadata_columns"]),
+        metadata_fields=",".join(config["curate"]["ppx_metadata_columns"]),
     shell:
         """
         tsv-select -H -f {params.metadata_fields} \

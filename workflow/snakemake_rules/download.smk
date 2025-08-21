@@ -5,8 +5,8 @@ rule download:
         metadata =  "data/{a_or_b}/metadata.tsv.gz",
         sequences = "data/{a_or_b}/sequences.fasta.xz"
     params:
-        metadata_url = "http://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata.tsv.gz",
-        sequence_url = "http://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences.fasta.xz"
+        metadata_url = "http://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata_with_restricted.tsv.gz",
+        sequence_url = "http://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences_with_restricted.fasta.xz"
     shell:
         """
         curl -fsSL --compressed {params.metadata_url:q} --output {output.metadata}

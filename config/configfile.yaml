@@ -6,7 +6,7 @@ builds_to_run: ["genome", "G", "F"]
 
 resolutions_to_run: ["all-time", "6y", "3y"]
 
-exclude: "config/outliers.txt"
+exclude: "config/outliers_ppx.txt"
 
 description: "config/description.md"
 
@@ -43,6 +43,7 @@ filter:
 
 files:
   auspice_config: "config/auspice_config.json"
+  auspice_config_additional_colorings: "config/auspice_config_additional_colorings.json"
 
 refine:
   coalescent: "opt"

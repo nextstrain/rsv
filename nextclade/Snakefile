@@ -53,7 +53,7 @@ rule join_metadata:
         import pandas as pd
         m1 = pd.read_csv(input.metadata, sep='\t')
         m2 = pd.read_csv(input.additional_meta, sep='\t')
-        pd.concat((m1,m2)).drop(columns=['clade', 'G_clade']).to_csv(output.metadata, sep='\t')
+        pd.concat((m1,m2)).drop(columns=['clade']).to_csv(output.metadata, sep='\t')
 
 rule download_clades:
     message:
@@ -80,14 +80,34 @@ rule download_changelog:
         curl {params.url} >> {output}
         """
 
+rule translate_insdc_accessions:
+    message: "Translating INSDC accessions to ppx IDs"
+    input:
+        metadata = "data/{a_or_b}/metadata.tsv",
+        include = "config/rsv-{a_or_b}_include.txt",
+        exclude = "config/rsv-{a_or_b}_outliers.txt",
+    output:
+        include = "build/{a_or_b}/include.txt",
+        exclude = "build/{a_or_b}/exclude.txt",
+    shell:
+        """
+        python3 scripts/translate_insdc_ppx.py \
+            --metadata {input.metadata} \
+            --accessions {input.include} \
+            --output {output.include}
+        python3 scripts/translate_insdc_ppx.py \
+            --metadata {input.metadata} \
+            --accessions {input.exclude} \
+            --output {output.exclude}
+        """
 
 
 rule subsample:
     input:
         aligned_sequences=rules.decompress.output.sequences,
         metadata=rules.join_metadata.output.metadata,
-        exclude="config/rsv-{a_or_b}_outliers.txt",
-        include="config/rsv-{a_or_b}_include.txt"
+        exclude="build/{a_or_b}/exclude.txt",
+        include="build/{a_or_b}/include.txt"
     output:
         sampled_sequences="build/{a_or_b}/{reference}/subsample.fasta",
         sampled_strains="build/{a_or_b}/{reference}/subsample.txt",
@@ -108,7 +128,7 @@ rule subsample:
             --exclude {input.exclude} \
             --include {input.include} \
             {params.filter_arguments} \
-            --output {output.sampled_sequences} \
+            --output-sequences {output.sampled_sequences} \
             --output-strains {output.sampled_strains}
         """
 
@@ -151,7 +171,7 @@ rule tree:
             > /dev/null
         """
 
-# root using dates in treetime, use 1500 as sequence length (good enough, doesn't matter)
+# root using dates in treetime, use 15000 as sequence length (good enough, doesn't matter)
 rule root:
     input:
         tree=rules.tree.output.tree,

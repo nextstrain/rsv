@@ -7,8 +7,11 @@ upload:
   s3:
     # Files to upload to S3 that are in the `data` directory
     files_to_upload: [
-      'genbank.ndjson',
       'sequences.ndjson',
+      'a/metadata_open.tsv',
+      'a/sequences_open.fasta',
+      'b/metadata_open.tsv',
+      'b/sequences_open.fasta',
       'a/metadata.tsv',
       'a/sequences.fasta',
       'b/metadata.tsv',
@@ -16,12 +19,15 @@ upload:
     ]
     # Remote file names for the files to upload, must be in the same order as local files above
     remote_file_names: [
-      'genbank.ndjson.xz',
       'sequences.ndjson.xz',
       'a/metadata.tsv.gz',
       'a/sequences.fasta.xz',
       'b/metadata.tsv.gz',
-      'b/sequences.fasta.xz'
+      'b/sequences.fasta.xz',
+      'a/metadata_with_restricted.tsv.gz',
+      'a/sequences_with_restricted.fasta.xz',
+      'b/metadata_with_restricted.tsv.gz',
+      'b/sequences_with_restricted.fasta.xz'
     ]
     cloudfront_domain: 'data.nextstrain.org'
 

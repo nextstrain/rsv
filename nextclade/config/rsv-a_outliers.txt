@@ -9,3 +9,6 @@ PP151353
 PP151368
 PP151363
 MN630091
+
+# too close an ancestor to A.D.1.10
+PP_001X2VB.1
