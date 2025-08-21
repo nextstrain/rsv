@@ -24,10 +24,10 @@ upload:
       'a/sequences.fasta.xz',
       'b/metadata.tsv.gz',
       'b/sequences.fasta.xz',
-      'a/metadata_withRestricted.tsv.gz',
-      'a/sequences_withRestricted.fasta.xz',
-      'b/metadata_withRestricted.tsv.gz',
-      'b/sequences_withRestricted.fasta.xz'
+      'a/metadata_with_restricted.tsv.gz',
+      'a/sequences_with_restricted.fasta.xz',
+      'b/metadata_with_restricted.tsv.gz',
+      'b/sequences_with_restricted.fasta.xz'
     ]
     cloudfront_domain: 'data.nextstrain.org'
 
