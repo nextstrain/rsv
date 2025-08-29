@@ -28,6 +28,18 @@ rule colors:
             --output {output.colors}
         """
 
+def auspice_configs(wildcards):
+    """
+    Returns a list of auspice configs which change depending on the wildcards.
+    This is preferable to using command-line args to define per-build changes as
+    these tend to clobber the data in the provided config JSON.
+    (Note: multiple config file support requires Augur v29.1.0)
+    """
+    configs = [config["files"]["auspice_config"]] # base config
+    if wildcards.build_name!='genome':
+        configs.append(config['files']['auspice_config_additional_colorings'])
+    return configs
+
 rule export:
     message: "Exporting data files for auspice"
     input:
@@ -35,19 +47,18 @@ rule export:
         metadata = "data/{a_or_b}/metadata.tsv",
         node_data = get_node_data,
         colors = rules.colors.output.colors,
-        auspice_config = config["files"]["auspice_config"],
+        auspice_config = auspice_configs,
         description = config["description"]
     output:
         auspice_json =  build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json"
     params:
         title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny",
         strain_id=config["strain_id_field"],
-        metadata_colors = lambda w: '' if w.build_name=='genome' else f"--color-by-metadata clade"
     shell:
         """
         augur export v2 \
             --tree {input.tree} \
-            --metadata {input.metadata} {params.metadata_colors} \
+            --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
             --node-data {input.node_data} \
             --title {params.title:q} \
@@ -55,8 +66,10 @@ rule export:
             --colors {input.colors} \
             --auspice-config {input.auspice_config} \
             --include-root-sequence-inline \
+            --validation warn \
             --output {output.auspice_json}
         """
+
 
 rule final_strain_name:
     input:

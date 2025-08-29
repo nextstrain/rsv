@@ -8,6 +8,10 @@
     {
       "name": "GenBank",
       "url": "https://www.ncbi.nlm.nih.gov/genbank/"
+    },
+    {
+      "name": "Pathoplexus",
+      "url": "https://pathoplexus.org"
     }
   ],
   "build_url": "https://github.com/nextstrain/rsv",
@@ -25,6 +29,11 @@
     {
       "key": "country",
       "title": "Country",
+      "type": "categorical"
+    },
+    {
+      "key": "dataUseTerms",
+      "title": "Data use terms",
       "type": "categorical"
     },
     {
@@ -82,6 +91,11 @@
       "title": "F Protein Prefusion Surface Residues",
       "type": "ordinal"
     }
+  ],
+  "metadata_columns": [
+    "PPX_accession",
+    "INSDC_accession",
+    "restrictedUntil"
   ],
   "geo_resolutions": [
     "country",

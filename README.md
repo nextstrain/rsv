@@ -20,6 +20,16 @@ RSV sequences and metadata can be downloaded in the `/ingest` folder using
 The ingest pipeline is based on the Nextstrain mpox ingest workflow (<https://github.com/nextstrain/mpox/tree/master/ingest>).
 Running the ingest pipeline produces `ingest/data/{a,b}/metadata.tsv` and `ingest/data/{a,b}/sequences.fasta`.
 
+### Use locally ingested data
+
+Once you have run the ingest pipeline locally you can copy the files into the top-level `data` directory so that the main phylo workflow uses these files rather than downloading from s3:
+
+```sh
+mkdir -p data/{a,b}
+for i in ingest/data/*/{metadata.tsv,sequences.fasta}; do cp $i ${i#ingest/}; done
+```
+
+
 ### `ingest/vendored`
 
 This repository uses [`git subrepo`](https://github.com/ingydotnet/git-subrepo) to manage copies of ingest scripts in [`ingest/vendored`](./ingest/vendored), from [nextstrain/ingest](https://github.com/nextstrain/ingest). To pull new changes from the central ingest repository, first install `git subrepo`, then run:
