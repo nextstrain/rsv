@@ -5,7 +5,7 @@
 - **Pathogen/Strain:** RSV
 - **Scope:** Whole genome builds for both RSV A and RSV B
 - **Purpose:** This repository contains the Nextstrain build for Washington State genomic surveillance of RSV.
-- **Nextstrain Build Location:** https://github.com/NW-PaGe/rsv
+- **Nextstrain Build Location:** https://nextstrain.org/groups/wadoh#rsv
 
 ## Table of Contents  
 - [Getting Started](#getting-started)
