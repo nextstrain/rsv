@@ -102,9 +102,11 @@ rule download_ppx_seqs:
         sequences= "data/{subtype}/ppx_sequences.fasta",
     params:
         sequences_url=lambda w: config["ppx_fetch"][w.subtype]["seqs"],
+    # Allow retries in case of network errors
+    retries: 5
     shell:
         """
-        curl  {params.sequences_url:q} -o {output.sequences}
+        curl -fsSL {params.sequences_url:q} -o {output.sequences}
         """
 
 rule download_ppx_meta:
@@ -113,9 +115,11 @@ rule download_ppx_meta:
     params:
         metadata_url=lambda w: config["ppx_fetch"][w.subtype]["meta"],
         fields = ",".join(config["ppx_metadata_fields"])
+    # Allow retries in case of network errors
+    retries: 5
     shell:
         """
-        curl  '{params.metadata_url}&fields={params.fields}' -o {output.metadata}
+        curl -fsSL '{params.metadata_url}&fields={params.fields}' -o {output.metadata}
         """
 
 rule format_ppx_ndjson:
