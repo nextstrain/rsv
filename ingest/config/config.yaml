@@ -9,10 +9,10 @@ ncbi_taxon_id:
 
 ppx_fetch:
   a:
-    seqs: https://lapis.pathoplexus.org/rsv-a/sample/unalignedNucleotideSequences
+    seqs: https://lapis.pathoplexus.org/rsv-a/sample/unalignedNucleotideSequences?versionStatus=LATEST_VERSION
     meta: https://lapis.pathoplexus.org/rsv-a/sample/details?dataFormat=csv&versionStatus=LATEST_VERSION
   b:
-    seqs: https://lapis.pathoplexus.org/rsv-b/sample/unalignedNucleotideSequences
+    seqs: https://lapis.pathoplexus.org/rsv-b/sample/unalignedNucleotideSequences?versionStatus=LATEST_VERSION
     meta: https://lapis.pathoplexus.org/rsv-b/sample/details?dataFormat=csv&versionStatus=LATEST_VERSION
 
 
