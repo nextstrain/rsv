@@ -14,3 +14,17 @@ Europe/Italy/Fvg/Gorizia	Europe/Italy/Friuli Venezia Giulia/Gorizia
 # Unclear which location is the real location
 Europe/Netherlands/Utrecht/Rotterdam	Europe/Netherlands//
 North America/USA/Washington/Dc	North America/USA/Washington DC/
+
+# General rules that should be transferred to Augur
+*/Cambodia/*/*	Asia/Cambodia/*/*
+*/Central African Republic/*/*	Africa/Central African Republic/*/*
+*/Cote d'Ivoire/*/*	Africa/Côte d'Ivoire/*/*
+*/Cuba/*/*	North America/Cuba/*/*
+*/Gambia/*/*	Africa/Gambia/*/*
+*/Jordan/*/*	Asia/Jordan/*/*
+*/Korea/*/*	Asia/South Korea/*/*
+*/Mali/*/*	Africa/Mali/*/*
+*/Mongolia/*/*	Asia/Mongolia/*/*
+*/Nicaragua/*/*	North America/Nicaragua/*/*
+*/Singapore/*/*	Asia/Singapore/*/*
+*/Viet Nam/*/*	Asia/Vietnam/*/*
