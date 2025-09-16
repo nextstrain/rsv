@@ -36,7 +36,6 @@ rule curate:
         strain_backup_fields = config['curate']['strain_backup_fields'],
         date_fields = config['curate']['date_fields'],
         expected_date_formats = config['curate']['expected_date_formats'],
-        genbank_location_field=config["curate"]["genbank_location_field"],
         articles = config['curate']['titlecase']['articles'],
         abbreviations = config['curate']['titlecase']['abbreviations'],
         titlecase_fields = config['curate']['titlecase']['fields'],
