@@ -63,6 +63,8 @@ curate:
   authors_default_value: '?'
   # Field name for the generated abbreviated authors
   abbr_authors_field: 'abbr_authors'
+  ppx_division_field: 'division'
+  location_field: 'location'
   # Local geolocation rules that are only applicable to rsv data
   local_geolocation_rules: 'source-data/geolocation-rules.tsv'
   # User annotations file

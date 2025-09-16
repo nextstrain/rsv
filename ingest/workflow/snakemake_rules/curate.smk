@@ -42,6 +42,8 @@ rule curate:
         authors_field = config['curate']['authors_field'],
         authors_default_value = config['curate']['authors_default_value'],
         abbr_authors_field = config['curate']['abbr_authors_field'],
+        ppx_division_field = config['curate']['ppx_division_field'],
+        location_field = config['curate']['location_field'],
         annotations_id = config['curate']['annotations_id'],
         id_field = config['curate']['id_field'],
         sequence_field = config['curate']['sequence_field']
@@ -65,6 +67,9 @@ rule curate:
                 --authors-field {params.authors_field} \
                 --default-value {params.authors_default_value} \
                 --abbr-authors-field {params.abbr_authors_field} \
+            | ./bin/parse-ppx-division \
+                --division-field {params.ppx_division_field:q} \
+                --location-field {params.location_field:q} \
             | augur curate apply-geolocation-rules \
                 --geolocation-rules {input.geolocation_rules} \
             | python ./bin/curate-urls.py \
