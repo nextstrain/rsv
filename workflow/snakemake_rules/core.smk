@@ -14,7 +14,7 @@ rule index_sequences:
         sequences="data/{a_or_b}/sequences.fasta",
     output:
         sequence_index=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/sequence_index.tsv",
+        + "/{a_or_b}/sequence_index.tsv",
     shell:
         """
         augur index \
