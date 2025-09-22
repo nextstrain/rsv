@@ -67,6 +67,15 @@ cds:
 traits:
   columns: "country"
 
+frequencies:
+  resolutions:
+    all-time:
+      min_date: 1975-01-01
+    6y:
+      min_date: 6Y
+    3y:
+      min_date: 3Y
+
 nextclade_attributes:
   a:
     name: "RSV-A NextClade using real-time tree"
