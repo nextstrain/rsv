@@ -54,7 +54,6 @@ rule filter_recent:
         """
     input:
         sequences="data/{a_or_b}/sequences.fasta",
-        reference="config/{a_or_b}reference.gbk",
         metadata="data/{a_or_b}/metadata.tsv",
         sequence_index=rules.index_sequences.output,
         exclude=config["exclude"],
@@ -95,7 +94,6 @@ rule filter_background:
         """
     input:
         sequences="data/{a_or_b}/sequences.fasta",
-        reference="config/{a_or_b}reference.gbk",
         metadata="data/{a_or_b}/metadata.tsv",
         sequence_index=rules.index_sequences.output,
         include="config/include_{a_or_b}.txt",
