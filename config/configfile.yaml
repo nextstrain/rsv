@@ -41,6 +41,12 @@ filter:
     G: 3000
     F: 3000
 
+  exclude_where:
+    recent: ["qc.overallStatus=bad"]
+    background: ["qc.overallStatus=bad", "qc.overallStatus=mediocre"]
+
+  missing_data_threshold: 1000
+
 files:
   auspice_config: "config/auspice_config.json"
   auspice_config_additional_colorings: "config/auspice_config_additional_colorings.json"

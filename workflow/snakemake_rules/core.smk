@@ -69,6 +69,8 @@ rule filter_recent:
         ].get(w.build_name, 1000),
         strain_id=config["strain_id_field"],
         min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
+        exclude_where=lambda w: " ".join([f"'{item}'" for item in config["filter"]["exclude_where"]["recent"]]),
+        missing_data_threshold=config["filter"]["missing_data_threshold"],
     shell:
         """
         augur filter \
@@ -77,13 +79,13 @@ rule filter_recent:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' \
+            --exclude-where {params.exclude_where} \
             --min-date {params.min_date} \
             --min-length {params.min_length} \
             --output {output.sequences} \
             --group-by {params.group_by} \
             --subsample-max-sequences {params.subsample_max_sequences} \
-            --query '({params.min_coverage}) & missing_data<1000'
+            --query '({params.min_coverage}) & missing_data<{params.missing_data_threshold}'
         """
 
 
@@ -114,6 +116,8 @@ rule filter_background:
         min_date=lambda w: config["filter"]["resolutions"][w.resolution][
             "background_min_date"
         ],
+        exclude_where=lambda w: " ".join([f"'{item}'" for item in config["filter"]["exclude_where"]["background"]]),
+        missing_data_threshold=config["filter"]["missing_data_threshold"],
     shell:
         """
         augur filter \
@@ -123,14 +127,14 @@ rule filter_background:
             --metadata-id-columns {params.strain_id} \
             --include {input.include} \
             --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' 'qc.overallStatus=mediocre'\
+            --exclude-where {params.exclude_where} \
             --min-date {params.min_date} \
             --max-date {params.max_date} \
             --min-length {params.min_length} \
             --output {output.sequences} \
             --group-by {params.group_by} \
             --subsample-max-sequences {params.subsample_max_sequences} \
-            --query '({params.min_coverage}) & missing_data<1000'
+            --query '({params.min_coverage}) & missing_data<{params.missing_data_threshold}'
         """
 
 
