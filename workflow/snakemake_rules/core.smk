@@ -32,9 +32,9 @@ rule newreference:
         oldreference="config/{a_or_b}reference.gbk",
     output:
         newreferencegbk=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/{gene}_reference.gbk",
+        + "/{a_or_b}/{gene}_reference.gbk",
         newreferencefasta=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/{gene}_reference.fasta",
+        + "/{a_or_b}/{gene}_reference.fasta",
     params:
         gene=lambda w: w.gene,
     shell:
@@ -225,7 +225,7 @@ rule realign:
     input:
         slicedalignment=rules.cut.output.slicedalignment,
         reference=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/{gene}_reference.fasta",
+        + "/{a_or_b}/{gene}_reference.fasta",
     output:
         realigned=build_dir + "/{a_or_b}/{build_name}/{resolution}/{gene}_aligned.fasta",
     threads: 4
@@ -394,7 +394,7 @@ rule ancestral:
         tree=rules.refine.output.tree,
         alignment=get_alignment,
         translations=rules.genome_align.output.translations,
-        root_sequence=build_dir + "/{a_or_b}/{build_name}/{resolution}/{build_name}_reference.gbk",
+        root_sequence=build_dir + "/{a_or_b}/{build_name}_reference.gbk",
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/nt_muts.json",
         translations_done=build_dir + "/{a_or_b}/{build_name}/{resolution}/translations.done",
@@ -426,7 +426,7 @@ rule translate:
     input:
         tree=rules.refine.output.tree,
         node_data=rules.ancestral.output.node_data,
-        reference=build_dir + "/{a_or_b}/{build_name}/{resolution}/{build_name}_reference.gbk",
+        reference=build_dir + "/{a_or_b}/{build_name}_reference.gbk",
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/aa_muts.json",
     params:
