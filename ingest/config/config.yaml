@@ -46,8 +46,6 @@ curate:
   # These date formats should use directives expected by datetime
   # See https://docs.python.org/3.9/library/datetime.html#strftime-and-strptime-format-codes
   expected_date_formats: ['%Y', '%Y-%m', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ']
-  # The expected field that contains the GenBank geo_loc_name
-  genbank_location_field: location
   # Titlecase rules
   titlecase:
     # Abbreviations not cast to titlecase, keeps uppercase
@@ -65,6 +63,8 @@ curate:
   authors_default_value: '?'
   # Field name for the generated abbreviated authors
   abbr_authors_field: 'abbr_authors'
+  ppx_division_field: 'division'
+  location_field: 'location'
   # Local geolocation rules that are only applicable to rsv data
   local_geolocation_rules: 'source-data/geolocation-rules.tsv'
   # User annotations file

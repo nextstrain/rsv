@@ -14,3 +14,41 @@ Europe/Italy/Fvg/Gorizia	Europe/Italy/Friuli Venezia Giulia/Gorizia
 # Unclear which location is the real location
 Europe/Netherlands/Utrecht/Rotterdam	Europe/Netherlands//
 North America/USA/Washington/Dc	North America/USA/Washington DC/
+
+# General rules that should be transferred to Augur
+*/Brazil/Fortaleza/Ce	*/Brazil/Ceará/Fortaleza
+*/Brazil/Sao Paulo/Sp	*/Brazil/São Paulo/São Paulo BR
+*/Cambodia/*/*	Asia/Cambodia/*/*
+*/Cambodia/Banang/*	*/Cambodia/Battambang/Rotanak Mondol
+*/Cambodia/Kantrop/*	*/Cambodia/Banteay Meanchey/Preah Netr Preah
+*/Cambodia/Kok Kdouch/*	*/Cambodia/Banteay Meanchey/Mongkol Borey
+*/Cambodia/Peam/*	*/Cambodia/Siem Reap/Puok
+*/Cambodia/Tako/*	*/Cambodia/Svay Rieng/Svay Chrum
+*/Cambodia/Tmey/*	*/Cambodia/Siem Reap/Puok
+*/Central African Republic/*/*	Africa/Central African Republic/*/*
+*/Cote d'Ivoire/*/*	Africa/Côte d'Ivoire/*/*
+*/Cuba/*/*	North America/Cuba/*/*
+*/Gambia/*/*	Africa/Gambia/*/*
+*/India/Pune District/Maharashtra State	*/India/Maharashtra/Pune (Maharashtra)
+*/Jordan/*/*	Asia/Jordan/*/*
+*/Korea/*/*	Asia/South Korea/*/*
+*/Mali/*/*	Africa/Mali/*/*
+*/Mongolia/*/*	Asia/Mongolia/*/*
+*/Nicaragua/*/*	North America/Nicaragua/*/*
+*/Philippines/Biliran/Naval	*/Philippines/Biliran/
+*/Philippines/Palawan/Puerto Princesa	*/Philippines/Mimaropa/Palawan
+*/Singapore/*/*	Asia/Singapore/*/*
+*/South Africa/Pretoria/Kalafong	*/South Africa/Gauteng/Pretoria
+*/Thailand/Hospital For Tropical Medicine/Bangkok	*/Thailand/Bangkok/
+*/Viet Nam/*/*	Asia/Vietnam/*/*
+*/USA/Dallas/Texas	*/USA/Texas/Dallas County
+*/USA/Gainesville/Florida	*/USA/Florida/Alachua County
+*/USA/Little Rock/Arkansas	*/USA/Arkansas/Pulaski County AR
+*/USA/Milwaukee/Wi	*/USA/Wisconsin/Milwaukee County
+*/USA/Nashville/Tennessee	*/USA/Tennessee/Davidson County TN
+*/USA/New Haven/Connecticut	*/USA/Connecticut/New Haven County
+*/USA/Philadelphia/Pa	*/USA/Pennsylvania/Philadelphia County
+*/USA/Pittsburgh/Pa	*/USA/Pennsylvania/Allegheny County
+*/USA/Rochester/Ny	*/USA/New York/Monroe County NY
+*/USA/Texas/Tx	*/USA/Texas/Galveston County
+*/USA/University of Colorado/Co	*/USA/Colorado/Boulder County
