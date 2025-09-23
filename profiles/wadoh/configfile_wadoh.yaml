@@ -1,89 +1,12 @@
-conda_environment: "workflow/envs/nextstrain.yaml"
-
 custom_rules:
   - "profiles/wadoh/wa_filter.smk"
-
-genesforglycosylation: ["G", "F"]
 
 builds_to_run: ["genome"]
 
 resolutions_to_run: ["6y"]
 
-subtypes: ['a', 'b']
-
-# Both files must have a {a_or_b} expandable field to be replaced by "a" or "b"
-# depending on if they are specified in the `subtypes` param above
-inputs:
-  - name: ppx_open
-    metadata: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata.tsv.gz"
-    sequences: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences.fasta.xz"
-  - name: ppx_restricted
-    metadata: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata_restricted.tsv.gz"
-    sequences: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences_restricted.fasta.xz"
-
-exclude: "config/outliers_ppx.txt"
-
-description: "config/description.md"
-
-strain_id_field: "accession"
-display_strain_field: "strain"
-
-
 filter:
   group_by: "year country division"
-  min_coverage:
-    genome: 0.3
-    G: 0.3
-    F: 0.3
-
-  min_length:
-    genome: 10000
-    G: 600
-    F: 1200
-  resolutions: #If adding new resolutions, need to add to config/distance_maps.tsv
-    all-time:
-      min_date: 1975-01-01
-    6y:
-      min_date: 6Y
-      background_min_date: 12Y
-    3y:
-      min_date: 3Y
-      background_min_date: 12Y
-    1y:
-      min_date: 1Y
-      background_min_date: 12Y
-
-  subsample_max_sequences:
-    genome: 3000
-    G: 3000
-    F: 3000
 
 files:
   auspice_config: "profiles/wadoh/auspice_config_wa.json"
-  auspice_config_additional_colorings: "config/auspice_config_additional_colorings.json"
-
-refine:
-  coalescent: "opt"
-  date_inference: "marginal"
-  clock_filter_iqd: 4
-
-ancestral:
-  inference: "joint"
-
-cds:
-  F: "F"
-  G: "G"
-  genome: "F"
-
-traits:
-  columns: "country region"
-
-nextclade_attributes:
-  a:
-    name: "RSV-A NextClade using real-time tree"
-    reference_name: "hRSV/A/England/397/2017"
-    accession: "EPI_ISL_412866"
-  b:
-    name: "RSV-B NextClade using real-time tree"
-    reference_name: "hRSV/B/Australia/VIC-RCH056/2019"
-    accession: "EPI_ISL_1653999"
