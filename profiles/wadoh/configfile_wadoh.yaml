@@ -1,12 +1,26 @@
-custom_rules:
-  - "profiles/wadoh/wa_filter.smk"
-
 builds_to_run: ["genome"]
 
 resolutions_to_run: ["6y"]
 
-filter:
-  group_by: "year country division"
+# NOTE: these are overrides. See default config or generated subsample config
+# files for the full picture.
+subsample_matrix:
+  defaults:
+    group_by:
+      - year
+      - country
+      - division
+  
+  resolutions:
+    6y:
+      samples:
+        recent:
+          min_date: 12Y
+          max_sequences: 10000
+          query: genome_coverage>0.3 & missing_data<1000 & division=="Washington"
+        background:
+          max_sequences: 3000
+          query: genome_coverage>0.3 & missing_data<1000 & division=="Washington"
 
 files:
   auspice_config: "profiles/wadoh/auspice_config_wa.json"
