@@ -1,12 +1,40 @@
-custom_rules:
-  - "profiles/wadoh/wa_filter.smk"
-
 builds_to_run: ["genome"]
 
 resolutions_to_run: ["6y"]
 
-filter:
-  group_by: "year country division"
+subsample:
+  - dataset: '*/*/*'
+    query: missing_data<1000
+    exclude: config/outliers_ppx.txt
+    exclude_where:
+      - qc.overallStatus=bad
+    group_by:
+      - year
+      - country
+      - division
+
+  - dataset: 'a/*/*'
+    include: config/include_a.txt
+    query: clade.str.startswith("A.D", na=False)
+  - dataset: 'b/*/*'
+    include: config/include_b.txt
+    query: clade.str.startswith("B.D", na=False)
+
+  - dataset: '*/genome/*'
+    min_length: 10000
+    query: genome_coverage>0.3
+
+  - dataset: '*/*/6y'
+    samples:
+      recent:
+        min_date: 6Y
+        max_sequences: 3000
+      background:
+        min_date: 12Y
+        max_date: 6Y
+        exclude_where:
+          - qc.overallStatus=mediocre
+        max_sequences: 300
 
 files:
   auspice_config: "profiles/wadoh/auspice_config_wa.json"
