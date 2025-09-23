@@ -1,6 +1,3 @@
-custom_rules:
-  - profiles/wadoh/wa_filter.smk
-
 #builds_to_run: ["genome", "G", "F"]
 builds_to_run: ["genome"]
 
@@ -8,16 +5,35 @@ builds_to_run: ["genome"]
 resolutions_to_run: ["all-time"]
 
 
-filter:
-  group_by: "year country division"
+custom_subsample:
+  genome/all-time:
+    samples:
+      wa:
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+          - qc.overallStatus=bad
+        min_length: 10000
+        query: genome_coverage>0.3 & missing_data<1000 & division == 'Washington'
+        min_date: 1975-01-01
+        group_by:
+          - year
+          - country
+          - division
+        max_sequences: 10000
 
-  subsample_max_sequences:
-    genome: 10000
-
-  # NOTE: these are unused; see filters applied directly in wa_filter.smk
-  subsampling:
-    state: 'division == "Washington" '
-    country: 'division != "Washington" '
+      contextual:
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+          - qc.overallStatus=bad
+          - qc.overallStatus=mediocre
+        min_length: 10000
+        query: genome_coverage>0.3 & missing_data<1000 & division != 'Washington'
+        min_date: 1975-01-01
+        group_by:
+          - year
+          - country
+          - division
+        max_sequences: 10000
 
 files:
   auspice_config: "profiles/wadoh/auspice_config_wa.json"
