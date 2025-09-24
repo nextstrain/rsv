@@ -47,108 +47,31 @@ rule newreference:
         """
 
 
-rule filter_recent:
-    message:
-        """
-        filtering sequences
-        """
+rule subsample:
     input:
         sequences="data/{a_or_b}/sequences.fasta",
-        reference="config/{a_or_b}reference.gbk",
         metadata="data/{a_or_b}/metadata.tsv",
         sequence_index=rules.index_sequences.output,
-        exclude=config["exclude"],
-    output:
-        sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_recent.fasta",
-    params:
-        group_by=config["filter"]["group_by"],
-        min_coverage=lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
-        min_length=lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
-        subsample_max_sequences=lambda w: config["filter"][
-            "subsample_max_sequences"
-        ].get(w.build_name, 1000),
-        strain_id=config["strain_id_field"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
-    shell:
-        """
-        augur filter \
-            --sequences {input.sequences} \
-            --sequence-index {input.sequence_index} \
-            --metadata {input.metadata} \
-            --metadata-id-columns {params.strain_id} \
-            --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' \
-            --min-date {params.min_date} \
-            --min-length {params.min_length} \
-            --output {output.sequences} \
-            --group-by {params.group_by} \
-            --subsample-max-sequences {params.subsample_max_sequences} \
-            --query '({params.min_coverage}) & missing_data<1000'
-        """
-
-
-rule filter_background:
-    message:
-        """
-        filtering sequences
-        """
-    input:
-        sequences="data/{a_or_b}/sequences.fasta",
-        reference="config/{a_or_b}reference.gbk",
-        metadata="data/{a_or_b}/metadata.tsv",
-        sequence_index=rules.index_sequences.output,
-        exclude=config["exclude"],
-    output:
-        sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background.fasta",
-    params:
-        group_by=config["filter"]["group_by"],
-        min_coverage=lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
-        min_length=lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
-        subsample_max_sequences=lambda w: int(
-            config["filter"]["subsample_max_sequences"].get(w.build_name, 1000)
-        )
-        // 10,
-        strain_id=config["strain_id_field"],
-        max_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution][
-            "background_min_date"
-        ],
-    shell:
-        """
-        augur filter \
-            --sequences {input.sequences} \
-            --sequence-index {input.sequence_index} \
-            --metadata {input.metadata} \
-            --metadata-id-columns {params.strain_id} \
-            --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' 'qc.overallStatus=mediocre'\
-            --min-date {params.min_date} \
-            --max-date {params.max_date} \
-            --min-length {params.min_length} \
-            --output {output.sequences} \
-            --group-by {params.group_by} \
-            --subsample-max-sequences {params.subsample_max_sequences} \
-            --query '({params.min_coverage}) & missing_data<1000'
-        """
-
-
-rule combine_samples:
-    input:
-        subsamples=lambda w: (
-            [
-                rules.filter_recent.output.sequences,
-                rules.filter_background.output.sequences,
-            ]
-            if "background_min_date" in config["filter"]["resolutions"][w.resolution]
-            else [rules.filter_recent.output.sequences]
-        ),
+        config = RUN_CONFIG,
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered.fasta",
+    params:
+        strain_id=config["strain_id_field"],
+        config_section = lambda w: ["custom_subsample" if config.get("custom_subsample") else "subsample", f"{w.build_name}/{w.resolution}"]
+    log:
+        "logs/subsample_{a_or_b}_{build_name}_{resolution}.txt",
+    threads: workflow.cores
     shell:
         """
-        cat {input.subsamples} | seqkit rmdup > {output}
+        augur subsample \
+            --sequences {input.sequences} \
+            --sequence-index {input.sequence_index} \
+            --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
+            --config {input.config} \
+            --config-section {params.config_section:q} \
+            --nthreads {threads} \
+            --output-sequences {output.sequences}
         """
 
 
@@ -158,7 +81,7 @@ rule get_nextclade_dataset:
         fetching nextclade dataset
         """
     output:
-        dataset="nextclade_rsv-{a_or_b}.zip",
+        dataset="results/nextclade_rsv-{a_or_b}.zip",
     params:
         ds_name=lambda w: (
             "nextstrain/rsv/a/EPI_ISL_412866"
@@ -177,7 +100,7 @@ rule genome_align:
         Aligning sequences to the reference
         """
     input:
-        sequences=rules.combine_samples.output.sequences,
+        sequences=rules.subsample.output.sequences,
         dataset=rules.get_nextclade_dataset.output.dataset,
     output:
         alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/sequences.aligned.fasta",
@@ -469,7 +392,7 @@ rule frequencies:
     output:
         frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     params:
-        min_date_arg = lambda w: f"--min-date {config['filter']['resolutions'][w.resolution]['min_date']}" if w.resolution in config["filter"].get('resolutions', {}) else "",
+        min_date_arg = lambda w: f"--min-date {config['frequencies']['resolutions'][w.resolution]['min_date']}" if w.resolution in config["frequencies"].get('resolutions', {}) else "",
     shell:
         """
         augur frequencies \

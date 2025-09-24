@@ -1,3 +1,52 @@
+variables:
+  # NOTE: these must be used in most-specific to least-specific order.
+  # <https://yaml.org/type/merge.html>
+  #     "Keys in mapping nodes earlier in the sequence override keys specified in later mapping nodes."
+  subsample:
+    defaults: &subsample_defaults
+      exclude: "config/outliers_ppx.txt"
+      exclude_where:
+        - qc.overallStatus=bad
+      group_by:
+        - year
+        - country
+
+    genome: &subsample_genome
+      min_length: 10000
+      query: genome_coverage>0.3 & missing_data<1000
+    G: &subsample_G
+      min_length: 600
+      query: G_coverage>0.3 & missing_data<1000
+    F: &subsample_F
+      min_length: 1200
+      query: F_coverage>0.3 & missing_data<1000
+
+    recent_base: &recent_base
+      max_sequences: 3000
+
+    background_base: &background_base
+      exclude_where:
+        - qc.overallStatus=bad
+        - qc.overallStatus=mediocre
+      max_sequences: 300
+
+    all-time: &subsample_all-time
+      min_date: 1975-01-01
+      max_sequences: 3000
+    6y_recent: &subsample_6y_recent
+      <<: *recent_base
+      min_date: 6Y
+    6y_background: &subsample_6y_background
+      <<: *background_base
+      max_date: 6Y
+    3y_recent: &subsample_3y_recent
+      <<: *recent_base
+      min_date: 3Y
+    3y_background: &subsample_3y_background
+      <<: *background_base
+      max_date: 3Y
+
+
 conda_environment: "workflow/envs/nextstrain.yaml"
 
 genesforglycosylation: ["G", "F"]
@@ -6,8 +55,6 @@ builds_to_run: ["genome", "G", "F"]
 
 resolutions_to_run: ["all-time", "6y", "3y"]
 
-exclude: "config/outliers.txt"
-
 description: "config/description.md"
 
 strain_id_field: "accession"
@@ -15,34 +62,62 @@ display_strain_field: "strain"
 
 subtypes: ['a', 'b']
 
-filter:
-  group_by: "year country"
-  min_coverage:
-    genome: 0.3
-    G: 0.3
-    F: 0.3
-
-  min_length:
-    genome: 10000
-    G: 600
-    F: 1200
-  resolutions:
-    all-time:
-      min_date: 1975-01-01
-    6y:
-      min_date: 6Y
-      background_min_date: 1975-01-01
-    3y:
-      min_date: 3Y
-      background_min_date: 1975-01-01
-
-  subsample_max_sequences:
-    genome: 3000
-    G: 3000
-    F: 3000
+# Use 'custom_subsample' instead of 'subsample' to define your own augur
+# subsample config¹ per build.
+# ¹ <https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/subsample.html#configuration>
+subsample:
+  genome/all-time:
+    samples:
+      all-time:
+        <<: [*subsample_genome, *subsample_all-time, *subsample_defaults]
+  genome/6y:
+    samples:
+      recent:
+        <<: [*subsample_genome, *subsample_6y_recent, *subsample_defaults]
+      background:
+        <<: [*subsample_genome, *subsample_6y_background, *subsample_defaults]
+  genome/3y:
+    samples:
+      recent:
+        <<: [*subsample_genome, *subsample_3y_recent, *subsample_defaults]
+      background:
+        <<: [*subsample_genome, *subsample_3y_background, *subsample_defaults]
+  G/all-time:
+    samples:
+      all-time:
+        <<: [*subsample_G, *subsample_all-time, *subsample_defaults]
+  G/6y:
+    samples:
+      recent:
+        <<: [*subsample_G, *subsample_6y_recent, *subsample_defaults]
+      background:
+        <<: [*subsample_G, *subsample_6y_background, *subsample_defaults]
+  G/3y:
+    samples:
+      recent:
+        <<: [*subsample_G, *subsample_3y_recent, *subsample_defaults]
+      background:
+        <<: [*subsample_G, *subsample_3y_background, *subsample_defaults]
+  F/all-time:
+    samples:
+      all-time:
+        <<: [*subsample_F, *subsample_all-time, *subsample_defaults]
+  F/6y:
+    samples:
+      recent:
+        <<: [*subsample_F, *subsample_6y_recent, *subsample_defaults]
+      background:
+        <<: [*subsample_F, *subsample_6y_background, *subsample_defaults]
+  F/3y:
+    samples:
+      recent:
+        <<: [*subsample_F, *subsample_3y_recent, *subsample_defaults]
+      background:
+        <<: [*subsample_F, *subsample_3y_background, *subsample_defaults]
 
 files:
   auspice_config: "config/auspice_config.json"
+  auspice_config_additional_colorings: "config/auspice_config_additional_colorings.json"
 
 refine:
   coalescent: "opt"
@@ -59,6 +134,15 @@ cds:
 
 traits:
   columns: "country"
+
+frequencies:
+  resolutions:
+    all-time:
+      min_date: 1975-01-01
+    6y:
+      min_date: 6Y
+    3y:
+      min_date: 3Y
 
 nextclade_attributes:
   a:

@@ -1,5 +1,5 @@
 # Sources of sequences to include in the ingest run
-sources: ['genbank']
+sources: ['ppx']
 conda_environment: "workflow/envs/nextstrain.yaml"
 
 ncbi_taxon_id:
@@ -7,17 +7,39 @@ ncbi_taxon_id:
   b: "208895"
   general: "11250"
 
+ppx_fetch:
+  a:
+    seqs: https://lapis.pathoplexus.org/rsv-a/sample/unalignedNucleotideSequences?versionStatus=LATEST_VERSION
+    meta: https://lapis.pathoplexus.org/rsv-a/sample/details?dataFormat=csv&versionStatus=LATEST_VERSION
+  b:
+    seqs: https://lapis.pathoplexus.org/rsv-b/sample/unalignedNucleotideSequences?versionStatus=LATEST_VERSION
+    meta: https://lapis.pathoplexus.org/rsv-b/sample/details?dataFormat=csv&versionStatus=LATEST_VERSION
+
+
 # Params for the curate rule
 curate:
   # Fields to rename.
   # This is the first step in the pipeline, so any references to field names
-  # in the configs below should use the new field names
-  field_map: ['collected=date', 'submitted=date_submitted', 'genbank_accession=accession']
+  # in the configs below should use the new field names.
+  # Format is <ppx key> = <renamed key from `augur curate rename`>
+  ppx_field_map: ['sampleCollectionDate=date',
+                  'displayName=strain',
+                  'earliestReleaseDate=date_submitted',
+                  'accessionVersion=PPX_accession',
+                  'insdcAccessionFull=INSDC_accession',
+                  'geoLocCountry=country',
+                  'geoLocAdmin1=division',
+                  'geoLocAdmin2=location',
+                  'hostNameCommon=host',
+                  'insdcRawReadsAccession=sra_accession',
+                  'dataUseTermsRestrictedUntil=restrictedUntil',
+                  'dataUseTermsUrl=dataUseTerms__url',
+                  'authorAffiliations=institution',]
   # Standardized strain name regex
   # Currently accepts any characters because we do not have a clear standard for strain names
   strain_regex: '^.+$'
   # Back up strain name field if 'strain' doesn't match regex above
-  strain_backup_fields: ['accession']
+  strain_backup_fields: ['accession'] # unversioned PPX accession
   # List of date fields to standardize
   date_fields: ['date', 'date_submitted']
   # Expected date formats present in date fields
@@ -43,25 +65,25 @@ curate:
   authors_default_value: '?'
   # Field name for the generated abbreviated authors
   abbr_authors_field: 'abbr_authors'
-  # General geolocation rules to apply to geolocation fields
-  geolocation_rules_url: 'https://raw.githubusercontent.com/nextstrain/ncov-ingest/master/source-data/gisaid_geoLocationRules.tsv'
   # Local geolocation rules that are only applicable to rsv data
-  # Local rules can overwrite the general geolocation rules provided above
   local_geolocation_rules: 'source-data/geolocation-rules.tsv'
   # User annotations file
   annotations: 'source-data/annotations.tsv'
   # ID field used to merge annotations
-  annotations_id: 'accession'
+  annotations_id: 'accession' # unversioned PPX accession
   # Field to use as the sequence ID in the FASTA file
-  id_field: 'accession'
+  id_field: 'accession' # unversioned PPX accession
   # Field to use as the sequence in the FASTA file
   sequence_field: 'sequence'
   # Final output columns for the metadata TSV
-  metadata_columns: [
-    'accession',
-    'genbank_accession_rev',
+  ppx_metadata_columns: [
     'strain',
     'date',
+    'accession', # unversioned PPX accession
+    'PPX_accession',
+    'PPX_accession__url',
+    'INSDC_accession',
+    'INSDC_accession__url',
     'region',
     'country',
     'division',
@@ -69,7 +91,78 @@ curate:
     'host',
     'date_submitted',
     'sra_accession',
-    'abbr_authors',
     'authors',
     'institution',
+    'dataUseTerms',
+    'dataUseTerms__url',
+    'restrictedUntil',
   ]
+
+ppx_metadata_fields: # Used to create the URL to download PPX metadata
+ - "accessionVersion"
+ - "accession"
+ - "version"
+ - "submitter"
+ - "groupName"
+ - "submittedDate"
+ - "releasedDate"
+ - "dataUseTerms"
+ - "dataUseTermsRestrictedUntil"
+ - "dataUseTermsUrl"
+ - "assemblyReferenceGenomeAccession"
+ - "authorAffiliations"
+ - "authors"
+ - "bioprojectAccession"
+ - "biosampleAccession"
+ - "completeness"
+ - "displayName"
+ - "earliestReleaseDate"
+ - "frameShifts"
+ - "geoLocAdmin1"
+ - "geoLocAdmin2"
+ - "geoLocCity"
+ - "geoLocCountry"
+ - "geoLocLatitude"
+ - "geoLocLongitude"
+ - "geoLocSite"
+ - "hostAge"
+ - "hostAgeBin"
+ - "hostDisease"
+ - "hostGender"
+ - "hostHealthOutcome"
+ - "hostHealthState"
+ - "hostNameCommon"
+ - "hostOriginCountry"
+ - "hostVaccinationStatus"
+ - "insdcAccessionBase"
+ - "insdcAccessionFull"
+ - "insdcRawReadsAccession"
+ - "insdcVersion"
+ - "isLabHost"
+ - "length"
+ - "lineage"
+ - "ncbiReleaseDate"
+ - "ncbiSourceDb"
+ - "ncbiSubmitterCountry"
+ - "ncbiUpdateDate"
+ - "ncbiVirusName"
+ - "ncbiVirusTaxId"
+ - "purposeOfSampling"
+ - "purposeOfSequencing"
+ - "qualityControlDetails"
+ - "qualityControlDetermination"
+ - "qualityControlIssues"
+ - "qualityControlMethodName"
+ - "qualityControlMethodVersion"
+ - "sampleCollectionDate"
+ - "sampleCollectionDateRangeLower"
+ - "sampleCollectionDateRangeUpper"
+ - "sampleType"
+ - "subtype"
+ - "totalAmbiguousNucs"
+ - "totalDeletedNucs"
+ - "totalFrameShifts"
+ - "totalInsertedNucs"
+ - "totalSnps"
+ - "totalUnknownNucs"
+ - "travelHistory"
