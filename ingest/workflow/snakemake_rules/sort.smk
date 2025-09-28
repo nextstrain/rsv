@@ -60,7 +60,7 @@ rule nextclade:
         nextclade = "data/{type}/nextclade.tsv"
     params:
         dataset = "rsv-{type}_nextclade",
-        output_columns = "seqName clade qc.overallScore qc.overallStatus totalMissing alignmentScore  alignmentStart  alignmentEnd  coverage dynamic"
+        output_columns = "seqName clade qc.overallScore qc.overallStatus totalMissing alignmentScore  alignmentStart  alignmentEnd  coverage cdsCoverage dynamic"
     threads: 8
     shell:
         """
