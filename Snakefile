@@ -1,3 +1,5 @@
+import shlex
+
 import pandas as pd
 
 configfile: "config/configfile.yaml"
@@ -5,6 +7,8 @@ configfile: "config/configfile.yaml"
 
 wildcard_constraints:
     a_or_b=r"a|b",
+    build_name="|".join(config.get("builds_to_run", ["genome"])),
+    resolution="|".join(config.get("resolutions_to_run", ["all-time"])),
 
 
 build_dir = "results"
@@ -23,6 +27,10 @@ rule all:
                subtype = config.get("subtypes",['a']),
                build = config.get("builds_to_run", ['genome']),
                resolution = config.get("resolutions_to_run", ["all-time"])),
+        expand(build_dir + "/{subtype}/{build}/pre_subsample/metadata_with_scores.tsv",
+               subtype=config.get("subtypes",['a']),
+               build=["F"]),
+
 
 include: "workflow/snakemake_rules/chores.smk"
 
