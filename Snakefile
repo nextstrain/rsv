@@ -1,3 +1,5 @@
+import shlex
+
 import pandas as pd
 from snakemake.utils import min_version
 
@@ -9,6 +11,8 @@ configfile: "config/configfile.yaml"
 
 wildcard_constraints:
     a_or_b=r"a|b",
+    build_name="|".join(config.get("builds_to_run", ["genome"])),
+    resolution="|".join(config.get("resolutions_to_run", ["all-time"])),
 
 
 build_dir = "results"
@@ -27,6 +31,10 @@ rule all:
                subtype = config.get("subtypes",['a']),
                build = config.get("builds_to_run", ['genome']),
                resolution = config.get("resolutions_to_run", ["all-time"])),
+        expand(build_dir + "/{subtype}/{build}/pre_subsample/metadata_with_scores.tsv",
+               subtype=config.get("subtypes",['a']),
+               build=["F"]),
+
 
 # remote_files.smk must be before merge_inputs.smk
 include: "shared/vendored/snakemake/remote_files.smk"

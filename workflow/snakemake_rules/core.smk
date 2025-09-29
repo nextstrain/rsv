@@ -203,6 +203,106 @@ rule get_nextclade_dataset:
         """
 
 
+rule filter_for_pre_subsample_alignment:
+    message:
+        """
+        Build-specific quality filtering before subsampling
+        """
+    input:
+        sequences="data/{a_or_b}/sequences.fasta",
+        metadata="data/{a_or_b}/metadata.tsv",
+        exclude=config["exclude"],
+    output:
+        sequences=build_dir + "/{a_or_b}/{build_name}/pre_subsample/filtered_for_alignment.fasta",
+    params:
+        min_coverage=lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
+        min_length=lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
+        strain_id=config["strain_id_field"],
+    shell:
+        """
+        augur filter \
+            --sequences {input.sequences} \
+            --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
+            --exclude {input.exclude} \
+            --exclude-where 'qc.overallStatus=bad' \
+            --min-length {params.min_length} \
+            --output {output.sequences} \
+            --query '({params.min_coverage}) & missing_data<1000'
+        """
+
+
+rule align_pre_subsample_sequences:
+    message:
+        """
+        Aligning all pre-subsampled build-specific quality-filtered sequences
+        """
+    input:
+        sequences=rules.filter_for_pre_subsample_alignment.output.sequences,
+        dataset=rules.get_nextclade_dataset.output.dataset,
+    output:
+        alignment=build_dir + "/{a_or_b}/{build_name}/pre_subsample/sequences.aligned.fasta",
+        translations=directory(build_dir + "/{a_or_b}/{build_name}/pre_subsample/translations"),
+        translations_done=build_dir + "/{a_or_b}/{build_name}/pre_subsample/translations.done",
+    params:
+        genes=lambda w: config["cds"][w.build_name],
+    threads: 8
+    log:
+        "logs/align_all_{a_or_b}_{build_name}.txt",
+    shell:
+        """
+        nextclade3 run -j {threads}\
+            {input.sequences} \
+            -D {input.dataset} \
+            --output-fasta {output.alignment} \
+            --cds-selection {params.genes} \
+            --output-translations "{output.translations}/{{cds}}.fasta" 2>&1 | tee {log} && touch {output.translations_done}
+        """
+
+
+rule score_pre_subsample_f_proteins:
+    message:
+        "Computing F protein DMS scores for pre-subsampled build-specific sequences"
+    input:
+        translations_done=rules.align_pre_subsample_sequences.output.translations_done,
+        dms_scores=config["f_dms_data"],
+    output:
+        scores=build_dir + "/{a_or_b}/{build_name}/pre_subsample/f_protein_scores.tsv",
+    params:
+        f_sequences=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/pre_subsample/translations/F.fasta",
+        dms_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
+        only_positive_escape=config["dms_only_positive_escape"],
+    shell:
+        """
+        python scripts/score_f_protein.py \
+            --sequences {params.f_sequences} \
+            --dms-scores {input.dms_scores} \
+            --output {output.scores} \
+            --dms-antibodies {params.dms_antibodies} \
+            --only-positive-escape {params.only_positive_escape}
+        """
+
+
+rule add_f_scores_to_pre_subsample_metadata:
+    message:
+        "Adding F protein scores to pre-subsampled build-specific metadata"
+    input:
+        original_metadata="data/{a_or_b}/metadata.tsv",
+        f_scores=rules.score_pre_subsample_f_proteins.output.scores,
+    output:
+        enhanced_metadata=build_dir + "/{a_or_b}/{build_name}/pre_subsample/metadata_with_scores.tsv",
+    params:
+        strain_id=config["strain_id_field"],
+    shell:
+        """
+        python scripts/merge_f_scores.py \
+            --metadata {input.original_metadata} \
+            --scores {input.f_scores} \
+            --output {output.enhanced_metadata} \
+            --strain-id-field {params.strain_id}
+        """
+
+
 rule genome_align:
     message:
         """

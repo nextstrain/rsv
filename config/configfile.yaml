@@ -84,3 +84,12 @@ nextclade_attributes:
     name: "RSV-B NextClade using real-time tree"
     reference_name: "hRSV/B/Australia/VIC-RCH056/2019"
     accession: "EPI_ISL_1653999"
+
+# configuration specific to the F deep mutational scanning antibody escape data
+f_dms_data: dms-data/antibody_summary.csv
+f_dms_antibodies:  # columns in `f_dms_data` with per-mutation escape
+  - Clesrovimab-Fab
+  - Clesrovimab-IgG
+  - Nirsevimab-Fab
+  - Nirsevimab-IgG
+dms_only_positive_escape: true  # for DMS escape values, set any values < 0 to 0
