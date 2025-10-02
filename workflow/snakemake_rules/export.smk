@@ -7,7 +7,7 @@ def get_node_data(w):
         node_data.append(rules.glycosylation.output.glycosylations)
     if w.build_name == "genome":
         node_data.append(rules.clades_consortium.output.node_data)
-    if w.build_name in ["G"]:
+    if w.build_name not in ["G"]:
         node_data.append(rules.distances.output.distances)
         node_data.append(rules.compute_f_scores_node_data.output.f_scores_node_data)
 
@@ -20,7 +20,7 @@ rule generate_f_dms_antibody_auspice_config:
     output:
         auspice_config = "results/{a_or_b}/{build_name}/{resolution}/auspice_config_f_dms_antibodies.json"
     params:
-        antibodies = config.get("f_dms_antibodies", []),
+        antibodies = config["f_dms_antibodies"],
         continuous_scale = " ".join(
             shlex.quote(hexcode)
             for hexcode in
@@ -108,7 +108,7 @@ rule final_strain_name:
         freq_json= "auspice/rsv_{a_or_b}_{build_name}_{resolution}_tip-frequencies.json"
     params:
         strain_id=config["strain_id_field"],
-        display_strain_field=config.get("display_strain_field", "strain"),
+        display_strain_field=config["display_strain_field"],
     shell:
         """
         python3 scripts/set_final_strain_name.py --metadata {input.metadata} \

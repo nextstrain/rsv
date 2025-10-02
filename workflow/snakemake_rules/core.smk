@@ -36,7 +36,7 @@ rule newreference:
         newreferencefasta=build_dir
         + "/{a_or_b}/{gene}_reference.fasta",
     params:
-        gene=lambda w: w.gene,
+        gene=lambda w: w.gene.split("-")[0],
     shell:
         """
         python scripts/newreference.py \
@@ -63,11 +63,11 @@ rule filter_recent:
         + "/{a_or_b}/{build_name}/{resolution}/filtered_recent.fasta",
     params:
         group_by=config["filter"]["group_by"],
-        min_coverage=lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
-        min_length=lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
+        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
+        min_length=lambda w: config["filter"]["min_length"][w.build_name],
         subsample_max_sequences=lambda w: config["filter"][
             "subsample_max_sequences"
-        ].get(w.build_name, 1000),
+        ][w.build_name],
         strain_id=config["strain_id_field"],
         min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
     shell:
@@ -107,10 +107,10 @@ rule filter_background:
         + "/{a_or_b}/{build_name}/{resolution}/filtered_background_metadata.tsv",
     params:
         group_by=config["filter"]["group_by"],
-        min_coverage=lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
-        min_length=lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
+        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
+        min_length=lambda w: config["filter"]["min_length"][w.build_name],
         subsample_max_sequences=lambda w: int(
-            config["filter"]["subsample_max_sequences"].get(w.build_name, 1000)
+            config["filter"]["subsample_max_sequences"][w.build_name],
         )
         // 10,
         strain_id=config["strain_id_field"],
@@ -215,8 +215,8 @@ rule filter_for_pre_subsample_alignment:
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/pre_subsample/filtered_for_alignment.fasta",
     params:
-        min_coverage=lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
-        min_length=lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
+        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
+        min_length=lambda w: config["filter"]["min_length"][w.build_name],
         strain_id=config["strain_id_field"],
     shell:
         """
@@ -339,7 +339,7 @@ rule cut:
         slicedalignment=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/{gene}_slicedalignment.fasta",
     params:
-        gene=lambda w: w.gene,
+        gene=lambda w: w.gene.split("-")[0],
     shell:
         """
         python scripts/cut.py \
@@ -456,9 +456,10 @@ rule refine:
 
 
 def _get_build_distance_map_config(wildcards):
+    build_gene = wildcards.build_name.split("-")[0]
     distance_config = distance_map_config[
         (distance_map_config["a_or_b"] == wildcards.a_or_b)
-        & (distance_map_config["build_name"] == wildcards.build_name)
+        & (distance_map_config["build_name"] == build_gene)
         & (distance_map_config["resolution"] == wildcards.resolution)
     ]
     if distance_config.shape[0] > 0:
@@ -479,8 +480,9 @@ def _get_distance_attributes_by_lineage_and_segment(wildcards):
 def _get_distance_maps_by_lineage_and_segment(wildcards):
     distance_config = _get_build_distance_map_config(wildcards)
     if wildcards.build_name != "G":
+        build_gene = wildcards.build_name.split("-")[0]
         return [
-            "config/distance_maps/{wildcards.build_name}/{distance_map}.json".format(wildcards=wildcards, distance_map=distance_map)
+            f"config/distance_maps/{build_gene}/{distance_map}.json"
             for distance_map in distance_config.loc[:, "distance_map"].values
         ]
     else:
@@ -634,7 +636,7 @@ rule frequencies:
     output:
         frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     params:
-        min_date_arg = lambda w: f"--min-date {config['filter']['resolutions'][w.resolution]['min_date']}" if w.resolution in config["filter"].get('resolutions', {}) else "",
+        min_date_arg = lambda w: f"--min-date {config['filter']['resolutions'][w.resolution]['min_date']}",
     shell:
         """
         augur frequencies \
