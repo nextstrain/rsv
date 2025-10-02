@@ -7,10 +7,33 @@ def get_node_data(w):
         node_data.append(rules.glycosylation.output.glycosylations)
     if w.build_name == "genome":
         node_data.append(rules.clades_consortium.output.node_data)
-    if w.build_name in ["F", "genome"]:
+    if w.build_name in ["G"]:
         node_data.append(rules.distances.output.distances)
+        node_data.append(rules.compute_f_scores_node_data.output.f_scores_node_data)
 
     return node_data
+
+rule generate_f_dms_antibody_auspice_config:
+    message: "Generating auspice config for F DMS antibody colorings"
+    input:
+        f_scores_node_data = rules.compute_f_scores_node_data.output.f_scores_node_data
+    output:
+        auspice_config = "results/{a_or_b}/{build_name}/{resolution}/auspice_config_f_dms_antibodies.json"
+    params:
+        antibodies = config.get("f_dms_antibodies", []),
+        continuous_scale = " ".join(
+            shlex.quote(hexcode)
+            for hexcode in
+            ["#440154", "#472d7b", "#3b528b", "#2c728e", "#21918c", "#28ae80", "#5ec962", "#addc30", "#fde725"]
+        )
+    shell:
+        """
+        python scripts/generate_f_dms_antibody_auspice_config.py \
+            --antibodies {params.antibodies} \
+            --continuous-scale {params.continuous_scale} \
+            --node-data {input.f_scores_node_data} \
+            --output {output.auspice_config}
+        """
 
 rule colors:
     input:
@@ -38,6 +61,10 @@ def auspice_configs(wildcards):
     configs = [config["files"]["auspice_config"]] # base config
     if wildcards.build_name!='genome':
         configs.append(config['files']['auspice_config_additional_colorings'])
+    if wildcards.build_name not in ["G"]:
+        configs.append(
+            f"results/{wildcards.a_or_b}/{wildcards.build_name}/{wildcards.resolution}/auspice_config_f_dms_antibodies.json"
+        )
     return configs
 
 rule export:
