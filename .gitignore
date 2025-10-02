@@ -27,3 +27,6 @@ logs/
 Icon?
 ehthumbs.db
 Thumbs.db
+
+# vim generated files
+*.swp

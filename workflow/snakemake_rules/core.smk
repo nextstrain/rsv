@@ -274,7 +274,7 @@ rule score_pre_subsample_f_proteins:
         only_positive_escape=config["dms_only_positive_escape"],
     shell:
         """
-        python scripts/score_f_protein.py \
+        python scripts/score_f_sequences.py fasta \
             --sequences {params.f_sequences} \
             --dms-scores {input.dms_scores} \
             --output {output.scores} \
@@ -499,6 +499,8 @@ rule distances:
         alignments=lambda w: [f"{build_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/{gene}_withInternalNodes.fasta" for gene in config["cds"][w.build_name]],
         comparisons=_get_distance_comparisons_by_lineage_and_segment,
         attribute_names=_get_distance_attributes_by_lineage_and_segment,
+    log:
+        "logs/distances_{a_or_b}_{build_name}_{resolution}.txt",
     resources:
         mem_mb=8000,
         time="00:30:00",
@@ -513,6 +515,7 @@ rule distances:
             --map {input.distance_maps} \
             --output {output.distances} 2>&1 | tee {log}
         """
+
 
 rule ancestral:
     message:
@@ -569,6 +572,36 @@ rule translate:
             --reference-sequence {input.reference} \
             --output-node-data {output.node_data} \
             --alignment-output {params.alignment_file_mask}
+        """
+
+
+rule compute_f_scores_node_data:
+    message:
+        """
+        Computing F protein antibody escape scores for all tree nodes
+        """
+    input:
+        tree_newick=rules.refine.output.tree,
+        aa_muts=rules.translate.output.node_data,
+        f_scores=config["f_dms_data"],
+    output:
+        f_scores_node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/f_scores.json"
+    params:
+        gene=lambda w: w.build_name,
+        f_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
+        only_positive_escape=config["dms_only_positive_escape"],
+    log:
+        "logs/compute_f_scores_node_data_{a_or_b}_{build_name}_{resolution}.txt",
+    shell:
+        """
+        python scripts/score_f_sequences.py tree \
+            --tree-newick {input.tree_newick} \
+            --aa-muts {input.aa_muts} \
+            --gene {params.gene} \
+            --dms-scores {input.f_scores} \
+            --dms-antibodies {params.f_antibodies} \
+            --only-positive-escape {params.only_positive_escape} \
+            --output {output.f_scores_node_data} &> {log}
         """
 
 
