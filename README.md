@@ -128,6 +128,9 @@ This repository uses [`git subrepo`](https://github.com/ingydotnet/git-subrepo) 
 See [shared/vendored/README.md](./shared/vendored/README.md#vendoring) for instructions on how to update the vendored scripts.
 
 
+## Deep mutational scanning data
+The trees are annotated with escape from key monoclonal antibodies as assessed by the effects of mutations measured in deep mutational scanning by [Simonich et al]() **ADD CITATION**.
+
 ## Update example data
 
 [Example data](./example_data/) is used by [CI](https://github.com/nextstrain/rsv/actions/workflows/ci.yaml). It can also be used as a small subset of real-world data.
