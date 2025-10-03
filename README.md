@@ -30,11 +30,10 @@ for i in ingest/data/*/{metadata.tsv,sequences.fasta}; do cp $i ${i#ingest/}; do
 ```
 
 
-### `ingest/vendored`
+### `shared/vendored`
 
-This repository uses [`git subrepo`](https://github.com/ingydotnet/git-subrepo) to manage copies of ingest scripts in [`ingest/vendored`](./ingest/vendored), from [nextstrain/ingest](https://github.com/nextstrain/ingest). To pull new changes from the central ingest repository, first install `git subrepo`, then run:
-
-See [ingest/vendored/README.md](./ingest/vendored/README.md#vendoring) for instructions on how to update the vendored scripts.
+This repository uses [`git subrepo`](https://github.com/ingydotnet/git-subrepo) to manage copies of shared scripts in [`shared/vendored`](./shared/vendored), from [nextstrain/shared](https://github.com/nextstrain/shared).
+See [shared/vendored/README.md](./shared/vendored/README.md#vendoring) for instructions on how to update the vendored scripts.
 
 ## Run Analysis Pipeline
 
