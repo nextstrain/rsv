@@ -169,12 +169,24 @@ rule exclude_preduplication:
 rule combine_samples:
     input:
         subsamples=lambda w: (
-            [
-                rules.filter_recent.output.sequences,
-                rules.exclude_preduplication.output.sequences,
-            ]
-            if "background_min_date" in config["filter"]["resolutions"][w.resolution]
-            else [rules.filter_recent.output.sequences]
+            (
+                [
+                    rules.filter_recent.output.sequences,
+                    rules.filter_background.output.sequences,
+                ]
+                if "background_min_date" in config["filter"]["resolutions"][w.resolution]
+                else [rules.filter_recent.output.sequences]
+            )
+            # potentially add sequences sampled to include maximum escape sequences
+            + (
+                [
+                    f"{build_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/filtered_{antibody}_{scoretype}.fasta"
+                    for antibody in config["f_dms_antibodies"]
+                    for scoretype in ["total_escape", "max_escape"]
+                ]
+                if w.build_name in config["enrich_antibody_escape"]
+                else []
+            )
         ),
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered.fasta",
@@ -206,18 +218,19 @@ rule get_nextclade_dataset:
 rule filter_for_pre_subsample_alignment:
     message:
         """
-        Build-specific quality filtering before subsampling
+        Do the quality filtering applied to each sequence set before subsampling
         """
     input:
         sequences="data/{a_or_b}/sequences.fasta",
         metadata="data/{a_or_b}/metadata.tsv",
         exclude=config["exclude"],
     output:
-        sequences=build_dir + "/{a_or_b}/{build_name}/pre_subsample/filtered_for_alignment.fasta",
+        sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/filtered_for_alignment.fasta",
     params:
         min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
         min_length=lambda w: config["filter"]["min_length"][w.build_name],
         strain_id=config["strain_id_field"],
+        min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
     shell:
         """
         augur filter \
@@ -227,6 +240,7 @@ rule filter_for_pre_subsample_alignment:
             --exclude {input.exclude} \
             --exclude-where 'qc.overallStatus=bad' \
             --min-length {params.min_length} \
+            --min-date {params.min_date} \
             --output {output.sequences} \
             --query '({params.min_coverage}) & missing_data<1000'
         """
@@ -235,20 +249,20 @@ rule filter_for_pre_subsample_alignment:
 rule align_pre_subsample_sequences:
     message:
         """
-        Aligning all pre-subsampled build-specific quality-filtered sequences
+        Aligning all pre-subsampled quality-filtered sequences
         """
     input:
         sequences=rules.filter_for_pre_subsample_alignment.output.sequences,
         dataset=rules.get_nextclade_dataset.output.dataset,
     output:
-        alignment=build_dir + "/{a_or_b}/{build_name}/pre_subsample/sequences.aligned.fasta",
-        translations=directory(build_dir + "/{a_or_b}/{build_name}/pre_subsample/translations"),
-        translations_done=build_dir + "/{a_or_b}/{build_name}/pre_subsample/translations.done",
+        alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/sequences.aligned.fasta",
+        translations=directory(build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations"),
+        translations_done=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations.done",
     params:
         genes=lambda w: config["cds"][w.build_name],
     threads: 8
     log:
-        "logs/align_all_{a_or_b}_{build_name}.txt",
+        "logs/align_all_{a_or_b}_{build_name}_{resolution}.txt",
     shell:
         """
         nextclade3 run -j {threads}\
@@ -262,14 +276,14 @@ rule align_pre_subsample_sequences:
 
 rule score_pre_subsample_f_proteins:
     message:
-        "Computing F protein DMS scores for pre-subsampled build-specific sequences"
+        "Computing F protein DMS scores for pre-subsampled sequences"
     input:
         translations_done=rules.align_pre_subsample_sequences.output.translations_done,
         dms_scores=config["f_dms_data"],
     output:
-        scores=build_dir + "/{a_or_b}/{build_name}/pre_subsample/f_protein_scores.tsv",
+        scores=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/f_protein_scores.tsv",
     params:
-        f_sequences=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/pre_subsample/translations/F.fasta",
+        f_sequences=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/pre_subsample/translations/F.fasta",
         dms_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
         only_positive_escape=config["dms_only_positive_escape"],
     shell:
@@ -285,12 +299,12 @@ rule score_pre_subsample_f_proteins:
 
 rule add_f_scores_to_pre_subsample_metadata:
     message:
-        "Adding F protein scores to pre-subsampled build-specific metadata"
+        "Adding F protein scores to pre-subsampled metadata"
     input:
         original_metadata="data/{a_or_b}/metadata.tsv",
         f_scores=rules.score_pre_subsample_f_proteins.output.scores,
     output:
-        enhanced_metadata=build_dir + "/{a_or_b}/{build_name}/pre_subsample/metadata_with_scores.tsv",
+        enhanced_metadata=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/metadata_with_scores.tsv",
     params:
         strain_id=config["strain_id_field"],
     shell:
@@ -300,6 +314,39 @@ rule add_f_scores_to_pre_subsample_metadata:
             --scores {input.f_scores} \
             --output {output.enhanced_metadata} \
             --strain-id-field {params.strain_id}
+        """
+
+
+rule enrich_antibody_escape:
+    message:
+        "Get sequences with high antibody escape to add to tree via custom filtering rule."
+    wildcard_constraints:
+        antibody="|".join(re.escape(antibody) for antibody in config["f_dms_antibodies"]),
+        scoretype="total_escape|max_escape",
+    input:
+        sequences="data/{a_or_b}/sequences.fasta",
+        metadata=rules.add_f_scores_to_pre_subsample_metadata.output.enhanced_metadata,
+    output:
+        sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered_{antibody}_{scoretype}.fasta"
+    params:
+        strain_id=config["strain_id_field"],
+        escape_col=lambda w: f"{w.antibody}_{w.scoretype}",
+        nseqs=lambda w: config["enrich_antibody_escape"][w.build_name]["nseqs_per_antibody_scoretype"],
+        group_by=lambda w: " ".join(shlex.quote(g) for g in config["enrich_antibody_escape"][w.build_name]["group_by"]),
+        max_identical_f_prot_muts=lambda w: config["enrich_antibody_escape"][w.build_name]["max_identical_f_prot_muts"],
+        max_identical_max_escape_mut=lambda w: config["enrich_antibody_escape"][w.build_name]["max_identical_max_escape_mut"],
+    shell:
+        """
+        python scripts/enrich_antibody_escape.py \
+            --input-sequences {input.sequences} \
+            --metadata {input.metadata} \
+            --output-sequences {output.sequences} \
+            --strain-id {params.strain_id} \
+            --escape-col {params.escape_col} \
+            --nseqs {params.nseqs} \
+            --group-by {params.group_by} \
+            --max-identical-f-prot-muts {params.max_identical_f_prot_muts} \
+            --max-identical-max-escape-mut {params.max_identical_max_escape_mut}
         """
 
 
@@ -377,7 +424,7 @@ rule hybrid_align:
         hybrid_alignment=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/hybrid_alignment.fasta",
     params:
-        gene=lambda w: w.build_name,
+        gene=lambda w: w.build_name.split("-"),
     shell:
         """
         python scripts/align_for_tree.py \
@@ -589,7 +636,7 @@ rule compute_f_scores_node_data:
     output:
         f_scores_node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/f_scores.json"
     params:
-        gene=lambda w: w.build_name,
+        gene=lambda w: w.build_name.split("-")[0],
         f_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
         only_positive_escape=config["dms_only_positive_escape"],
     log:
