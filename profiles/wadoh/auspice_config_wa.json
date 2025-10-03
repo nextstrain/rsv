@@ -1,0 +1,113 @@
+{
+  "title": "Genomic epidemiology of RSV - Washington-focused",
+  "maintainers": [
+    {"name": "WA DOH Molecular Epidemiology Program", "url": "https://github.com/NW-PaGe"}
+  ],
+  "data_provenance": [
+    {
+      "name": "GenBank",
+      "url": "https://www.ncbi.nlm.nih.gov/genbank/"
+    }
+  ],
+  "build_url": "https://github.com/NW-PaGe",
+  "colorings": [
+    {
+      "key": "gt",
+      "title": "Genotype",
+      "type": "categorical"
+    },
+    {
+      "key": "num_date",
+      "title": "Date",
+      "type": "continuous"
+    },
+    {
+      "key": "country",
+      "title": "Country",
+      "type": "categorical"
+    },
+    {
+      "key": "region",
+      "title": "Region",
+      "type": "categorical"
+    },
+    {
+      "key": "division",
+      "title": "Division",
+      "type": "categorical"
+
+    },
+    {
+      "key": "glyc",
+      "title": "Glycosylation",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_00",
+      "title": "F Protein Epitope 0",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_01",
+      "title": "F Protein Epitope 1",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_02",
+      "title": "F Protein Epitope 2",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_03",
+      "title": "F Protein Epitope 3",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_04",
+      "title": "F Protein Epitope 4",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_05",
+      "title": "F Protein Epitope 5",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_all",
+      "title": "All F Protein Epitopes",
+      "type": "ordinal"
+    },
+    {
+      "key": "surface_residues_postf",
+      "title": "F Protein Postfusion Surface Residues",
+      "type": "ordinal"
+    },
+    {
+      "key": "surface_residues_pref",
+      "title": "F Protein Prefusion Surface Residues",
+      "type": "ordinal"
+    }
+  ],
+  "geo_resolutions": [
+    "country",
+    "region",
+    "division"
+  ],
+  "panels": [
+     "tree",
+     "map",
+     "entropy",
+     "frequencies"
+  ],
+  "display_defaults": {
+    "map_triplicate": true,
+    "color_by": "clade",
+    "transmission_lines": false
+  },
+  "filters": [
+    "country",
+    "region",
+    "division",
+    "clade_membership"
+  ]
+}

@@ -1,0 +1,26 @@
+samples:
+  wa:
+    exclude: config/outliers_ppx.txt
+    min_length: 10000
+    min_date: 1975-01-01
+    group_by:
+    - year
+    - country
+    - division
+    query: genome_coverage>0.3 & missing_data<1000 & division == 'Washington'
+    exclude_where:
+    - qc.overallStatus=bad
+    max_sequences: 10000
+  contextual:
+    exclude: config/outliers_ppx.txt
+    min_length: 10000
+    min_date: 1975-01-01
+    group_by:
+    - year
+    - country
+    - division
+    query: genome_coverage>0.3 & missing_data<1000 & division != 'Washington'
+    exclude_where:
+    - qc.overallStatus=bad
+    - qc.overallStatus=mediocre
+    max_sequences: 10000

@@ -1,0 +1,10 @@
+#builds_to_run: ["genome", "G", "F"]
+builds_to_run: ["genome"]
+
+#resolutions_to_run: ["all-time", "6y", "3y"]
+resolutions_to_run: ["all-time"]
+
+subsample: "profiles/wadoh/subsample/{build_name}_{resolution}.yaml"
+
+files:
+  auspice_config: "profiles/wadoh/auspice_config_wa.json"

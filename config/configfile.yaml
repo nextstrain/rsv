@@ -6,8 +6,6 @@ builds_to_run: ["genome", "G", "F"]
 
 resolutions_to_run: ["all-time", "6y", "3y"]
 
-exclude: "config/outliers_ppx.txt"
-
 description: "config/description.md"
 
 strain_id_field: "accession"
@@ -15,37 +13,7 @@ display_strain_field: "strain"
 
 subtypes: ['a', 'b']
 
-filter:
-  group_by: "year country"
-  min_coverage:
-    genome: 0.3
-    G: 0.3
-    F: 0.3
-
-  min_length:
-    genome: 10000
-    G: 600
-    F: 1200
-  resolutions:
-    all-time:
-      min_date: 1975-01-01
-    6y:
-      min_date: 6Y
-      background_min_date: 1975-01-01
-    3y:
-      min_date: 3Y
-      background_min_date: 1975-01-01
-
-  subsample_max_sequences:
-    genome: 3000
-    G: 3000
-    F: 3000
-
-  exclude_where:
-    recent: ["qc.overallStatus=bad"]
-    background: ["qc.overallStatus=bad", "qc.overallStatus=mediocre"]
-
-  missing_data_threshold: 1000
+subsample: "config/subsample/{build_name}_{resolution}.yaml"
 
 files:
   auspice_config: "config/auspice_config.json"

@@ -39,6 +39,26 @@ See [ingest/vendored/README.md](./ingest/vendored/README.md#vendoring) for instr
 ## Run Analysis Pipeline
 
 The workflow produces whole genome and G gene trees for RSV-A and RSV-B.
+
+### Generate subsample configs
+
+Before running the workflow, you must generate the subsample configuration files:
+
+```sh
+nextstrain shell . -c 'python scripts/generate_subsample_configs.py config/subsample_source.yaml config/subsample/'
+```
+
+If you modify `config/subsample_source.yaml`, re-run this command to regenerate the configs.
+
+For custom profiles (e.g., wadoh), generate profile-specific configs:
+
+```sh
+# Generate wadoh subsample configs
+nextstrain shell . -c 'python scripts/generate_subsample_configs.py profiles/wadoh/subsample_source.yaml profiles/wadoh/subsample/'
+```
+
+### Run the workflow
+
 To run the workflow, use `snakemake -j4 -p --configfile config/configfile.yaml` and `nextstrain view auspice` to visualise results.
 
 ## Installation
