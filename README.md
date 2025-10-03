@@ -49,6 +49,9 @@ Follow the standard [installation instructions](https://docs.nextstrain.org/en/l
 
 We gratefully acknowledge the authors, originating and submitting laboratories of the genetic sequences and metadata for sharing their work. Please note that although data generators have generously shared data in an open fashion, that does not mean there should be free license to publish on this data. Data generators should be cited where possible and collaborations should be sought in some circumstances.
 
+## Deep mutational scanning data
+The trees are annotated with escape from key monoclonal antibodies as assessed by the effects of mutations measured in deep mutational scanning by [Simonich et al]() **ADD CITATION**.
+
 ## Update example data
 
 [Example data](./example_data/) is used by [CI](https://github.com/nextstrain/rsv/actions/workflows/ci.yaml). It can also be used as a small subset of real-world data.
