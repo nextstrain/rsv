@@ -55,7 +55,7 @@ We gratefully acknowledge the authors, originating and submitting laboratories o
 Example data should be updated every time metadata schema is changed. To update, run:
 
 ```sh
-nextstrain build --docker . update_example_data -F
+nextstrain build --docker . update_example_data --configfile config/chores.yaml -F
 ```
 
 

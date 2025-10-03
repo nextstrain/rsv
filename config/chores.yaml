@@ -1,0 +1,7 @@
+custom_rules:
+  - "workflow/snakemake_rules/chores.smk"
+
+inputs:
+  - name: ppx_open
+    metadata: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata.tsv.gz"
+    sequences: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences.fasta.xz"
