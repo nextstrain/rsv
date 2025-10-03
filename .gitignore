@@ -4,6 +4,7 @@ data/
 results/
 auspice/
 build/
+benchmarks/
 ingest/benchmarks/
 ingest/rsv-a_nextclade/
 ingest/rsv-b_nextclade/
