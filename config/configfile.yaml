@@ -6,6 +6,15 @@ builds_to_run: ["genome", "G", "F"]
 
 resolutions_to_run: ["all-time", "6y", "3y"]
 
+subtypes: ['a', 'b']
+
+# Both files must have a {a_or_b} expandable field to be replaced by "a" or "b"
+# depending on if they are specified in the `subtypes` param above
+inputs:
+  - name: ppx_with_restricted
+    metadata: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata_with_restricted.tsv.gz"
+    sequences: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences_with_restricted.fasta.xz"
+
 exclude: "config/outliers_ppx.txt"
 
 description: "config/description.md"
@@ -13,7 +22,6 @@ description: "config/description.md"
 strain_id_field: "accession"
 display_strain_field: "strain"
 
-subtypes: ['a', 'b']
 
 filter:
   group_by: "year country"

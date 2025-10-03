@@ -11,8 +11,8 @@ rule update_example_data_wildcards:
     message:
         "Update example data"
     input:
-        sequences = "data/{a_or_b}/sequences.fasta",
-        metadata = "data/{a_or_b}/metadata.tsv",
+        sequences = "results/{a_or_b}/sequences.fasta",
+        metadata = "results/{a_or_b}/metadata.tsv",
     output:
         sequences = "example_data/{a_or_b}/sequences.fasta",
         metadata = "example_data/{a_or_b}/metadata.tsv",
