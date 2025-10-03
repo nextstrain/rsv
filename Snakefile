@@ -32,7 +32,6 @@ rule all:
 include: "shared/vendored/snakemake/remote_files.smk"
 include: "workflow/snakemake_rules/merge_inputs.smk"
 
-include: "workflow/snakemake_rules/chores.smk"
 include: "workflow/snakemake_rules/core.smk"
 include: "workflow/snakemake_rules/export.smk"
 include: "workflow/snakemake_rules/glycosylation.smk"
