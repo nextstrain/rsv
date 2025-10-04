@@ -10,3 +10,5 @@ on:
 jobs:
   pathogen-ci:
     uses: nextstrain/.github/.github/workflows/pathogen-repo-ci.yaml@v0
+    with:
+      build-args: --configfile config/ci.yaml
