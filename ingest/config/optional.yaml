@@ -30,6 +30,3 @@ upload:
       'b/sequences_with_restricted.fasta.xz'
     ]
     cloudfront_domain: 'data.nextstrain.org'
-
-# Toggle for triggering builds
-trigger_rebuild: True
