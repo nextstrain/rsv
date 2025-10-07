@@ -1,4 +1,7 @@
-# Base options applied to all builds and resolutions
+# Subsample configuration using N-dimensional format
+# Format: base → params (by dimension) → dimensions (Cartesian product)
+
+# Base parameters applied to all builds
 base:
   exclude: "config/outliers_ppx.txt"
   exclude_where:
@@ -7,50 +10,47 @@ base:
     - year
     - country
 
-# Build-specific options
-builds:
-  genome:
-    min_length: 10000
-    query: genome_coverage>0.3 & missing_data<1000
-  G:
-    min_length: 600
-    query: G_coverage>0.3 & missing_data<1000
-  F:
-    min_length: 1200
-    query: F_coverage>0.3 & missing_data<1000
+output_name_template: "{build}_{resolution}"
 
-# Resolution-specific options (samples are defined at this level)
-resolutions:
-  all-time:
-    samples:
-      all-time:
-        min_date: 1975-01-01
-        max_sequences: 3000
+# Dimension-specific parameters
+# Order of dimensions matters for merge precedence
+params:
+  build:
+    genome:
+      min_length: 10000
+      query: genome_coverage>0.3 & missing_data<1000
+    G:
+      min_length: 600
+      query: G_coverage>0.3 & missing_data<1000
+    F:
+      min_length: 1200
+      query: F_coverage>0.3 & missing_data<1000
 
-  6y:
-    samples:
-      recent:
-        min_date: 6Y
-        max_sequences: 3000
-      background:
-        max_date: 6Y
-        max_sequences: 300
-        exclude_where:
-          - qc.overallStatus=bad
-          - qc.overallStatus=mediocre
-
-  3y:
-    samples:
-      recent:
-        min_date: 3Y
-        max_sequences: 3000
-      background:
-        max_date: 3Y
-        max_sequences: 300
-        exclude_where:
-          - qc.overallStatus=bad
-          - qc.overallStatus=mediocre
-
-# Which builds and resolutions to generate
-builds_to_run: [genome, G, F]
-resolutions_to_run: [all-time, 6y, 3y]
+  resolution:
+    all-time:
+      samples:
+        all-time:
+          min_date: 1975-01-01
+          max_sequences: 3000
+    6y:
+      samples:
+        recent:
+          min_date: 6Y
+          max_sequences: 3000
+        background:
+          max_date: 6Y
+          max_sequences: 300
+          exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+    3y:
+      samples:
+        recent:
+          min_date: 3Y
+          max_sequences: 3000
+        background:
+          max_date: 3Y
+          max_sequences: 300
+          exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
