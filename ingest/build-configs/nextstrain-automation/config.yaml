@@ -1,4 +1,7 @@
 # Optional configs used by Nextstrain team
+custom_rules:
+  - "build-configs/nextstrain-automation/upload.smk"
+
 # Params for uploads
 # AWS S3 Bucket with prefix
 s3_dst: 's3://nextstrain-data/files/workflows/rsv'
