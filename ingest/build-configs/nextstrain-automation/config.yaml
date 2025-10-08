@@ -4,32 +4,16 @@ custom_rules:
 
 # Params for uploads
 # AWS S3 Bucket with prefix
-s3_dst: 's3://nextstrain-data/files/workflows/rsv'
-upload:
-  # Upload params for AWS S3
-  s3:
-    # Files to upload to S3 that are in the `data` directory
-    files_to_upload: [
-      'sequences.ndjson',
-      'a/metadata_open.tsv',
-      'a/sequences_open.fasta',
-      'b/metadata_open.tsv',
-      'b/sequences_open.fasta',
-      'a/metadata.tsv',
-      'a/sequences.fasta',
-      'b/metadata.tsv',
-      'b/sequences.fasta'
-    ]
-    # Remote file names for the files to upload, must be in the same order as local files above
-    remote_file_names: [
-      'sequences.ndjson.xz',
-      'a/metadata.tsv.gz',
-      'a/sequences.fasta.xz',
-      'b/metadata.tsv.gz',
-      'b/sequences.fasta.xz',
-      'a/metadata_with_restricted.tsv.gz',
-      'a/sequences_with_restricted.fasta.xz',
-      'b/metadata_with_restricted.tsv.gz',
-      'b/sequences_with_restricted.fasta.xz'
-    ]
-    cloudfront_domain: 'data.nextstrain.org'
+s3_dst: "s3://nextstrain-data/files/workflows/rsv"
+cloudfront_domain: "data.nextstrain.org"
+
+files_to_upload:
+  sequences.ndjson.xz: "data/sequences.ndjson"
+  a/metadata.tsv.gz: "data/a/metadata_open.tsv"
+  a/sequences.fasta.xz: "data/a/sequences_open.fasta"
+  b/metadata.tsv.gz: "data/b/metadata_open.tsv"
+  b/sequences.fasta.xz: "data/b/sequences_open.fasta"
+  a/metadata_with_restricted.tsv.gz: "data/a/metadata.tsv"
+  a/sequences_with_restricted.fasta.xz: "data/a/sequences.fasta"
+  b/metadata_with_restricted.tsv.gz: "data/b/metadata.tsv"
+  b/sequences_with_restricted.fasta.xz: "data/b/sequences.fasta"

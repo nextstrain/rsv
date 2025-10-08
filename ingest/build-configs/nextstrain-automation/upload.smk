@@ -1,68 +1,54 @@
 """
-This part of the workflow handles uploading files to a specified destination.
+This part of the workflow handles uploading files to AWS S3.
 
-Uses predefined wildcard `file_to_upload` determine input and predefined
-wildcard `remote_file_name` as the remote file name in the specified destination.
+Files to upload must be defined in the `files_to_upload` config param, where
+the keys are the remote files and the values are the local filepaths
+relative to the ingest directory.
 
-Produces output files as `data/upload/{upload_target_name}/{file_to_upload}-to-{remote_file_name}.done`.
+Produces a single file for each uploaded file:
+    "results/upload/{remote_file}.upload"
 
-Currently only supports uploads to AWS S3, but additional upload rules can
-be easily added as long as they follow the output pattern described above.
+The rule `upload_all` can be used as a target to upload all files.
 """
 import os
 
+slack_envvars_defined = "SLACK_CHANNELS" in os.environ and "SLACK_TOKEN" in os.environ
+send_notifications = (
+    config.get("send_slack_notifications", False) and slack_envvars_defined
+)
+
+
 rule upload_to_s3:
     input:
-        file_to_upload = "data/{file_to_upload}"
+        file_to_upload=lambda wildcards: config["files_to_upload"][wildcards.remote_file],
     output:
-        touch("data/upload/s3/{file_to_upload}-to-{remote_file_name}.done")
+        touch("results/upload/{remote_file}.upload"),
     params:
-        s3_dst = config["s3_dst"],
-        cloudfront_domain = config["upload"].get("s3", {}).get("cloudfront_domain", ""),
+        quiet="" if send_notifications else "--quiet",
+        s3_dst=config["s3_dst"],
+        cloudfront_domain=config["cloudfront_domain"],
         current_basedir = str(workflow.current_basedir),
+    benchmark:
+        "benchmarks/upload_to_s3/{remote_file}.txt"
+    log:
+        "logs/upload_to_s3/{remote_file}.txt"
     shell:
-        """
+        r"""
+        exec &> >(tee {log:q})
+
         {params.current_basedir}/../../../shared/vendored/scripts/upload-to-s3 \
-            --quiet \
-            {input:q} \
-            {params.s3_dst:q}/{wildcards.remote_file_name:q} \
-            {params.cloudfront_domain}
+            {params.quiet:q} \
+            {input.file_to_upload:q} \
+            {params.s3_dst:q}/{wildcards.remote_file:q} \
+            {params.cloudfront_domain:q}
         """
-
-
-
-def _get_all_targets(wildcards):
-    # Default targets are the metadata TSV and sequences FASTA files
-    all_targets = []
-
-    # Add additional targets based on upload config
-    upload_config = config.get("upload", {})
-
-    for target, params in upload_config.items():
-        files_to_upload = params.get("files_to_upload", [])
-        remote_file_names = params.get("remote_file_names", [])
-
-        if len(files_to_upload) != len(remote_file_names):
-            print(
-                f"Skipping file upload for {target!r} because the number of",
-                "files to upload does not match the number of remote file names."
-            )
-        elif len(remote_file_names) != len(set(remote_file_names)):
-            print(f"Skipping file upload for {target!r} because there are duplicate remote file names.")
-        elif "s3_dst" not in config:
-            print(f"Skipping file upload for {target!r} because the destintion was not defined.")
-        else:
-            all_targets.extend(
-                expand(
-                    [f"data/upload/{target}/{{file_to_upload}}-to-{{remote_file_name}}.done"],
-                    zip,
-                    file_to_upload=files_to_upload,
-                    remote_file_name=remote_file_names
-                )
-            )
-    return all_targets
 
 
 rule upload_all:
     input:
-        _get_all_targets
+        uploads=[
+            f"results/upload/{remote_file}.upload"
+            for remote_file in config["files_to_upload"].keys()
+        ],
+    output:
+        touch("results/upload_all.done")
