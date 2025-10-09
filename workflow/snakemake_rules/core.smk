@@ -47,112 +47,32 @@ rule newreference:
         """
 
 
-rule filter_recent:
-    message:
-        """
-        filtering sequences
-        """
+rule subsample:
     input:
         sequences="data/{a_or_b}/sequences.fasta",
         metadata="data/{a_or_b}/metadata.tsv",
         sequence_index=rules.index_sequences.output,
-        exclude=config["exclude"],
-    output:
-        sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_recent.fasta",
-    params:
-        group_by=config["filter"]["group_by"],
-        min_coverage=lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
-        min_length=lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
-        subsample_max_sequences=lambda w: config["filter"][
-            "subsample_max_sequences"
-        ].get(w.build_name, 1000),
-        strain_id=config["strain_id_field"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
-        exclude_where=lambda w: " ".join([f"'{item}'" for item in config["filter"]["exclude_where"]["recent"]]),
-        missing_data_threshold=config["filter"]["missing_data_threshold"],
-    shell:
-        """
-        augur filter \
-            --sequences {input.sequences} \
-            --sequence-index {input.sequence_index} \
-            --metadata {input.metadata} \
-            --metadata-id-columns {params.strain_id} \
-            --exclude {input.exclude} \
-            --exclude-where {params.exclude_where} \
-            --min-date {params.min_date} \
-            --min-length {params.min_length} \
-            --output {output.sequences} \
-            --group-by {params.group_by} \
-            --subsample-max-sequences {params.subsample_max_sequences} \
-            --query '({params.min_coverage}) & missing_data<{params.missing_data_threshold}'
-        """
-
-
-rule filter_background:
-    message:
-        """
-        filtering sequences
-        """
-    input:
-        sequences="data/{a_or_b}/sequences.fasta",
-        metadata="data/{a_or_b}/metadata.tsv",
-        sequence_index=rules.index_sequences.output,
-        include="config/include_{a_or_b}.txt",
-        exclude=config["exclude"],
-    output:
-        sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background.fasta",
-    params:
-        group_by=config["filter"]["group_by"],
-        min_coverage=lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
-        min_length=lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
-        subsample_max_sequences=lambda w: int(
-            config["filter"]["subsample_max_sequences"].get(w.build_name, 1000)
-        )
-        // 10,
-        strain_id=config["strain_id_field"],
-        max_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution][
-            "background_min_date"
-        ],
-        exclude_where=lambda w: " ".join([f"'{item}'" for item in config["filter"]["exclude_where"]["background"]]),
-        missing_data_threshold=config["filter"]["missing_data_threshold"],
-    shell:
-        """
-        augur filter \
-            --sequences {input.sequences} \
-            --sequence-index {input.sequence_index} \
-            --metadata {input.metadata} \
-            --metadata-id-columns {params.strain_id} \
-            --include {input.include} \
-            --exclude {input.exclude} \
-            --exclude-where {params.exclude_where} \
-            --min-date {params.min_date} \
-            --max-date {params.max_date} \
-            --min-length {params.min_length} \
-            --output {output.sequences} \
-            --group-by {params.group_by} \
-            --subsample-max-sequences {params.subsample_max_sequences} \
-            --query '({params.min_coverage}) & missing_data<{params.missing_data_threshold}'
-        """
-
-
-rule combine_samples:
-    input:
-        subsamples=lambda w: (
-            [
-                rules.filter_recent.output.sequences,
-                rules.filter_background.output.sequences,
-            ]
-            if "background_min_date" in config["filter"]["resolutions"][w.resolution]
-            else [rules.filter_recent.output.sequences]
-        ),
+        config = "results/config_processed.yaml",
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered.fasta",
+    params:
+        strain_id=config["strain_id_field"],
+        config_section = lambda w: ["subsample", w.build_name, w.resolution]
+    log:
+        "logs/subsample_{a_or_b}_{build_name}_{resolution}.txt",
+    # FIXME: set this dynamically based on the the number of samples
+    threads: 1
     shell:
         """
-        cat {input.subsamples} | seqkit rmdup > {output}
+        augur subsample \
+            --sequences {input.sequences} \
+            --sequence-index {input.sequence_index} \
+            --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
+            --config {input.config} \
+            --config-section {params.config_section:q} \
+            --nthreads {threads} \
+            --output-sequences {output.sequences}
         """
 
 
@@ -181,7 +101,7 @@ rule genome_align:
         Aligning sequences to the reference
         """
     input:
-        sequences=rules.combine_samples.output.sequences,
+        sequences=rules.subsample.output.sequences,
         dataset=rules.get_nextclade_dataset.output.dataset,
     output:
         alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/sequences.aligned.fasta",

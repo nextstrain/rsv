@@ -1,0 +1,38 @@
+#builds_to_run: ["genome", "G", "F"]
+builds_to_run: ["genome"]
+
+#resolutions_to_run: ["all-time", "6y", "3y"]
+resolutions_to_run: ["all-time"]
+
+subsample:
+  defaults:
+    exclude: config/outliers_ppx.txt
+    min_length: 10000
+    min_date: 1975-01-01
+    group_by:
+      - year
+      - country
+      - division
+
+  matrix:
+    builds:
+      genome:
+        query: genome_coverage>0.3 & missing_data<1000
+
+    resolutions:
+      all-time:
+        samples:
+          wa:
+            exclude_where:
+              - qc.overallStatus=bad
+            query: genome_coverage>0.3 & missing_data<1000 & division == 'Washington'
+            max_sequences: 10000
+          contextual:
+            exclude_where:
+              - qc.overallStatus=bad
+              - qc.overallStatus=mediocre
+            query: genome_coverage>0.3 & missing_data<1000 & division != 'Washington'
+            max_sequences: 10000
+
+files:
+  auspice_config: "profiles/wadoh/auspice_config_wa.json"
