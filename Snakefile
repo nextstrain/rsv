@@ -18,13 +18,13 @@ distance_map_config = pd.read_table("config/distance_maps.tsv")
 rule all:
     input:
         expand("auspice/rsv_{subtype}_{build}_{resolution}.json",
-               subtype = config.get("subtypes",['a']),
-               build = config.get("builds_to_run", ['genome']),
-               resolution = config.get("resolutions_to_run", ["all-time"])),
+               subtype = config["subtypes"],
+               build = config["builds_to_run"],
+               resolution = config["resolutions_to_run"]),
         expand("auspice/rsv_{subtype}_{build}_{resolution}_tip-frequencies.json",
-               subtype = config.get("subtypes",['a']),
-               build = config.get("builds_to_run", ['genome']),
-               resolution = config.get("resolutions_to_run", ["all-time"])),
+               subtype = config["subtypes"],
+               build = config["builds_to_run"],
+               resolution = config["resolutions_to_run"]),
 
 include: "workflow/snakemake_rules/chores.smk"
 

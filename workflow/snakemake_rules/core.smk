@@ -473,14 +473,14 @@ rule frequencies:
     output:
         frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     params:
-        min_date_arg = lambda w: f"--min-date {config['frequencies']['resolutions'][w.resolution]['min_date']}" if w.resolution in config["frequencies"].get('resolutions', {}) else "",
+        min_date = lambda w: config['frequencies']['resolutions'][w.resolution]['min_date'],
     shell:
         """
         augur frequencies \
             --tree {input.tree} \
             --method kde \
             --metadata-id-columns accession \
-            {params.min_date_arg} \
+            --min-date {params.min_date} \
             --metadata {input.metadata} \
             --output {output.frequencies}
         """

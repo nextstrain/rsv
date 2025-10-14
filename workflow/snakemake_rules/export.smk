@@ -81,7 +81,7 @@ rule final_strain_name:
         freq_json= "auspice/rsv_{a_or_b}_{build_name}_{resolution}_tip-frequencies.json"
     params:
         strain_id=config["strain_id_field"],
-        display_strain_field=config.get("display_strain_field", "strain"),
+        display_strain_field=config["display_strain_field"],
     shell:
         """
         python3 scripts/set_final_strain_name.py --metadata {input.metadata} \
