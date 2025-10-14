@@ -56,8 +56,8 @@ rule subsample:
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered.fasta",
     params:
-        strain_id=config["strain_id_field"],
-        config_section = lambda w: ["subsample", w.build_name, w.resolution]
+        strain_id=get_config_value("subsample", "strain_id_field"),
+        config_section = get_subsample_config_section()
     log:
         "logs/subsample_{a_or_b}_{build_name}_{resolution}.txt",
     # FIXME: set this dynamically based on the the number of samples
@@ -107,7 +107,7 @@ rule genome_align:
         alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/sequences.aligned.fasta",
         translations=directory(build_dir + "/{a_or_b}/{build_name}/{resolution}/translations"),
     params:
-        genes=lambda w: config["cds"][w.build_name],
+        genes=get_config_value("genome_align", "genes"),
     threads: 4
     log:
         "logs/align_{a_or_b}_{build_name}_{resolution}.txt",
@@ -225,10 +225,10 @@ rule refine:
         tree=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.nwk",
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/branch_lengths.json",
     params:
-        coalescent=config["refine"]["coalescent"],
-        clock_filter_iqd=config["refine"]["clock_filter_iqd"],
-        date_inference=config["refine"]["date_inference"],
-        strain_id=config["strain_id_field"],
+        coalescent=get_config_value("refine", "coalescent"),
+        clock_filter_iqd=get_config_value("refine", "clock_filter_iqd"),
+        date_inference=get_config_value("refine", "date_inference"),
+        strain_id=get_config_value("refine", "strain_id_field"),
     shell:
         """
         augur refine \
@@ -287,8 +287,8 @@ rule distances:
     output:
         distances= build_dir + "/{a_or_b}/{build_name}/{resolution}/distances.json"
     params:
-        genes=lambda w: config["cds"][w.build_name],
-        alignments=lambda w: [f"{build_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/{gene}_withInternalNodes.fasta" for gene in config["cds"][w.build_name]],
+        genes=get_config_value("distances", "genes"),
+        alignments=lambda w: [f"{build_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/{gene}_withInternalNodes.fasta" for gene in get_config_value("distances", "genes")(w)],
         comparisons=_get_distance_comparisons_by_lineage_and_segment,
         attribute_names=_get_distance_attributes_by_lineage_and_segment,
     resources:
@@ -321,8 +321,8 @@ rule ancestral:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/nt_muts.json",
         translations_done=build_dir + "/{a_or_b}/{build_name}/{resolution}/translations.done",
     params:
-        inference=config["ancestral"]["inference"],
-        genes=lambda w: config["cds"][w.build_name],
+        inference=get_config_value("ancestral", "inference"),
+        genes=get_config_value("ancestral", "genes"),
         output_translations=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE_withInternalNodes.fasta",
         input_translations=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE.fasta",
     log:
@@ -373,8 +373,8 @@ rule traits:
     log:
         "logs/{a_or_b}/traits_{build_name}_{resolution}_rsv.txt",
     params:
-        columns=config["traits"]["columns"],
-        strain_id=config["strain_id_field"],
+        columns=get_config_value("traits", "columns"),
+        strain_id=get_config_value("traits", "strain_id_field"),
     shell:
         """
         augur traits \
@@ -393,7 +393,7 @@ rule frequencies:
     output:
         frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     params:
-        min_date = lambda w: config['frequencies']['resolutions'][w.resolution]['min_date'],
+        min_date = get_config_value('frequencies', 'min_date'),
     shell:
         """
         augur frequencies \

@@ -1,0 +1,695 @@
+WORKFLOW_CONFIG:
+  genome/all-time:
+    subsample:
+      strain_id_field: accession
+      config:
+        samples:
+          all-time:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 10000
+            query: genome_coverage>0.3 & missing_data<1000
+            min_date: 1975-01-01
+            max_sequences: 3000
+    refine:
+      coalescent: opt
+      date_inference: marginal
+      clock_filter_iqd: 4
+      strain_id_field: accession
+    ancestral:
+      inference: joint
+      genes: F
+    frequencies:
+      min_date: 1975-01-01
+    traits:
+      columns: country
+      strain_id_field: accession
+    export:
+      strain_id_field: accession
+      display_strain_field: strain
+      auspice_config: config/auspice_config.json
+      auspice_config_additional_colorings: config/auspice_config_additional_colorings.json
+      description: config/description.md
+    final_strain_name:
+      strain_id_field: accession
+      display_strain_field: strain
+    genome_align:
+      genes: F
+    distances:
+      genes: F
+  genome/6y:
+    subsample:
+      strain_id_field: accession
+      config:
+        samples:
+          recent:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 10000
+            query: genome_coverage>0.3 & missing_data<1000
+            min_date: 6Y
+            max_sequences: 3000
+          background:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+            group_by:
+            - year
+            - country
+            min_length: 10000
+            query: genome_coverage>0.3 & missing_data<1000
+            max_date: 6Y
+            max_sequences: 300
+    refine:
+      coalescent: opt
+      date_inference: marginal
+      clock_filter_iqd: 4
+      strain_id_field: accession
+    ancestral:
+      inference: joint
+      genes: F
+    frequencies:
+      min_date: 6Y
+    traits:
+      columns: country
+      strain_id_field: accession
+    export:
+      strain_id_field: accession
+      display_strain_field: strain
+      auspice_config: config/auspice_config.json
+      auspice_config_additional_colorings: config/auspice_config_additional_colorings.json
+      description: config/description.md
+    final_strain_name:
+      strain_id_field: accession
+      display_strain_field: strain
+    genome_align:
+      genes: F
+    distances:
+      genes: F
+  genome/3y:
+    subsample:
+      strain_id_field: accession
+      config:
+        samples:
+          recent:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 10000
+            query: genome_coverage>0.3 & missing_data<1000
+            min_date: 3Y
+            max_sequences: 3000
+          background:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+            group_by:
+            - year
+            - country
+            min_length: 10000
+            query: genome_coverage>0.3 & missing_data<1000
+            max_date: 3Y
+            max_sequences: 300
+    refine:
+      coalescent: opt
+      date_inference: marginal
+      clock_filter_iqd: 4
+      strain_id_field: accession
+    ancestral:
+      inference: joint
+      genes: F
+    frequencies:
+      min_date: 3Y
+    traits:
+      columns: country
+      strain_id_field: accession
+    export:
+      strain_id_field: accession
+      display_strain_field: strain
+      auspice_config: config/auspice_config.json
+      auspice_config_additional_colorings: config/auspice_config_additional_colorings.json
+      description: config/description.md
+    final_strain_name:
+      strain_id_field: accession
+      display_strain_field: strain
+    genome_align:
+      genes: F
+    distances:
+      genes: F
+  G/all-time:
+    subsample:
+      strain_id_field: accession
+      config:
+        samples:
+          all-time:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 600
+            query: G_coverage>0.3 & missing_data<1000
+            min_date: 1975-01-01
+            max_sequences: 3000
+    refine:
+      coalescent: opt
+      date_inference: marginal
+      clock_filter_iqd: 4
+      strain_id_field: accession
+    ancestral:
+      inference: joint
+      genes: G
+    frequencies:
+      min_date: 1975-01-01
+    traits:
+      columns: country
+      strain_id_field: accession
+    export:
+      strain_id_field: accession
+      display_strain_field: strain
+      auspice_config: config/auspice_config.json
+      auspice_config_additional_colorings: config/auspice_config_additional_colorings.json
+      description: config/description.md
+    final_strain_name:
+      strain_id_field: accession
+      display_strain_field: strain
+    genome_align:
+      genes: G
+    distances:
+      genes: G
+  G/6y:
+    subsample:
+      strain_id_field: accession
+      config:
+        samples:
+          recent:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 600
+            query: G_coverage>0.3 & missing_data<1000
+            min_date: 6Y
+            max_sequences: 3000
+          background:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+            group_by:
+            - year
+            - country
+            min_length: 600
+            query: G_coverage>0.3 & missing_data<1000
+            max_date: 6Y
+            max_sequences: 300
+    refine:
+      coalescent: opt
+      date_inference: marginal
+      clock_filter_iqd: 4
+      strain_id_field: accession
+    ancestral:
+      inference: joint
+      genes: G
+    frequencies:
+      min_date: 6Y
+    traits:
+      columns: country
+      strain_id_field: accession
+    export:
+      strain_id_field: accession
+      display_strain_field: strain
+      auspice_config: config/auspice_config.json
+      auspice_config_additional_colorings: config/auspice_config_additional_colorings.json
+      description: config/description.md
+    final_strain_name:
+      strain_id_field: accession
+      display_strain_field: strain
+    genome_align:
+      genes: G
+    distances:
+      genes: G
+  G/3y:
+    subsample:
+      strain_id_field: accession
+      config:
+        samples:
+          recent:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 600
+            query: G_coverage>0.3 & missing_data<1000
+            min_date: 3Y
+            max_sequences: 3000
+          background:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+            group_by:
+            - year
+            - country
+            min_length: 600
+            query: G_coverage>0.3 & missing_data<1000
+            max_date: 3Y
+            max_sequences: 300
+    refine:
+      coalescent: opt
+      date_inference: marginal
+      clock_filter_iqd: 4
+      strain_id_field: accession
+    ancestral:
+      inference: joint
+      genes: G
+    frequencies:
+      min_date: 3Y
+    traits:
+      columns: country
+      strain_id_field: accession
+    export:
+      strain_id_field: accession
+      display_strain_field: strain
+      auspice_config: config/auspice_config.json
+      auspice_config_additional_colorings: config/auspice_config_additional_colorings.json
+      description: config/description.md
+    final_strain_name:
+      strain_id_field: accession
+      display_strain_field: strain
+    genome_align:
+      genes: G
+    distances:
+      genes: G
+  F/all-time:
+    subsample:
+      strain_id_field: accession
+      config:
+        samples:
+          all-time:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 1200
+            query: F_coverage>0.3 & missing_data<1000
+            min_date: 1975-01-01
+            max_sequences: 3000
+    refine:
+      coalescent: opt
+      date_inference: marginal
+      clock_filter_iqd: 4
+      strain_id_field: accession
+    ancestral:
+      inference: joint
+      genes: F
+    frequencies:
+      min_date: 1975-01-01
+    traits:
+      columns: country
+      strain_id_field: accession
+    export:
+      strain_id_field: accession
+      display_strain_field: strain
+      auspice_config: config/auspice_config.json
+      auspice_config_additional_colorings: config/auspice_config_additional_colorings.json
+      description: config/description.md
+    final_strain_name:
+      strain_id_field: accession
+      display_strain_field: strain
+    genome_align:
+      genes: F
+    distances:
+      genes: F
+  F/6y:
+    subsample:
+      strain_id_field: accession
+      config:
+        samples:
+          recent:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 1200
+            query: F_coverage>0.3 & missing_data<1000
+            min_date: 6Y
+            max_sequences: 3000
+          background:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+            group_by:
+            - year
+            - country
+            min_length: 1200
+            query: F_coverage>0.3 & missing_data<1000
+            max_date: 6Y
+            max_sequences: 300
+    refine:
+      coalescent: opt
+      date_inference: marginal
+      clock_filter_iqd: 4
+      strain_id_field: accession
+    ancestral:
+      inference: joint
+      genes: F
+    frequencies:
+      min_date: 6Y
+    traits:
+      columns: country
+      strain_id_field: accession
+    export:
+      strain_id_field: accession
+      display_strain_field: strain
+      auspice_config: config/auspice_config.json
+      auspice_config_additional_colorings: config/auspice_config_additional_colorings.json
+      description: config/description.md
+    final_strain_name:
+      strain_id_field: accession
+      display_strain_field: strain
+    genome_align:
+      genes: F
+    distances:
+      genes: F
+  F/3y:
+    subsample:
+      strain_id_field: accession
+      config:
+        samples:
+          recent:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 1200
+            query: F_coverage>0.3 & missing_data<1000
+            min_date: 3Y
+            max_sequences: 3000
+          background:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+            group_by:
+            - year
+            - country
+            min_length: 1200
+            query: F_coverage>0.3 & missing_data<1000
+            max_date: 3Y
+            max_sequences: 300
+    refine:
+      coalescent: opt
+      date_inference: marginal
+      clock_filter_iqd: 4
+      strain_id_field: accession
+    ancestral:
+      inference: joint
+      genes: F
+    frequencies:
+      min_date: 3Y
+    traits:
+      columns: country
+      strain_id_field: accession
+    export:
+      strain_id_field: accession
+      display_strain_field: strain
+      auspice_config: config/auspice_config.json
+      auspice_config_additional_colorings: config/auspice_config_additional_colorings.json
+      description: config/description.md
+    final_strain_name:
+      strain_id_field: accession
+      display_strain_field: strain
+    genome_align:
+      genes: F
+    distances:
+      genes: F
+USER_CONFIG:
+  conda_environment: workflow/envs/nextstrain.yaml
+  genesforglycosylation:
+  - G
+  - F
+  builds_to_run:
+  - genome
+  - G
+  - F
+  resolutions_to_run:
+  - all-time
+  - 6y
+  - 3y
+  description: config/description.md
+  strain_id_field: accession
+  display_strain_field: strain
+  subtypes:
+  - a
+  - b
+  subsample:
+    genome:
+      all-time:
+        samples:
+          all-time:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 10000
+            query: genome_coverage>0.3 & missing_data<1000
+            min_date: 1975-01-01
+            max_sequences: 3000
+      6y:
+        samples:
+          recent:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 10000
+            query: genome_coverage>0.3 & missing_data<1000
+            min_date: 6Y
+            max_sequences: 3000
+          background:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+            group_by:
+            - year
+            - country
+            min_length: 10000
+            query: genome_coverage>0.3 & missing_data<1000
+            max_date: 6Y
+            max_sequences: 300
+      3y:
+        samples:
+          recent:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 10000
+            query: genome_coverage>0.3 & missing_data<1000
+            min_date: 3Y
+            max_sequences: 3000
+          background:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+            group_by:
+            - year
+            - country
+            min_length: 10000
+            query: genome_coverage>0.3 & missing_data<1000
+            max_date: 3Y
+            max_sequences: 300
+    G:
+      all-time:
+        samples:
+          all-time:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 600
+            query: G_coverage>0.3 & missing_data<1000
+            min_date: 1975-01-01
+            max_sequences: 3000
+      6y:
+        samples:
+          recent:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 600
+            query: G_coverage>0.3 & missing_data<1000
+            min_date: 6Y
+            max_sequences: 3000
+          background:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+            group_by:
+            - year
+            - country
+            min_length: 600
+            query: G_coverage>0.3 & missing_data<1000
+            max_date: 6Y
+            max_sequences: 300
+      3y:
+        samples:
+          recent:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 600
+            query: G_coverage>0.3 & missing_data<1000
+            min_date: 3Y
+            max_sequences: 3000
+          background:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+            group_by:
+            - year
+            - country
+            min_length: 600
+            query: G_coverage>0.3 & missing_data<1000
+            max_date: 3Y
+            max_sequences: 300
+    F:
+      all-time:
+        samples:
+          all-time:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 1200
+            query: F_coverage>0.3 & missing_data<1000
+            min_date: 1975-01-01
+            max_sequences: 3000
+      6y:
+        samples:
+          recent:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 1200
+            query: F_coverage>0.3 & missing_data<1000
+            min_date: 6Y
+            max_sequences: 3000
+          background:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+            group_by:
+            - year
+            - country
+            min_length: 1200
+            query: F_coverage>0.3 & missing_data<1000
+            max_date: 6Y
+            max_sequences: 300
+      3y:
+        samples:
+          recent:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            group_by:
+            - year
+            - country
+            min_length: 1200
+            query: F_coverage>0.3 & missing_data<1000
+            min_date: 3Y
+            max_sequences: 3000
+          background:
+            exclude: config/outliers_ppx.txt
+            exclude_where:
+            - qc.overallStatus=bad
+            - qc.overallStatus=mediocre
+            group_by:
+            - year
+            - country
+            min_length: 1200
+            query: F_coverage>0.3 & missing_data<1000
+            max_date: 3Y
+            max_sequences: 300
+  files:
+    auspice_config: config/auspice_config.json
+    auspice_config_additional_colorings: config/auspice_config_additional_colorings.json
+  refine:
+    coalescent: opt
+    date_inference: marginal
+    clock_filter_iqd: 4
+  ancestral:
+    inference: joint
+  cds:
+    F: F
+    G: G
+    genome: F
+  traits:
+    columns: country
+  frequencies:
+    resolutions:
+      all-time:
+        min_date: 1975-01-01
+      6y:
+        min_date: 6Y
+      3y:
+        min_date: 3Y
+  nextclade_attributes:
+    a:
+      name: RSV-A NextClade using real-time tree
+      reference_name: hRSV/A/England/397/2017
+      accession: EPI_ISL_412866
+    b:
+      name: RSV-B NextClade using real-time tree
+      reference_name: hRSV/B/Australia/VIC-RCH056/2019
+      accession: EPI_ISL_1653999

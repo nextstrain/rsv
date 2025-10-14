@@ -17,7 +17,7 @@ rule update_example_data_wildcards:
         sequences = "example_data/{a_or_b}/sequences.fasta",
         metadata = "example_data/{a_or_b}/metadata.tsv",
     params:
-        strain_id=config["strain_id_field"],
+        strain_id=config["USER_CONFIG"]["strain_id_field"],
     shell:
         """
         augur filter \

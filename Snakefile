@@ -2,6 +2,7 @@ import pandas as pd
 
 configfile: "config/configfile.yaml"
 
+include: "workflow/snakemake_rules/shared_config.smk"
 include: "workflow/snakemake_rules/config.smk"
 
 wildcard_constraints:
@@ -18,13 +19,13 @@ distance_map_config = pd.read_table("config/distance_maps.tsv")
 rule all:
     input:
         expand("auspice/rsv_{subtype}_{build}_{resolution}.json",
-               subtype = config["subtypes"],
-               build = config["builds_to_run"],
-               resolution = config["resolutions_to_run"]),
+               subtype = config["USER_CONFIG"]["subtypes"],
+               build = config["USER_CONFIG"]["builds_to_run"],
+               resolution = config["USER_CONFIG"]["resolutions_to_run"]),
         expand("auspice/rsv_{subtype}_{build}_{resolution}_tip-frequencies.json",
-               subtype = config["subtypes"],
-               build = config["builds_to_run"],
-               resolution = config["resolutions_to_run"]),
+               subtype = config["USER_CONFIG"]["subtypes"],
+               build = config["USER_CONFIG"]["builds_to_run"],
+               resolution = config["USER_CONFIG"]["resolutions_to_run"]),
 
 include: "workflow/snakemake_rules/chores.smk"
 
@@ -36,7 +37,7 @@ include: "workflow/snakemake_rules/glycosylation.smk"
 include: "workflow/snakemake_rules/clades.smk"
 
 
-if "deploy_url" in config:
+if "deploy_url" in config["USER_CONFIG"]:
 
     include: "workflow/snakemake_rules/nextstrain_automation.smk"
 
@@ -59,6 +60,6 @@ rule clobber:
         rm config/clades*tsv
         """
 
-if "custom_rules" in config:
-    for rule_file in config["custom_rules"]:
+if "custom_rules" in config["USER_CONFIG"]:
+    for rule_file in config["USER_CONFIG"]["custom_rules"]:
         include: rule_file

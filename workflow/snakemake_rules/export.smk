@@ -3,7 +3,7 @@ def get_node_data(w):
                     rules.traits.output.node_data,
                     rules.ancestral.output.node_data,
                     rules.translate.output.node_data]
-    if w.build_name in config["genesforglycosylation"]:
+    if w.build_name in config["USER_CONFIG"]["genesforglycosylation"]:
         node_data.append(rules.glycosylation.output.glycosylations)
     if w.build_name == "genome":
         node_data.append(rules.clades_consortium.output.node_data)
@@ -35,9 +35,9 @@ def auspice_configs(wildcards):
     these tend to clobber the data in the provided config JSON.
     (Note: multiple config file support requires Augur v29.1.0)
     """
-    configs = [config["files"]["auspice_config"]] # base config
+    configs = [get_config_value("export", "auspice_config")(wildcards)] # base config
     if wildcards.build_name!='genome':
-        configs.append(config['files']['auspice_config_additional_colorings'])
+        configs.append(get_config_value("export", "auspice_config_additional_colorings")(wildcards))
     return configs
 
 rule export:
@@ -48,12 +48,12 @@ rule export:
         node_data = get_node_data,
         colors = rules.colors.output.colors,
         auspice_config = auspice_configs,
-        description = config["description"]
+        description = get_config_value("export", "description")
     output:
         auspice_json =  build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json"
     params:
         title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny",
-        strain_id=config["strain_id_field"],
+        strain_id=get_config_value("export", "strain_id_field"),
     shell:
         """
         augur export v2 \
@@ -80,8 +80,8 @@ rule final_strain_name:
         auspice_json=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_renamed.json",
         freq_json= "auspice/rsv_{a_or_b}_{build_name}_{resolution}_tip-frequencies.json"
     params:
-        strain_id=config["strain_id_field"],
-        display_strain_field=config["display_strain_field"],
+        strain_id=get_config_value("final_strain_name", "strain_id_field"),
+        display_strain_field=get_config_value("final_strain_name", "display_strain_field"),
     shell:
         """
         python3 scripts/set_final_strain_name.py --metadata {input.metadata} \
@@ -101,9 +101,9 @@ rule rename_and_ready_for_nextclade:
     output:
         auspice_json= "auspice/rsv_{a_or_b}_{build_name}_{resolution}.json",
     params:
-        accession= lambda w: config["nextclade_attributes"][w.a_or_b]["accession"],
-        name= lambda w: config["nextclade_attributes"][w.a_or_b]["name"],
-        ref_name= lambda w: config["nextclade_attributes"][w.a_or_b]["reference_name"]
+        accession= lambda w: config["USER_CONFIG"]["nextclade_attributes"][w.a_or_b]["accession"],
+        name= lambda w: config["USER_CONFIG"]["nextclade_attributes"][w.a_or_b]["name"],
+        ref_name= lambda w: config["USER_CONFIG"]["nextclade_attributes"][w.a_or_b]["reference_name"]
     shell:
         """
         python3 scripts/rename_and_nextclade.py  \
