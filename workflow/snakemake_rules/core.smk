@@ -102,7 +102,9 @@ rule filter_background:
         exclude=config["exclude"],
     output:
         sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background.fasta",
+        + "/{a_or_b}/{build_name}/{resolution}/filtered_background_pre.fasta",
+        metadata=build_dir
+        + "/{a_or_b}/{build_name}/{resolution}/filtered_background_metadata.tsv",
     params:
         group_by=config["filter"]["group_by"],
         min_coverage=lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
@@ -125,15 +127,43 @@ rule filter_background:
             --metadata-id-columns {params.strain_id} \
             --include {input.include} \
             --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' 'qc.overallStatus=mediocre'\
+            --exclude-where 'qc.overallStatus=bad' 'qc.overallStatus=mediocre' \
             --min-date {params.min_date} \
             --max-date {params.max_date} \
             --min-length {params.min_length} \
-            --output {output.sequences} \
+            --output-sequences {output.sequences} \
+            --output-metadata {output.metadata} \
             --group-by {params.group_by} \
             --subsample-max-sequences {params.subsample_max_sequences} \
             --query '({params.min_coverage}) & missing_data<1000'
         """
+
+rule exclude_preduplication:
+    message:
+        """
+        excluding sequences predate the duplication starting with A.D or B.D as lineage names
+        """
+    input:
+        sequences=rules.filter_background.output.sequences,
+        metadata=rules.filter_background.output.metadata,
+    output:
+        sequences=build_dir
+        + "/{a_or_b}/{build_name}/{resolution}/filtered_background.fasta",
+    run:
+        import pandas as pd
+        import Bio.SeqIO as SeqIO
+
+        desired_prefix = wildcards.a_or_b.upper() + ".D"
+
+        metadata_df = pd.read_csv(input.metadata, sep="\t")
+        ids_to_keep = set(metadata_df[
+            metadata_df["clade"].str.startswith(desired_prefix, na=False)
+        ]["accession"].tolist())
+
+        with open(output.sequences, "w") as seq_out:
+            for seq in SeqIO.parse(input.sequences, "fasta"):
+                if seq.id in ids_to_keep:
+                    SeqIO.write(seq, seq_out, "fasta")
 
 
 rule combine_samples:
@@ -141,7 +171,7 @@ rule combine_samples:
         subsamples=lambda w: (
             [
                 rules.filter_recent.output.sequences,
-                rules.filter_background.output.sequences,
+                rules.exclude_preduplication.output.sequences,
             ]
             if "background_min_date" in config["filter"]["resolutions"][w.resolution]
             else [rules.filter_recent.output.sequences]

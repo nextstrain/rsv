@@ -31,10 +31,13 @@ filter:
       min_date: 1975-01-01
     6y:
       min_date: 6Y
-      background_min_date: 1975-01-01
+      background_min_date: 12Y
     3y:
       min_date: 3Y
-      background_min_date: 1975-01-01
+      background_min_date: 12Y
+    1y:
+      min_date: 1Y
+      background_min_date: 12Y
 
   subsample_max_sequences:
     genome: 3000
@@ -59,7 +62,7 @@ cds:
   genome: "F"
 
 traits:
-  columns: "country"
+  columns: "country region"
 
 nextclade_attributes:
   a:
