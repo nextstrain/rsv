@@ -65,25 +65,8 @@ rule fetch_all_ppx_sequences:
         "data/a/ppx.ndjson",
         "data/b/ppx.ndjson",
     output:
-        sequences_ndjson="data/ppx.ndjson",
-    shell:
-        """
-        cat {input} > {output.sequences_ndjson}
-        """
-
-
-
-
-def _get_all_sources(wildcards):
-    return [f"data/{source}.ndjson" for source in config["sources"]]
-
-
-rule fetch_all_sequences:
-    input:
-        all_sources=_get_all_sources,
-    output:
         sequences_ndjson="data/sequences.ndjson",
     shell:
         """
-        cat {input.all_sources} > {output.sequences_ndjson}
+        cat {input} > {output.sequences_ndjson}
         """
