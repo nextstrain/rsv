@@ -93,7 +93,7 @@ nextclade_attributes:
     accession: "EPI_ISL_1653999"
 
 # configuration specific to the F deep mutational scanning antibody escape data
-f_dms_data: dms-data/antibody_summary.csv
+f_dms_data: dms-data/all_antibodies.csv
 f_dms_antibodies:  # columns in `f_dms_data` with per-mutation escape
   - Clesrovimab-Fab
   - Clesrovimab-IgG
