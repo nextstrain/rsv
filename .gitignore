@@ -29,3 +29,6 @@ Thumbs.db
 
 # vim generated files
 *.swp
+
+# Jupyter notebook cache files
+.ipynb_checkpoints
