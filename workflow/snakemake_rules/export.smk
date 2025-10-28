@@ -18,7 +18,7 @@ rule colors:
         color_orderings = "config/color_orderings.tsv",
         metadata = "data/{a_or_b}/metadata.tsv",
     output:
-        colors = "results/{a_or_b}/{build_name}/{resolution}/colors.tsv"
+        colors = "results/{a_or_b}/colors.tsv"
     shell:
         """
         python scripts/assign-colors.py \
