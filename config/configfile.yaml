@@ -41,6 +41,12 @@ filter:
     G: 3000
     F: 3000
 
+  exclude_where:
+    recent: ["qc.overallStatus=bad"]
+    background: ["qc.overallStatus=bad", "qc.overallStatus=mediocre"]
+
+  missing_data_threshold: 1000
+
 files:
   auspice_config: "config/auspice_config.json"
   auspice_config_additional_colorings: "config/auspice_config_additional_colorings.json"
@@ -60,6 +66,15 @@ cds:
 
 traits:
   columns: "country"
+
+frequencies:
+  resolutions:
+    all-time:
+      min_date: 1975-01-01
+    6y:
+      min_date: 6Y
+    3y:
+      min_date: 3Y
 
 nextclade_attributes:
   a:

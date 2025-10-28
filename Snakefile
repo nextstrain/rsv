@@ -2,10 +2,12 @@ import pandas as pd
 
 configfile: "config/configfile.yaml"
 
+include: "workflow/snakemake_rules/config.smk"
 
 wildcard_constraints:
     a_or_b=r"a|b",
-
+    build_name=r"genome|G|F",
+    resolution=r"all-time|6y|3y",
 
 build_dir = "results"
 auspice_dir = "auspice"
