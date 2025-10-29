@@ -6,3 +6,8 @@ builds_to_run: ["genome"]
 resolutions_to_run: ["all-time"]
 
 subtypes: ["a"]
+
+inputs:
+  - name: example_data
+    metadata: example_data/{a_or_b}/metadata.tsv
+    sequences: example_data/{a_or_b}/sequences.fasta
