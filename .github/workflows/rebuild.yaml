@@ -25,7 +25,14 @@ on:
       - rebuild
 
   workflow_dispatch:
-
+    inputs:
+      trial_name:
+        description: |
+          Trial name for deploying builds.
+          If not set, builds will overwrite existing builds at s3://nextstrain-data/rsv*
+          If set, builds will be deployed to s3://nextstrain-staging/rsv_trials_<trial_name>_*
+        required: false
+        type: string
 jobs:
   rebuild_rsv:
     permissions:
@@ -34,7 +41,15 @@ jobs:
     secrets: inherit
     with:
       runtime: aws-batch
+      env: |
+        TRIAL_NAME: ${{ inputs.trial_name }}
       run: |
+        declare -a config
+
+        if [[ "$TRIAL_NAME" ]]; then
+          config+=("deploy_url=s3://nextstrain-staging/rsv_trials_${TRIAL_NAME}_")
+        fi
+
         nextstrain build \
           --aws-batch \
           --detach \
@@ -44,4 +59,4 @@ jobs:
           . \
           deploy \
             --configfiles config/configfile.yaml config/nextstrain_automation.yaml \
-            --printshellcmds
+            --config "${config[@]}"
