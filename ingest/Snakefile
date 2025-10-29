@@ -11,6 +11,10 @@ rule all:
         "data/a/metadata_open.tsv",
         "data/b/sequences_open.fasta",
         "data/b/metadata_open.tsv",
+        "data/a/sequences_restricted.fasta",
+        "data/a/metadata_restricted.tsv",
+        "data/b/sequences_restricted.fasta",
+        "data/b/metadata_restricted.tsv",
 
 
 include: "workflow/snakemake_rules/fetch_sequences.smk"
