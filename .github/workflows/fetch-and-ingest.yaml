@@ -37,7 +37,7 @@ jobs:
     uses: nextstrain/.github/.github/workflows/pathogen-repo-build.yaml@master
     secrets: inherit
     with:
-      runtime: aws-batch
+      runtime: docker
       env: |
         TRIAL_NAME: ${{ inputs.trial_name }}
       run: |
@@ -48,11 +48,6 @@ jobs:
         fi
 
         nextstrain build \
-          --aws-batch \
-          --detach \
-          --no-download \
-          --cpus 8 \
-          --memory 32gib \
           --env S3_DST \
           ingest \
             --configfiles config/config.yaml config/optional.yaml \
