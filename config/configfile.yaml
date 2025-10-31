@@ -12,11 +12,11 @@ subtypes: ['a', 'b']
 # depending on if they are specified in the `subtypes` param above
 inputs:
   - name: ppx_open
-    metadata: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata.tsv.gz"
-    sequences: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences.fasta.xz"
+    metadata: "https://data.nextstrain.org/files/workflows/rsv/trial/separate-restricted-files/{a_or_b}/metadata.tsv.gz"
+    sequences: "https://data.nextstrain.org/files/workflows/rsv/trial/separate-restricted-files/{a_or_b}/sequences.fasta.xz"
   - name: ppx_restricted
-    metadata: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata_restricted.tsv.gz"
-    sequences: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences_restricted.fasta.xz"
+    metadata: "https://data.nextstrain.org/files/workflows/rsv/trial/separate-restricted-files/{a_or_b}/metadata_restricted.tsv.gz"
+    sequences: "https://data.nextstrain.org/files/workflows/rsv/trial/separate-restricted-files/{a_or_b}/sequences_restricted.fasta.xz"
 
 exclude: "config/outliers_ppx.txt"
 
