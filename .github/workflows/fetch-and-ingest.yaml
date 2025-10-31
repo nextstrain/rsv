@@ -31,43 +31,24 @@ on:
         description: 'Short name for a trial run. WARNING: without this we will overwrite files in s3://nextstrain-data/files/workflows/rsv'
 
 jobs:
-  set_config_overrides:
-    runs-on: ubuntu-latest
-    steps:
-      - id: s3_dst
-        run: |
-          S3_DST=s3://nextstrain-data/files/workflows/rsv
-
-          if [[ -n "$TRIAL_NAME" ]]; then
-            S3_DST+=/trial/"$TRIAL_NAME"
-          fi
-
-          echo "s3_dst=$S3_DST" >> "$GITHUB_OUTPUT"
-        env:
-          TRIAL_NAME: ${{ inputs.trial_name }}
-    outputs:
-      s3_dst: ${{ steps.s3_dst.outputs.s3_dst }}
-
   fetch-and-ingest:
-    needs: [set_config_overrides]
     permissions:
       id-token: write
     uses: nextstrain/.github/.github/workflows/pathogen-repo-build.yaml@master
     secrets: inherit
     with:
-      runtime: aws-batch
+      runtime: docker
+      env: |
+        TRIAL_NAME: ${{ inputs.trial_name }}
       run: |
+        declare -a config
+
+        if [[ "$TRIAL_NAME" ]]; then
+          config+=("s3_dst=s3://nextstrain-data/files/workflows/rsv/trial/$TRIAL_NAME")
+        fi
+
         nextstrain build \
-          --aws-batch \
-          --detach \
-          --no-download \
-          --cpus 8 \
-          --memory 32gib \
-          --env PAT_GITHUB_DISPATCH="$GH_TOKEN_NEXTSTRAIN_BOT_WORKFLOW_DISPATCH" \
           --env S3_DST \
           ingest \
             --configfiles config/config.yaml config/optional.yaml \
-            --config s3_dst="$S3_DST" \
-            --printshellcmds
-      env: |
-        S3_DST: ${{ needs.set_config_overrides.outputs.s3_dst }}
+            --config "${config[@]}"
