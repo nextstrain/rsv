@@ -16,7 +16,7 @@ rule colors:
     input:
         color_schemes = "config/color_schemes.tsv",
         color_orderings = "config/color_orderings.tsv",
-        metadata = "data/{a_or_b}/metadata.tsv",
+        metadata = "results/{a_or_b}/metadata.tsv",
     output:
         colors = "results/{a_or_b}/colors.tsv"
     shell:
@@ -44,7 +44,7 @@ rule export:
     message: "Exporting data files for auspice"
     input:
         tree = rules.refine.output.tree,
-        metadata = "data/{a_or_b}/metadata.tsv",
+        metadata = "results/{a_or_b}/metadata.tsv",
         node_data = get_node_data,
         colors = rules.colors.output.colors,
         auspice_config = auspice_configs,
@@ -74,7 +74,7 @@ rule export:
 rule final_strain_name:
     input:
         auspice_json= rules.export.output.auspice_json,
-        metadata = "data/{a_or_b}/metadata.tsv",
+        metadata = "results/{a_or_b}/metadata.tsv",
         frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     output:
         auspice_json=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_renamed.json",

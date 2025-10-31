@@ -18,8 +18,13 @@ rule upload_to_s3:
         touch("data/upload/s3/{file_to_upload}-to-{remote_file_name}.done")
     params:
         s3_dst = config["s3_dst"],
-        cloudfront_domain = config["upload"].get("s3", {}).get("cloudfront_domain", "")
+        cloudfront_domain = config["upload"].get("s3", {}).get("cloudfront_domain", ""),
+        current_basedir = str(workflow.current_basedir),
     shell:
         """
-        ./vendored/upload-to-s3 --quiet {input:q} {params.s3_dst:q}/{wildcards.remote_file_name:q} {params.cloudfront_domain}
+        {params.current_basedir}/../../../shared/vendored/scripts/upload-to-s3 \
+            --quiet \
+            {input:q} \
+            {params.s3_dst:q}/{wildcards.remote_file_name:q} \
+            {params.cloudfront_domain}
         """

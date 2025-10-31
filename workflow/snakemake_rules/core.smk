@@ -11,7 +11,7 @@ rule index_sequences:
         Creating an index of sequence composition for filtering.
         """
     input:
-        sequences="data/{a_or_b}/sequences.fasta",
+        sequences="results/{a_or_b}/sequences.fasta",
     output:
         sequence_index=build_dir
         + "/{a_or_b}/sequence_index.tsv",
@@ -53,9 +53,9 @@ rule filter_recent:
         filtering sequences
         """
     input:
-        sequences="data/{a_or_b}/sequences.fasta",
+        sequences="results/{a_or_b}/sequences.fasta",
         reference="config/{a_or_b}reference.gbk",
-        metadata="data/{a_or_b}/metadata.tsv",
+        metadata="results/{a_or_b}/metadata.tsv",
         sequence_index=rules.index_sequences.output,
         exclude=config["exclude"],
     output:
@@ -94,9 +94,9 @@ rule filter_background:
         filtering sequences
         """
     input:
-        sequences="data/{a_or_b}/sequences.fasta",
+        sequences="results/{a_or_b}/sequences.fasta",
         reference="config/{a_or_b}reference.gbk",
-        metadata="data/{a_or_b}/metadata.tsv",
+        metadata="results/{a_or_b}/metadata.tsv",
         sequence_index=rules.index_sequences.output,
         include="config/include_{a_or_b}.txt",
         exclude=config["exclude"],
@@ -328,7 +328,7 @@ rule refine:
     input:
         tree=rules.tree.output.tree,
         alignment=get_alignment,
-        metadata="data/{a_or_b}/metadata.tsv",
+        metadata="results/{a_or_b}/metadata.tsv",
     output:
         tree=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.nwk",
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/branch_lengths.json",
@@ -475,7 +475,7 @@ rule translate:
 rule traits:
     input:
         tree=rules.refine.output.tree,
-        metadata="data/{a_or_b}/metadata.tsv",
+        metadata="results/{a_or_b}/metadata.tsv",
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/traits.json",
     log:
@@ -497,7 +497,7 @@ rule traits:
 rule frequencies:
     input:
         tree = rules.refine.output.tree,
-        metadata = "data/{a_or_b}/metadata.tsv"
+        metadata = "results/{a_or_b}/metadata.tsv"
     output:
         frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     params:
