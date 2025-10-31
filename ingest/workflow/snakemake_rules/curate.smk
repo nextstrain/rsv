@@ -13,13 +13,6 @@ Parameters are expected to be defined in `config.transform`.
 """
 
 
-# curate rule is slightly different from the previous genbank version.
-# field_map now uses the ppx_field_map from config
-# the geo_loc parsing from genbank is omitted
-#
-#        | augur curate parse-genbank-location \
-#                --location-field {params.genbank_location_field} \
-#
 rule curate:
     input:
         sequences_ndjson = "data/sequences.ndjson",

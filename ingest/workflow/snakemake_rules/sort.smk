@@ -98,7 +98,24 @@ rule extract_open_data:
         augur filter --metadata {input.metadata} \
                      --sequences {input.sequences} \
                      --metadata-id-columns accession \
-                     --exclude-where "dataUseTerms=RESTRICTED" \
+                     --include-where "dataUseTerms=OPEN" \
+                     --output-metadata {output.metadata} \
+                     --output-sequences {output.sequences}
+        """
+
+rule extract_restricted_data:
+    input:
+        metadata = "data/{type}/metadata.tsv",
+        sequences = "data/{type}/sequences.fasta"
+    output:
+        metadata = "data/{type}/metadata_restricted.tsv",
+        sequences = "data/{type}/sequences_restricted.fasta"
+    shell:
+        """
+        augur filter --metadata {input.metadata} \
+                     --sequences {input.sequences} \
+                     --metadata-id-columns accession \
+                     --include-where "dataUseTerms=RESTRICTED" \
                      --output-metadata {output.metadata} \
                      --output-sequences {output.sequences}
         """

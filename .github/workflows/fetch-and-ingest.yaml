@@ -50,5 +50,6 @@ jobs:
         nextstrain build \
           --env S3_DST \
           ingest \
-            --configfiles config/config.yaml config/optional.yaml \
+            upload_all \
+            --configfiles build-configs/nextstrain-automation/config.yaml \
             --config "${config[@]}"

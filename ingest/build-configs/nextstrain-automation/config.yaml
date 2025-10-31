@@ -1,0 +1,19 @@
+# Optional configs used by Nextstrain team
+custom_rules:
+  - "build-configs/nextstrain-automation/upload.smk"
+
+# Params for uploads
+# AWS S3 Bucket with prefix
+s3_dst: "s3://nextstrain-data/files/workflows/rsv"
+cloudfront_domain: "data.nextstrain.org"
+
+files_to_upload:
+  sequences.ndjson.xz: "data/sequences.ndjson"
+  a/metadata.tsv.gz: "data/a/metadata_open.tsv"
+  a/sequences.fasta.xz: "data/a/sequences_open.fasta"
+  b/metadata.tsv.gz: "data/b/metadata_open.tsv"
+  b/sequences.fasta.xz: "data/b/sequences_open.fasta"
+  a/metadata_restricted.tsv.gz: "data/a/metadata_restricted.tsv"
+  a/sequences_restricted.fasta.xz: "data/a/sequences_restricted.fasta"
+  b/metadata_restricted.tsv.gz: "data/b/metadata_restricted.tsv"
+  b/sequences_restricted.fasta.xz: "data/b/sequences_restricted.fasta"
