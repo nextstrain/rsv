@@ -29,15 +29,27 @@ filter:
   resolutions:
     all-time:
       min_date: 1975-01-01
+      root_lineage:
+        a: "A"
+        b: "B"
     6y:
       min_date: 6Y
       background_min_date: 12Y
+      root_lineage:
+        a: "A.D"
+        b: "B.D.4.1"
     3y:
       min_date: 3Y
       background_min_date: 12Y
+      root_lineage:
+        a: "A.D"
+        b: "B.D.4.1.1"
     1y:
       min_date: 1Y
       background_min_date: 12Y
+      root_lineage:
+        a: "A.D"
+        b: "B.D.4.1.1"
 
   subsample_max_sequences:
     genome: 3000

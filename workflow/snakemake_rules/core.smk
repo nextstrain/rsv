@@ -202,6 +202,9 @@ rule get_nextclade_dataset:
         nextclade3 dataset get -n {params.ds_name} --output-zip {output.dataset}
         """
 
+def get_founders(w):
+    ref = config["nextclade_attributes"][w.a_or_b]["accession"]
+    return f"nextclade/config/rsv-{w.a_or_b}/{ref}/founder_sequences.fasta"
 
 rule genome_align:
     message:
@@ -210,6 +213,7 @@ rule genome_align:
         """
     input:
         sequences=rules.combine_samples.output.sequences,
+        founder_sequences= get_founders,
         dataset=rules.get_nextclade_dataset.output.dataset,
     output:
         alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/sequences.aligned.fasta",
@@ -222,7 +226,7 @@ rule genome_align:
     shell:
         """
         nextclade3 run -j {threads}\
-            {input.sequences} \
+            {input.sequences} {input.founder_sequences} \
             -D {input.dataset} \
             --output-fasta {output.alignment} \
             --cds-selection {params.genes} \
@@ -299,22 +303,48 @@ def get_alignment(w):
         )
 
 
+# rule tree:
+#     message:
+#         "Building tree"
+#     input:
+#         alignment=get_alignment,
+#     output:
+#         tree=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_raw.nwk",
+#     threads: 4
+#     shell:
+#         """
+#         augur tree \
+#             --alignment {input.alignment} \
+#             --output {output.tree} \
+#             --tree-builder-args '-ninit 10 -n 4 -czb' \
+#             --nthreads {threads}
+#         """
+
 rule tree:
     message:
         "Building tree"
     input:
         alignment=get_alignment,
+        guide_tree = "results/clades_consortium_{a_or_b}.nwk",
+        metadata="data/{a_or_b}/metadata.tsv",
     output:
         tree=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_raw.nwk",
+    params:
+        root_lineage=lambda w: config["filter"]["resolutions"][w.resolution]["root_lineage"][w.a_or_b],
     threads: 4
     shell:
         """
-        augur tree \
+        python3 scripts/tidy_tree.py \
             --alignment {input.alignment} \
             --output {output.tree} \
-            --tree-builder-args '-ninit 10 -n 4 -czb' \
-            --nthreads {threads}
+            --lineage-assignments {input.metadata} \
+            --seq-id-column accession \
+            --lineage-column clade \
+            --root-lineage {params.root_lineage} \
+            --guide-tree {input.guide_tree} \
+            --threads {threads}
         """
+
 
 
 rule refine:
@@ -350,6 +380,7 @@ rule refine:
             --date-inference {params.date_inference} \
             --timetree \
             --stochastic-resolve \
+            --keep-root \
             --use-fft \
             --clock-filter-iqd {params.clock_filter_iqd}
         """
