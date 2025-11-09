@@ -14,6 +14,7 @@ builds:
     clade_systems:
       consortium:
         url: "https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineages.tsv"
+        tree_url: "https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineages.nwk"
 
   b:
     refs:
@@ -25,3 +26,4 @@ builds:
     clade_systems:
       consortium:
         url: https://raw.githubusercontent.com/rsv-lineages/lineage-designation-B/main/.auto-generated/lineages.tsv
+        tree_url: "https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineages.nwk"
