@@ -54,6 +54,7 @@ rule export:
     params:
         title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny",
         strain_id=config["strain_id_field"],
+        color_by_metadata= lambda w: "--color-by-metadata clade " if w.build_name!="genome" else ""
     shell:
         """
         augur export v2 \

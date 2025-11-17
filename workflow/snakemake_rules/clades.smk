@@ -70,3 +70,14 @@ rule download_clades:
         """
         curl {params.url} --output {output.clades}
         """
+
+
+rule download_clade_tree:
+    output:
+        clades = "results/clades_consortium_{a_or_b}.nwk"
+    params:
+        url = lambda w: f"https://raw.githubusercontent.com/rsv-lineages/lineage-designation-{w.a_or_b.upper()}/main/.auto-generated/lineages.nwk"
+    shell:
+        """
+        curl {params.url} --output {output.clades}
+        """
