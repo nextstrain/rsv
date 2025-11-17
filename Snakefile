@@ -1,4 +1,8 @@
 import pandas as pd
+from snakemake.utils import min_version
+
+# Minimum Snakemake version needed for the storage plugins used in remote_files.smk
+min_version("8.0.0")
 
 configfile: "config/configfile.yaml"
 
@@ -24,12 +28,12 @@ rule all:
                build = config.get("builds_to_run", ['genome']),
                resolution = config.get("resolutions_to_run", ["all-time"])),
 
-include: "workflow/snakemake_rules/chores.smk"
-
+# remote_files.smk must be before merge_inputs.smk
+include: "shared/vendored/snakemake/remote_files.smk"
+include: "workflow/snakemake_rules/merge_inputs.smk"
 
 include: "workflow/snakemake_rules/core.smk"
 include: "workflow/snakemake_rules/export.smk"
-include: "workflow/snakemake_rules/download.smk"
 include: "workflow/snakemake_rules/glycosylation.smk"
 include: "workflow/snakemake_rules/clades.smk"
 

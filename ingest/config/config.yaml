@@ -1,11 +1,4 @@
-# Sources of sequences to include in the ingest run
-sources: ['ppx']
 conda_environment: "workflow/envs/nextstrain.yaml"
-
-ncbi_taxon_id:
-  a: "208893"
-  b: "208895"
-  general: "11250"
 
 ppx_fetch:
   a:
