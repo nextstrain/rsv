@@ -45,6 +45,41 @@ To run the workflow, use `snakemake -j4 -p --configfile config/configfile.yaml` 
 
 Follow the standard [installation instructions](https://docs.nextstrain.org/en/latest/install.html) for Nextstrain's suite of software tools.
 
+## Configuration
+
+The pipeline configuration is managed using [CUE](https://cuelang.org), which provides better maintainability than YAML anchors and aliases. The source file is `config/configfile.cue`, and it generates `config/configfile.yaml` that Snakemake uses.
+
+### For Contributors (modifying config)
+
+If you need to modify the configuration:
+
+1. **Install CUE** (one time setup):
+   ```sh
+   micromamba create -n cue -c conda-forge cue pyyaml
+   ```
+
+2. **Edit the CUE file** (not the YAML):
+   ```sh
+   # Edit config/configfile.cue with your changes
+   ```
+
+3. **Regenerate YAML**:
+   ```sh
+   make config/configfile.yaml
+   # or manually: micromamba run -n cue cue export config/configfile.cue --out yaml --outfile config/configfile.yaml
+   ```
+
+4. **Validate** (optional):
+   ```sh
+   make validate-config
+   ```
+
+See `make help` for other config management targets.
+
+### For Users (running the pipeline)
+
+No CUE installation required! Just use the committed `config/configfile.yaml` as normal. The workflow uses the YAML file directly.
+
 ## Data use
 
 We gratefully acknowledge the authors, originating and submitting laboratories of the genetic sequences and metadata for sharing their work. Please note that although data generators have generously shared data in an open fashion, that does not mean there should be free license to publish on this data. Data generators should be cited where possible and collaborations should be sought in some circumstances.
