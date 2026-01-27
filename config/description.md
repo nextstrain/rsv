@@ -1,12 +1,14 @@
 We gratefully acknowledge the authors, originating and submitting laboratories of the genetic sequences and metadata for sharing their work via INSDC or Pathoplexus. Please note that data from Pathoplexus comes with specific data use terms that need to be abided by. If data are shared under RESTRICTED terms, you can not use these data in publications without collaborating with the group that generated the data, please consult the [Data Use Terms of Pathoplexus](https://pathoplexus.org/about/terms-of-use/restricted-data) for details. Even if data are shared without restrictions, that does not mean there should be free license to publish on this data. Data generators should be cited where possible and collaborations should be sought in some circumstances. Please try to avoid scooping someone else's work. Reach out if uncertain.
 
-We maintain three views of human respiratory syncytial virus evolution for 3 time spans of each RSV subtype:
+We maintain several views of human respiratory syncytial virus evolution for 3 time spans of each RSV subtype:
 
-The first is ['rsv/a/genome'](https://nextstrain.org/staging/rsv/a/genome) and ['rsv/b/genome'](https://nextstrain.org/staging/rsv/b/genome), which show evolution of full genome sequences.
+The first is ['rsv/a/genome'](https://nextstrain.org/rsv/a/genome) and ['rsv/b/genome'](https://nextstrain.org/rsv/b/genome), which show evolution of full genome sequences.
 
-The second is ['rsv/a/G'](https://nextstrain.org/staging/rsv/a/G) and ['rsv/b/G'](https://nextstrain.org/staging/rsv/b/G), which show evolution of only the G gene, which is highly variable and for which more data points are available than for the full-genome.
+The second is ['rsv/a/G'](https://nextstrain.org/rsv/a/G) and ['rsv/b/G'](https://nextstrain.org/rsv/b/G), which show evolution of only the G gene, which is highly variable and for which more data points are available than for the full-genome.
 
-The second is ['rsv/a/F'](https://nextstrain.org/staging/rsv/a/F) and ['rsv/b/F'](https://nextstrain.org/staging/rsv/b/G), which show evolution of only the F gene. The F gene builds currently don't contain any clade annotations.
+The third is ['rsv/a/F'](https://nextstrain.org/rsv/a/F) and ['rsv/b/F'](https://nextstrain.org/rsv/b/F), which show evolution of only the F gene.
+
+The fourth is ['rsv/a/F-antibody-escape'](https://nextstrain.org/rsv/a/F-antibody-escape) and ['rsv/b/F-antibody-escape'](https://nextstrain.org/rsv/b/F-antibody-escape), which show evolution of only the F gene but with the available sequences subsampled so as to enrich for sequences that have escape mutations to key monoclonal antibodies as assessed by the deep mutational scanning reported in [Simonich et al]() **ADD CITATION**. Note that these trees as well as the other ones can be colored by the escape from key monoclonal antibodies as computed under an additive model of the mutation effects measured in the deep mutational scanning, with annotations for either *Total Escape* (sum of effects of all mutations) and *Max Escape* (the maximum escape caused by any mutation in the strain).
 
 #### Analysis
 
@@ -20,8 +22,9 @@ Our bioinformatic processing workflow can be found at [github.com/nextstrain/rsv
   [RSV-A](https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineage.tsv)
   [RSV-B](https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineage.tsv)
   These clade definitions are based on the [nomenclature proposal by the RSV Genotyping Consensus Consortium](https://wwwnc.cdc.gov/eid/article/30/8/24-0209_article).
+- annotation of antibody escape is done based on an additive model of mutational effects measured in the deep mutational scanning of [Simonich et al]() **ADD CITATION**, and additionally the *F-antibody-escape* builds have the sequences subsampled to enrich for those with escape mutations.
 
-#### Underlying data
+#### Underlying sequence data
 
 We source sequence data and metadata from [Pathoplexus](https://pathoplexus.org) which ingests data from INSDC and provides data from INSDC together with data that were submitted directly to Pathoplexus. See our [ingest configuration file](https://github.com/nextstrain/rsv/blob/master/ingest/config/config.yaml).
 Curated sequences and metadata are available as flat files at the links below.
