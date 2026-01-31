@@ -222,8 +222,8 @@ rule filter_for_pre_subsample_alignment:
         Do the quality filtering applied to each sequence set before subsampling
         """
     input:
-        sequences="data/{a_or_b}/sequences.fasta",
-        metadata="data/{a_or_b}/metadata.tsv",
+        sequences="results/{a_or_b}/sequences.fasta",
+        metadata="results/{a_or_b}/metadata.tsv",
         exclude=config["exclude"],
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/filtered_for_alignment.fasta",
@@ -302,7 +302,7 @@ rule add_f_scores_to_pre_subsample_metadata:
     message:
         "Adding F protein scores to pre-subsampled metadata"
     input:
-        original_metadata="data/{a_or_b}/metadata.tsv",
+        original_metadata="results/{a_or_b}/metadata.tsv",
         f_scores=rules.score_pre_subsample_f_proteins.output.scores,
     output:
         enhanced_metadata=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/metadata_with_scores.tsv",
@@ -325,7 +325,7 @@ rule enrich_antibody_escape:
         antibody="|".join(re.escape(antibody) for antibody in config["f_dms_antibodies"]),
         scoretype="total_escape|max_escape",
     input:
-        sequences="data/{a_or_b}/sequences.fasta",
+        sequences="results/{a_or_b}/sequences.fasta",
         metadata=rules.add_f_scores_to_pre_subsample_metadata.output.enhanced_metadata,
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered_{antibody}_{scoretype}.fasta"
