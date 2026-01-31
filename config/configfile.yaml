@@ -58,8 +58,8 @@ filter:
   subsample_max_sequences:
     genome: 3000
     G: 3000
-    F: 3000
-    F-antibody-escape: 2000
+    F: 300
+    F-antibody-escape: 200
 
 files:
   auspice_config: "config/auspice_config.json"
@@ -106,4 +106,4 @@ enrich_antibody_escape:  # additional filtering for antibody escape sequences ad
     group_by: [country, year]  # group by these variables
     max_identical_f_prot_muts: 2  # for each group, no more than this many w identical F protein mutations
     max_identical_max_escape_mut: 6  # for each group, no more than this many w same top F escape mutation
-  
+

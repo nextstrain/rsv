@@ -5,6 +5,7 @@ This part of the workflow expects input files
 """
 
 
+
 rule index_sequences:
     message:
         """
@@ -385,15 +386,13 @@ rule cut:
     output:
         slicedalignment=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/{gene}_slicedalignment.fasta",
-    params:
-        gene=lambda w: w.gene.split("-")[0],
     shell:
         """
         python scripts/cut.py \
             --oldalignment {input.oldalignment} \
             --slicedalignment {output.slicedalignment} \
             --reference {input.reference} \
-            --gene {params.gene}
+            --gene {wildcards.gene}
         """
 
 
@@ -423,8 +422,6 @@ rule hybrid_align:
     output:
         hybrid_alignment=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/hybrid_alignment.fasta",
-    params:
-        gene=lambda w: w.build_name.split("-"),
     shell:
         """
         python scripts/align_for_tree.py \
@@ -432,7 +429,7 @@ rule hybrid_align:
             --original {input.original} \
             --reference {input.reference} \
             --output {output.hybrid_alignment} \
-            --gene {params.gene}
+            --build {wildcards.build_name}
         """
 
 
@@ -440,9 +437,10 @@ def get_alignment(w):
     if w.build_name == "genome":
         return rules.hybrid_align.output.hybrid_alignment
     else:
+        gene = config["cds"][w.build_name]
         return (
             build_dir
-            + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/{w.build_name}_aligned.fasta"
+            + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/{gene}_aligned.fasta"
         )
 
 
@@ -503,7 +501,7 @@ rule refine:
 
 
 def _get_build_distance_map_config(wildcards):
-    build_gene = wildcards.build_name.split("-")[0]
+    build_gene = config["cds"][wildcards.build_name]
     distance_config = distance_map_config[
         (distance_map_config["a_or_b"] == wildcards.a_or_b)
         & (distance_map_config["build_name"] == build_gene)
@@ -527,7 +525,7 @@ def _get_distance_attributes_by_lineage_and_segment(wildcards):
 def _get_distance_maps_by_lineage_and_segment(wildcards):
     distance_config = _get_build_distance_map_config(wildcards)
     if wildcards.build_name != "G":
-        build_gene = wildcards.build_name.split("-")[0]
+        build_gene = config["cds"][wildcards.build_name]
         return [
             f"config/distance_maps/{build_gene}/{distance_map}.json"
             for distance_map in distance_config.loc[:, "distance_map"].values
@@ -636,7 +634,7 @@ rule compute_f_scores_node_data:
     output:
         f_scores_node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/f_scores.json"
     params:
-        gene=lambda w: w.build_name.split("-")[0],
+        gene="F",
         f_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
         only_positive_escape=config["dms_only_positive_escape"],
     log:
