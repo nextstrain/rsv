@@ -58,8 +58,8 @@ filter:
   subsample_max_sequences:
     genome: 3000
     G: 3000
-    F: 300
-    F-antibody-escape: 200
+    F: 3000
+    F-antibody-escape: 2000
 
 files:
   auspice_config: "config/auspice_config.json"
