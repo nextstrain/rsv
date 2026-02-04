@@ -98,6 +98,7 @@ rule extract_open_data:
         augur filter --metadata {input.metadata} \
                      --sequences {input.sequences} \
                      --metadata-id-columns accession \
+                     --exclude-all \
                      --include-where "dataUseTerms=OPEN" \
                      --output-metadata {output.metadata} \
                      --output-sequences {output.sequences}
@@ -115,6 +116,7 @@ rule extract_restricted_data:
         augur filter --metadata {input.metadata} \
                      --sequences {input.sequences} \
                      --metadata-id-columns accession \
+                     --exclude-all \
                      --include-where "dataUseTerms=RESTRICTED" \
                      --output-metadata {output.metadata} \
                      --output-sequences {output.sequences}
