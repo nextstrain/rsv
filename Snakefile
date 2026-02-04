@@ -32,10 +32,6 @@ rule all:
                subtype = config.get("subtypes",['a']),
                build = config.get("builds_to_run", ['genome']),
                resolution = config.get("resolutions_to_run", ["all-time"])),
-        expand(build_dir + "/{subtype}/{build}/{resolution}/pre_subsample/metadata_with_scores.tsv",
-               subtype=config.get("subtypes",['a']),
-               build=["F-antibody-escape"],
-               resolution = config.get("resolutions_to_run", ["all-time"])),
 
 
 # remote_files.smk must be before merge_inputs.smk
