@@ -97,6 +97,9 @@ rule extract_ppx_data:
         ppx_dut="open|restricted",
     params:
         ppx_dut = lambda w: w.ppx_dut.upper(),
+        # Warn on empty output for restricted since it's feasible that
+        # none of the data is restricted
+        empty_output = lambda w: "warn" if w.ppx_dut == "restricted" else "error",
     shell:
         """
         augur filter --metadata {input.metadata} \
@@ -105,5 +108,6 @@ rule extract_ppx_data:
                      --exclude-all \
                      --include-where "dataUseTerms={params.ppx_dut:q}" \
                      --output-metadata {output.metadata} \
-                     --output-sequences {output.sequences}
+                     --output-sequences {output.sequences} \
+                     --empty-output-reporting {params.empty_output:q}
         """
