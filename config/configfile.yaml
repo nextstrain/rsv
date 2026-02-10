@@ -2,7 +2,10 @@ conda_environment: "workflow/envs/nextstrain.yaml"
 
 genesforglycosylation: ["G", "F"]
 
-builds_to_run: ["genome", "G", "F"]
+# if the build name has a "-" in it, then the pipeline assumes
+# the gene is the part before the first "-", so "F-antibody-escape"
+# is parsed as the gene "F".
+builds_to_run: ["genome", "G", "F", "F-antibody-escape"]
 
 resolutions_to_run: ["all-time", "6y", "3y"]
 
@@ -32,11 +35,13 @@ filter:
     genome: 0.3
     G: 0.3
     F: 0.3
+    F-antibody-escape: 0.75
 
   min_length:
     genome: 10000
     G: 600
     F: 1200
+    F-antibody-escape: 1200
   resolutions:
     all-time:
       min_date: 1975-01-01
@@ -54,6 +59,7 @@ filter:
     genome: 3000
     G: 3000
     F: 3000
+    F-antibody-escape: 2000
 
 files:
   auspice_config: "config/auspice_config.json"
@@ -71,6 +77,7 @@ cds:
   F: "F"
   G: "G"
   genome: "F"
+  F-antibody-escape: "F"
 
 traits:
   columns: "country region"
@@ -84,3 +91,19 @@ nextclade_attributes:
     name: "RSV-B NextClade using real-time tree"
     reference_name: "hRSV/B/Australia/VIC-RCH056/2019"
     accession: "EPI_ISL_1653999"
+
+# configuration specific to the F deep mutational scanning antibody escape data
+f_dms_data: dms-data/all_antibodies.csv
+f_dms_antibodies:  # columns in `f_dms_data` with per-mutation escape
+  - Clesrovimab-Fab
+  - Clesrovimab-IgG
+  - Nirsevimab-Fab
+  - Nirsevimab-IgG
+dms_only_positive_escape: true  # for DMS escape values, set any values < 0 to 0
+enrich_antibody_escape:  # additional filtering for antibody escape sequences added to tree
+  F-antibody-escape:  # for this build, enrich by these criteria
+    nseqs_per_antibody_scoretype: 500  # add this many sequences for each antibody for total and max escape
+    group_by: [country, year]  # group by these variables
+    max_identical_f_prot_muts: 2  # for each group, no more than this many w identical F protein mutations
+    max_identical_max_escape_mut: 6  # for each group, no more than this many w same top F escape mutation
+

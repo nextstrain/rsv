@@ -5,6 +5,7 @@ This part of the workflow expects input files
 """
 
 
+
 rule index_sequences:
     message:
         """
@@ -36,7 +37,7 @@ rule newreference:
         newreferencefasta=build_dir
         + "/{a_or_b}/{gene}_reference.fasta",
     params:
-        gene=lambda w: w.gene,
+        gene=lambda w: w.gene.split("-")[0],
     shell:
         """
         python scripts/newreference.py \
@@ -63,11 +64,11 @@ rule filter_recent:
         + "/{a_or_b}/{build_name}/{resolution}/filtered_recent.fasta",
     params:
         group_by=config["filter"]["group_by"],
-        min_coverage=lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
-        min_length=lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
+        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
+        min_length=lambda w: config["filter"]["min_length"][w.build_name],
         subsample_max_sequences=lambda w: config["filter"][
             "subsample_max_sequences"
-        ].get(w.build_name, 1000),
+        ][w.build_name],
         strain_id=config["strain_id_field"],
         min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
     shell:
@@ -107,10 +108,10 @@ rule filter_background:
         + "/{a_or_b}/{build_name}/{resolution}/filtered_background_metadata.tsv",
     params:
         group_by=config["filter"]["group_by"],
-        min_coverage=lambda w: f'{w.build_name}_coverage>{config["filter"]["min_coverage"].get(w.build_name, 10000)}',
-        min_length=lambda w: config["filter"]["min_length"].get(w.build_name, 10000),
+        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
+        min_length=lambda w: config["filter"]["min_length"][w.build_name],
         subsample_max_sequences=lambda w: int(
-            config["filter"]["subsample_max_sequences"].get(w.build_name, 1000)
+            config["filter"]["subsample_max_sequences"][w.build_name],
         )
         // 10,
         strain_id=config["strain_id_field"],
@@ -169,12 +170,24 @@ rule exclude_preduplication:
 rule combine_samples:
     input:
         subsamples=lambda w: (
-            [
-                rules.filter_recent.output.sequences,
-                rules.exclude_preduplication.output.sequences,
-            ]
-            if "background_min_date" in config["filter"]["resolutions"][w.resolution]
-            else [rules.filter_recent.output.sequences]
+            (
+                [
+                    rules.filter_recent.output.sequences,
+                    rules.filter_background.output.sequences,
+                ]
+                if "background_min_date" in config["filter"]["resolutions"][w.resolution]
+                else [rules.filter_recent.output.sequences]
+            )
+            # potentially add sequences sampled to include maximum escape sequences
+            + (
+                [
+                    f"{build_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/filtered_{antibody}_{scoretype}.fasta"
+                    for antibody in config["f_dms_antibodies"]
+                    for scoretype in ["total_escape", "max_escape"]
+                ]
+                if w.build_name in config["enrich_antibody_escape"]
+                else []
+            )
         ),
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered.fasta",
@@ -200,6 +213,141 @@ rule get_nextclade_dataset:
     shell:
         """
         nextclade3 dataset get -n {params.ds_name} --output-zip {output.dataset}
+        """
+
+
+rule filter_for_pre_subsample_alignment:
+    message:
+        """
+        Do the quality filtering applied to each sequence set before subsampling
+        """
+    input:
+        sequences="results/{a_or_b}/sequences.fasta",
+        metadata="results/{a_or_b}/metadata.tsv",
+        exclude=config["exclude"],
+    output:
+        sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/filtered_for_alignment.fasta",
+    params:
+        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
+        min_length=lambda w: config["filter"]["min_length"][w.build_name],
+        strain_id=config["strain_id_field"],
+        min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
+    shell:
+        """
+        augur filter \
+            --sequences {input.sequences} \
+            --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
+            --exclude {input.exclude} \
+            --exclude-where 'qc.overallStatus=bad' \
+            --min-length {params.min_length} \
+            --min-date {params.min_date} \
+            --output {output.sequences} \
+            --query '({params.min_coverage}) & missing_data<1000'
+        """
+
+
+rule align_pre_subsample_sequences:
+    message:
+        """
+        Aligning all pre-subsampled quality-filtered sequences
+        """
+    input:
+        sequences=rules.filter_for_pre_subsample_alignment.output.sequences,
+        dataset=rules.get_nextclade_dataset.output.dataset,
+    output:
+        alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/sequences.aligned.fasta",
+        translations=directory(build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations"),
+        translations_done=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations.done",
+    params:
+        genes=lambda w: config["cds"][w.build_name],
+    threads: 8
+    log:
+        "logs/align_all_{a_or_b}_{build_name}_{resolution}.txt",
+    shell:
+        """
+        nextclade3 run -j {threads}\
+            {input.sequences} \
+            -D {input.dataset} \
+            --output-fasta {output.alignment} \
+            --cds-selection {params.genes} \
+            --output-translations "{output.translations}/{{cds}}.fasta" 2>&1 | tee {log} && touch {output.translations_done}
+        """
+
+
+rule score_pre_subsample_f_proteins:
+    message:
+        "Computing F protein DMS scores for pre-subsampled sequences"
+    input:
+        translations_done=rules.align_pre_subsample_sequences.output.translations_done,
+        dms_scores=config["f_dms_data"],
+    output:
+        scores=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/f_protein_scores.tsv",
+    params:
+        f_sequences=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/pre_subsample/translations/F.fasta",
+        dms_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
+        only_positive_escape=config["dms_only_positive_escape"],
+    shell:
+        """
+        python scripts/score_f_sequences.py fasta \
+            --sequences {params.f_sequences} \
+            --dms-scores {input.dms_scores} \
+            --output {output.scores} \
+            --dms-antibodies {params.dms_antibodies} \
+            --only-positive-escape {params.only_positive_escape}
+        """
+
+
+rule add_f_scores_to_pre_subsample_metadata:
+    message:
+        "Adding F protein scores to pre-subsampled metadata"
+    input:
+        original_metadata="results/{a_or_b}/metadata.tsv",
+        f_scores=rules.score_pre_subsample_f_proteins.output.scores,
+    output:
+        enhanced_metadata=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/metadata_with_scores.tsv",
+    params:
+        strain_id=config["strain_id_field"],
+    shell:
+        """
+        python scripts/merge_f_scores.py \
+            --metadata {input.original_metadata} \
+            --scores {input.f_scores} \
+            --output {output.enhanced_metadata} \
+            --strain-id-field {params.strain_id}
+        """
+
+
+rule enrich_antibody_escape:
+    message:
+        "Get sequences with high antibody escape to add to tree via custom filtering rule."
+    wildcard_constraints:
+        antibody="|".join(re.escape(antibody) for antibody in config["f_dms_antibodies"]),
+        scoretype="total_escape|max_escape",
+    input:
+        sequences="results/{a_or_b}/sequences.fasta",
+        metadata=rules.add_f_scores_to_pre_subsample_metadata.output.enhanced_metadata,
+    output:
+        sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered_{antibody}_{scoretype}.fasta"
+    params:
+        strain_id=config["strain_id_field"],
+        escape_col=lambda w: f"{w.antibody}_{w.scoretype}",
+        nseqs=lambda w: config["enrich_antibody_escape"][w.build_name]["nseqs_per_antibody_scoretype"],
+        group_by=lambda w: " ".join(shlex.quote(g) for g in config["enrich_antibody_escape"][w.build_name]["group_by"]),
+        max_identical_f_prot_muts=lambda w: config["enrich_antibody_escape"][w.build_name]["max_identical_f_prot_muts"],
+        max_identical_max_escape_mut=lambda w: config["enrich_antibody_escape"][w.build_name]["max_identical_max_escape_mut"],
+    shell:
+        """
+        python scripts/enrich_antibody_escape.py \
+            --input-sequences {input.sequences} \
+            --metadata {input.metadata} \
+            --output-sequences {output.sequences} \
+            --strain-id {params.strain_id} \
+            --escape-col {params.escape_col} \
+            --nseqs {params.nseqs} \
+            --group-by {params.group_by} \
+            --max-identical-f-prot-muts {params.max_identical_f_prot_muts} \
+            --max-identical-max-escape-mut {params.max_identical_max_escape_mut}
         """
 
 
@@ -238,15 +386,13 @@ rule cut:
     output:
         slicedalignment=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/{gene}_slicedalignment.fasta",
-    params:
-        gene=lambda w: w.gene,
     shell:
         """
         python scripts/cut.py \
             --oldalignment {input.oldalignment} \
             --slicedalignment {output.slicedalignment} \
             --reference {input.reference} \
-            --gene {params.gene}
+            --gene {wildcards.gene}
         """
 
 
@@ -276,8 +422,6 @@ rule hybrid_align:
     output:
         hybrid_alignment=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/hybrid_alignment.fasta",
-    params:
-        gene=lambda w: w.build_name,
     shell:
         """
         python scripts/align_for_tree.py \
@@ -285,7 +429,7 @@ rule hybrid_align:
             --original {input.original} \
             --reference {input.reference} \
             --output {output.hybrid_alignment} \
-            --gene {params.gene}
+            --build {wildcards.build_name}
         """
 
 
@@ -293,9 +437,10 @@ def get_alignment(w):
     if w.build_name == "genome":
         return rules.hybrid_align.output.hybrid_alignment
     else:
+        gene = config["cds"][w.build_name]
         return (
             build_dir
-            + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/{w.build_name}_aligned.fasta"
+            + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/{gene}_aligned.fasta"
         )
 
 
@@ -356,9 +501,10 @@ rule refine:
 
 
 def _get_build_distance_map_config(wildcards):
+    build_gene = config["cds"][wildcards.build_name]
     distance_config = distance_map_config[
         (distance_map_config["a_or_b"] == wildcards.a_or_b)
-        & (distance_map_config["build_name"] == wildcards.build_name)
+        & (distance_map_config["build_name"] == build_gene)
         & (distance_map_config["resolution"] == wildcards.resolution)
     ]
     if distance_config.shape[0] > 0:
@@ -379,8 +525,9 @@ def _get_distance_attributes_by_lineage_and_segment(wildcards):
 def _get_distance_maps_by_lineage_and_segment(wildcards):
     distance_config = _get_build_distance_map_config(wildcards)
     if wildcards.build_name != "G":
+        build_gene = config["cds"][wildcards.build_name]
         return [
-            "config/distance_maps/{wildcards.build_name}/{distance_map}.json".format(wildcards=wildcards, distance_map=distance_map)
+            f"config/distance_maps/{build_gene}/{distance_map}.json"
             for distance_map in distance_config.loc[:, "distance_map"].values
         ]
     else:
@@ -399,6 +546,8 @@ rule distances:
         alignments=lambda w: [f"{build_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/{gene}_withInternalNodes.fasta" for gene in config["cds"][w.build_name]],
         comparisons=_get_distance_comparisons_by_lineage_and_segment,
         attribute_names=_get_distance_attributes_by_lineage_and_segment,
+    log:
+        "logs/distances_{a_or_b}_{build_name}_{resolution}.txt",
     resources:
         mem_mb=8000,
         time="00:30:00",
@@ -413,6 +562,7 @@ rule distances:
             --map {input.distance_maps} \
             --output {output.distances} 2>&1 | tee {log}
         """
+
 
 rule ancestral:
     message:
@@ -472,6 +622,36 @@ rule translate:
         """
 
 
+rule compute_f_scores_node_data:
+    message:
+        """
+        Computing F protein antibody escape scores for all tree nodes
+        """
+    input:
+        tree_newick=rules.refine.output.tree,
+        aa_muts=rules.translate.output.node_data,
+        f_scores=config["f_dms_data"],
+    output:
+        f_scores_node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/f_scores.json"
+    params:
+        gene="F",
+        f_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
+        only_positive_escape=config["dms_only_positive_escape"],
+    log:
+        "logs/compute_f_scores_node_data_{a_or_b}_{build_name}_{resolution}.txt",
+    shell:
+        """
+        python scripts/score_f_sequences.py tree \
+            --tree-newick {input.tree_newick} \
+            --aa-muts {input.aa_muts} \
+            --gene {params.gene} \
+            --dms-scores {input.f_scores} \
+            --dms-antibodies {params.f_antibodies} \
+            --only-positive-escape {params.only_positive_escape} \
+            --output {output.f_scores_node_data} &> {log}
+        """
+
+
 rule traits:
     input:
         tree=rules.refine.output.tree,
@@ -501,7 +681,7 @@ rule frequencies:
     output:
         frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     params:
-        min_date_arg = lambda w: f"--min-date {config['filter']['resolutions'][w.resolution]['min_date']}" if w.resolution in config["filter"].get('resolutions', {}) else "",
+        min_date_arg = lambda w: f"--min-date {config['filter']['resolutions'][w.resolution]['min_date']}",
     shell:
         """
         augur frequencies \
