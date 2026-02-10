@@ -1,0 +1,7 @@
+{
+  "display_defaults": {
+    "map_triplicate": true,
+    "color_by": "Clesrovimab-Fab_max_escape",
+    "transmission_lines": false
+  }
+}
