@@ -65,6 +65,10 @@ def auspice_configs(wildcards):
         configs.append(
             f"results/{wildcards.a_or_b}/{wildcards.build_name}/{wildcards.resolution}/auspice_config_f_dms_antibodies.json"
         )
+    if wildcards.build_name == "F-antibody-escape":
+        configs.append(config['files']['auspice_config_f_antibody_escape'])
+    elif wildcards.build_name not in ["genome", "G"]:
+        configs.append(config['files']['auspice_config_non-genome_builds'])
     return configs
 
 rule export:

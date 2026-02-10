@@ -64,6 +64,8 @@ filter:
 files:
   auspice_config: "config/auspice_config.json"
   auspice_config_additional_colorings: "config/auspice_config_additional_colorings.json"
+  auspice_config_f_antibody_escape: "config/auspice_config_dms-defaults.json"
+  auspice_config_non-genome_builds: "config/auspice_config_non-genome.json"
 
 refine:
   coalescent: "opt"
