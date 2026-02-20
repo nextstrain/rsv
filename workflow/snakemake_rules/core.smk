@@ -4,6 +4,31 @@ This part of the workflow expects input files
             metadata = "data/metadata.tsv"
 """
 
+rule exclude_preduplication:
+    message:
+        """
+        excluding sequences predate the duplication starting with A.D or B.D as lineage names
+        """
+    input:
+        sequences="results/{a_or_b}/sequences.fasta",
+        metadata="results/{a_or_b}/metadata.tsv",
+    output:
+        sequences=build_dir + "/{a_or_b}/sequences_filtered.fasta",
+    run:
+        import pandas as pd
+        import Bio.SeqIO as SeqIO
+
+        desired_prefix = wildcards.a_or_b.upper() + ".D"
+
+        metadata_df = pd.read_csv(input.metadata, sep="\t")
+        ids_to_keep = set(metadata_df[
+            metadata_df["clade"].str.startswith(desired_prefix, na=False)
+        ]["accession"].tolist())
+
+        with open(output.sequences, "w") as seq_out:
+            for seq in SeqIO.parse(input.sequences, "fasta"):
+                if seq.id in ids_to_keep:
+                    SeqIO.write(seq, seq_out, "fasta")
 
 
 rule index_sequences:
@@ -54,7 +79,7 @@ rule filter_recent:
         filtering sequences
         """
     input:
-        sequences="results/{a_or_b}/sequences.fasta",
+        sequences=build_dir + "/{a_or_b}/sequences_filtered.fasta",
         metadata="results/{a_or_b}/metadata.tsv",
         sequence_index=rules.index_sequences.output,
         exclude=config["exclude"],
@@ -96,7 +121,7 @@ rule filter_background:
         filtering sequences
         """
     input:
-        sequences="results/{a_or_b}/sequences.fasta",
+        sequences=build_dir + "/{a_or_b}/sequences_filtered.fasta",
         metadata="results/{a_or_b}/metadata.tsv",
         sequence_index=rules.index_sequences.output,
         include="config/include_{a_or_b}.txt",
@@ -141,33 +166,6 @@ rule filter_background:
             --query '({params.min_coverage}) & missing_data<{params.missing_data_threshold}'
         """
 
-rule exclude_preduplication:
-    message:
-        """
-        excluding sequences predate the duplication starting with A.D or B.D as lineage names
-        """
-    input:
-        sequences=rules.filter_background.output.sequences,
-        metadata=rules.filter_background.output.metadata,
-    output:
-        sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background.fasta",
-    run:
-        import pandas as pd
-        import Bio.SeqIO as SeqIO
-
-        desired_prefix = wildcards.a_or_b.upper() + ".D"
-
-        metadata_df = pd.read_csv(input.metadata, sep="\t")
-        ids_to_keep = set(metadata_df[
-            metadata_df["clade"].str.startswith(desired_prefix, na=False)
-        ]["accession"].tolist())
-
-        with open(output.sequences, "w") as seq_out:
-            for seq in SeqIO.parse(input.sequences, "fasta"):
-                if seq.id in ids_to_keep:
-                    SeqIO.write(seq, seq_out, "fasta")
-
 
 rule combine_samples:
     input:
@@ -175,7 +173,7 @@ rule combine_samples:
             (
                 [
                     rules.filter_recent.output.sequences,
-                    rules.exclude_preduplication.output.sequences,
+                    rules.filter_background.output.sequences,
                 ]
                 if "background_min_date" in config["filter"]["resolutions"][w.resolution]
                 else [rules.filter_recent.output.sequences]
