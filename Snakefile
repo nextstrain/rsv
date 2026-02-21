@@ -9,6 +9,9 @@ min_version("8.0.0")
 
 configfile: "config/configfile.yaml"
 
+build_dir = "results"
+auspice_dir = "auspice"
+
 include: "shared/vendored/snakemake/config.smk"
 include: "workflow/snakemake_rules/config.smk"
 
@@ -17,10 +20,6 @@ wildcard_constraints:
     build_name="|".join(config.get("builds_to_run", ["genome"])),
     resolution="|".join(config.get("resolutions_to_run", ["all-time"])),
     gene="G|F",
-
-
-build_dir = "results"
-auspice_dir = "auspice"
 
 distance_map_config = pd.read_table("config/distance_maps.tsv")
 
