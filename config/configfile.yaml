@@ -28,44 +28,140 @@ description: "config/description.md"
 strain_id_field: "accession"
 display_strain_field: "strain"
 
+# This section describes the subsampling options for various datasets produced
+# by this workflow.
+#
+# The datasets are determined by taking the cross-product of subtype category
+# (`subtypes`), gene category (`builds`) and time category (`resolutions`).
+# What's actually run is determined by `subtypes`, `builds_to_run`, and
+# `resolutions_to_run`.
+#
+# The config structure differs from the standard augur subsample config schema
+# to concisely support the nature of cross-product. Each category has an entry
+# in the matrix. `resolutions`, as the most granular category, contains the
+# actual `samples` structure that corresponds to `samples` in the standard augur
+# subsample config schema. Options from other categories are taken as defaults
+# as needed, the order of importance matching the category's order of
+# granularity with respect to others.
+#
+# Q: What if an option is specified in multiple categories?
+#
+#   1. If the option is 'query' or 'exclude_where', values from all categories
+#      will be applied.
+#   2. Otherwise, only the value given in the most granular category is used.
+#      This is further customizable using a `sample_overrides` section. Those
+#      options override options in `resolutions`, but note that they need to
+#      account for all possible `samples`. Example:
+#
+#        F-antibody-escape:
+#          min_length: 1200
+#          query: F_coverage>0.75
+#          sample_overrides:
+#            all-time:
+#              max_sequences: 2000
+#            recent:
+#              max_sequences: 2000
+#            background:
+#              max_sequences: 200
+#
+# Q: How to customize this in user config?
+#
+#   1. Use the matrix below with modifications. The example below sets a custom
+#      group_by for all datasets, and max_sequences for 6y:
+#
+#        subsample_matrix:
+#          defaults:
+#            group_by:
+#              - year
+#              - country
+#              - division
+#          resolutions:
+#            6y:
+#              samples:
+#                recent:
+#                  max_sequences: 3000
+#
+#   2. Define a custom matrix using `custom_subsample_matrix`.
+#
+# For debugging purposes, refer to the generated augur subsample schema files
+# under the results folder. Paths to these files are noted in the first lines of
+# Snakemake output.
+subsample_matrix:
+  defaults:
+    query: missing_data<1000
+    exclude: "config/outliers_ppx.txt"
+    exclude_where:
+      - qc.overallStatus=bad
+    group_by:
+      - year
+      - country
 
-filter:
-  group_by: "year country"
-  min_coverage:
-    genome: 0.3
-    G: 0.3
-    F: 0.3
-    F-antibody-escape: 0.75
+  subtypes:
+    a:
+      query: clade.str.startswith("A.D", na=False)
+    b:
+      query: clade.str.startswith("B.D", na=False)
 
-  min_length:
-    genome: 10000
-    G: 600
-    F: 1200
-    F-antibody-escape: 1200
+  builds:
+    genome:
+      min_length: 10000
+      query: genome_coverage>0.3
+    G:
+      min_length: 600
+      query: G_coverage>0.3
+    F:
+      min_length: 1200
+      query: F_coverage>0.3
+    F-antibody-escape:
+      min_length: 1200
+      query: F_coverage>0.75
+      sample_overrides:
+        all-time:
+          max_sequences: 2000
+        recent:
+          max_sequences: 2000
+        background:
+          max_sequences: 200
+
   resolutions:
     all-time:
-      min_date: 1975-01-01
+      samples:
+        all-time:
+          min_date: 1975-01-01
+          max_sequences: 3000
     6y:
-      min_date: 6Y
-      background_min_date: 12Y
+      samples:
+        recent:
+          min_date: 6Y
+          max_sequences: 3000
+        background:
+          min_date: 12Y
+          max_date: 6Y
+          exclude_where:
+            - qc.overallStatus=mediocre
+          max_sequences: 300
     3y:
-      min_date: 3Y
-      background_min_date: 12Y
+      samples:
+        recent:
+          min_date: 3Y
+          max_sequences: 3000
+        background:
+          min_date: 12Y
+          max_date: 3Y
+          exclude_where:
+            - qc.overallStatus=mediocre
+          max_sequences: 300
     1y:
-      min_date: 1Y
-      background_min_date: 12Y
-
-  subsample_max_sequences:
-    genome: 3000
-    G: 3000
-    F: 3000
-    F-antibody-escape: 2000
-
-  exclude_where:
-    recent: ["qc.overallStatus=bad"]
-    background: ["qc.overallStatus=bad", "qc.overallStatus=mediocre"]
-
-  missing_data_threshold: 1000
+      samples:
+        recent:
+          min_date: 1Y
+          max_sequences: 3000
+        background:
+          min_date: 12Y
+          max_date: 1Y
+          exclude_where:
+            - qc.overallStatus=mediocre
+          max_sequences: 300
 
 files:
   auspice_config: "config/auspice_config.json"
