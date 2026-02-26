@@ -31,17 +31,6 @@ display_strain_field: "strain"
 
 filter:
   group_by: "year country"
-  min_coverage:
-    genome: 0.3
-    G: 0.3
-    F: 0.3
-    F-antibody-escape: 0.75
-
-  min_length:
-    genome: 10000
-    G: 600
-    F: 1200
-    F-antibody-escape: 1200
   resolutions:
     all-time:
       min_date: 1975-01-01
@@ -62,10 +51,8 @@ filter:
     F-antibody-escape: 2000
 
   exclude_where:
-    recent: ["qc.overallStatus=bad"]
-    background: ["qc.overallStatus=bad", "qc.overallStatus=mediocre"]
-
-  missing_data_threshold: 1000
+    recent: []
+    background: ["qc.overallStatus=mediocre"]
 
 files:
   auspice_config: "config/auspice_config.json"
@@ -108,6 +95,33 @@ nextclade_attributes:
     name: "RSV-B NextClade using real-time tree"
     reference_name: "hRSV/B/Australia/VIC-RCH056/2019"
     accession: "EPI_ISL_1653999"
+
+filter_for_pre_subsample_alignment:
+  min_coverage:
+    genome: 0.3
+    G: 0.3
+    F: 0.3
+    F-antibody-escape: 0.75
+
+  min_length:
+    genome: 10000
+    G: 600
+    F: 1200
+    F-antibody-escape: 1200
+
+  resolutions:
+    all-time:
+      min_date: 1975-01-01
+    6y:
+      min_date: 12Y
+    3y:
+      min_date: 12Y
+    1y:
+      min_date: 12Y
+
+  exclude_where: ["qc.overallStatus=bad"]
+
+  missing_data_threshold: 1000
 
 # configuration specific to the F deep mutational scanning antibody escape data
 f_dms_data: dms-data/all_antibodies.csv
