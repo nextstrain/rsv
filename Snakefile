@@ -7,12 +7,12 @@ from snakemake.utils import min_version
 # Minimum Snakemake version needed for the storage plugins used in remote_files.smk
 min_version("8.0.0")
 
+include: "shared/vendored/snakemake/config.smk"
 configfile: "config/configfile.yaml"
 
 build_dir = "results"
 auspice_dir = "auspice"
 
-include: "shared/vendored/snakemake/config.smk"
 include: "workflow/snakemake_rules/config.smk"
 
 wildcard_constraints:
