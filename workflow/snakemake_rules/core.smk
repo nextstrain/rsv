@@ -158,10 +158,10 @@ rule filter_for_pre_subsample_alignment:
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/filtered_for_alignment.fasta",
     params:
-        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
-        min_length=lambda w: config["filter"]["min_length"][w.build_name],
+        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter_for_pre_subsample_alignment"]["min_coverage"][w.build_name]}',
+        min_length=lambda w: config["filter_for_pre_subsample_alignment"]["min_length"][w.build_name],
         strain_id=config["strain_id_field"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
+        min_date=lambda w: config["filter_for_pre_subsample_alignment"]["resolutions"][w.resolution]["min_date"],
     shell:
         """
         augur filter \
