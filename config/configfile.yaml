@@ -28,31 +28,75 @@ description: "config/description.md"
 strain_id_field: "accession"
 display_strain_field: "strain"
 
+# This section describes the subsampling options for various datasets produced
+# by this workflow. The datasets are determined by taking the cross-product of
+# gene category ("builds") and time category ("resolutions").
+# What's actually run is dependent on "builds_to_run" and "resolutions_to_run".
+#
+# The config structure differs from the standard augur subsample config schema
+# to concisely define the options used by this workflow. For debugging purposes,
+# refer to the generated augur subsample schema files under the results folder,
+# noted in the first lines of Snakemake output.
+#
+# FIXME: allow full override via custom_subsample_matrix
+subsample_matrix:
+  defaults:
+    group_by:
+      - year
+      - country
 
-filter:
-  group_by: "year country"
+  builds:
+    genome:
+    G:
+    F:
+    F-antibody-escape:
+      sample_overrides:
+        all-time:
+          max_sequences: 2000
+        recent:
+          max_sequences: 2000
+        background:
+          max_sequences: 200
+
   resolutions:
     all-time:
-      min_date: 1975-01-01
+      samples:
+        all-time:
+          min_date: 1975-01-01
+          max_sequences: 3000
     6y:
-      min_date: 6Y
-      background_min_date: 12Y
+      samples:
+        recent:
+          min_date: 6Y
+          max_sequences: 3000
+        background:
+          min_date: 12Y
+          max_date: 6Y
+          exclude_where:
+            - qc.overallStatus=mediocre
+          max_sequences: 300
     3y:
-      min_date: 3Y
-      background_min_date: 12Y
+      samples:
+        recent:
+          min_date: 3Y
+          max_sequences: 3000
+        background:
+          min_date: 12Y
+          max_date: 3Y
+          exclude_where:
+            - qc.overallStatus=mediocre
+          max_sequences: 300
     1y:
-      min_date: 1Y
-      background_min_date: 12Y
-
-  subsample_max_sequences:
-    genome: 3000
-    G: 3000
-    F: 3000
-    F-antibody-escape: 2000
-
-  exclude_where:
-    recent: []
-    background: ["qc.overallStatus=mediocre"]
+      samples:
+        recent:
+          min_date: 1Y
+          max_sequences: 3000
+        background:
+          min_date: 12Y
+          max_date: 1Y
+          exclude_where:
+            - qc.overallStatus=mediocre
+          max_sequences: 300
 
 files:
   auspice_config: "config/auspice_config.json"

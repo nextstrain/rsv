@@ -3,6 +3,8 @@ This part of the workflow expects input files
             sequences = "data/sequences.fasta"
             metadata = "data/metadata.tsv"
 """
+from augur.subsample import get_referenced_files
+
 
 rule exclude_preduplication:
     message:
@@ -55,93 +57,37 @@ rule newreference:
         """
 
 
-rule filter_recent:
-    message:
-        """
-        filtering sequences
-        """
+rule subsample:
     input:
         sequences=rules.exclude_preduplication.output.sequences,
         metadata="results/{a_or_b}/metadata.tsv",
+        config=build_dir + "/{a_or_b}/{build_name}/{resolution}/subsample_config.yaml",
+        referenced_files=lambda w: get_referenced_files(build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/subsample_config.yaml"),
     output:
-        sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_recent.fasta",
+        sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/subsampled.fasta",
+    log:
+        "logs/subsample_{a_or_b}_{build_name}_{resolution}.txt",
+    benchmark:
+        "benchmarks/subsample_{a_or_b}_{build_name}_{resolution}.txt",
     params:
-        group_by=config["filter"]["group_by"],
-        subsample_max_sequences=lambda w: config["filter"][
-            "subsample_max_sequences"
-        ][w.build_name],
         strain_id=config["strain_id_field"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
-        exclude_where=config["filter"]["exclude_where"]["recent"],
+    threads: 2
     shell:
         """
-        augur filter \
+        augur subsample \
             --sequences {input.sequences} \
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
-            --exclude-where {params.exclude_where:q} \
-            --min-date {params.min_date} \
-            --output {output.sequences} \
-            --group-by {params.group_by} \
-            --subsample-max-sequences {params.subsample_max_sequences}
-        """
-
-
-rule filter_background:
-    message:
-        """
-        filtering sequences
-        """
-    input:
-        sequences=rules.exclude_preduplication.output.sequences,
-        metadata="results/{a_or_b}/metadata.tsv",
-        include="config/include_{a_or_b}.txt",
-    output:
-        sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background_pre.fasta",
-        metadata=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background_metadata.tsv",
-    params:
-        group_by=config["filter"]["group_by"],
-        subsample_max_sequences=lambda w: int(
-            config["filter"]["subsample_max_sequences"][w.build_name],
-        )
-        // 10,
-        strain_id=config["strain_id_field"],
-        max_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution][
-            "background_min_date"
-        ],
-        exclude_where=config["filter"]["exclude_where"]["background"],
-    shell:
-        """
-        augur filter \
-            --sequences {input.sequences} \
-            --metadata {input.metadata} \
-            --metadata-id-columns {params.strain_id} \
-            --include {input.include} \
-            --exclude-where {params.exclude_where:q}  \
-            --min-date {params.min_date} \
-            --max-date {params.max_date} \
-            --output-sequences {output.sequences} \
-            --output-metadata {output.metadata} \
-            --group-by {params.group_by} \
-            --subsample-max-sequences {params.subsample_max_sequences}
+            --config {input.config} \
+            --nthreads {threads} \
+            --output-sequences {output.sequences}
         """
 
 
 rule combine_samples:
     input:
         subsamples=lambda w: (
-            (
-                [
-                    rules.filter_recent.output.sequences,
-                    rules.filter_background.output.sequences,
-                ]
-                if "background_min_date" in config["filter"]["resolutions"][w.resolution]
-                else [rules.filter_recent.output.sequences]
-            )
+            [rules.subsample.output.sequences]
             # potentially add sequences sampled to include maximum escape sequences
             + (
                 [
