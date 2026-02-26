@@ -28,41 +28,76 @@ description: "config/description.md"
 strain_id_field: "accession"
 display_strain_field: "strain"
 
+# dataset values are in the format '<subtype>/<build>/<resolution>'
+# dataset parts can be a literal value, '*', or multiple values like '(6y|3y)'
+subsample:
+  - dataset: '*/*/*'
+    query: missing_data<1000
+    exclude: config/outliers_ppx.txt
+    exclude_where:
+      - qc.overallStatus=bad
+    group_by:
+      - year
+      - country
 
-filter:
-  group_by: "year country"
-  min_coverage:
-    genome: 0.3
-    G: 0.3
-    F: 0.3
-    F-antibody-escape: 0.75
+  - dataset: 'a/*/*'
+    include: config/include_a.txt
+    query: clade.str.startswith("A.D", na=False)
+  - dataset: 'b/*/*'
+    include: config/include_b.txt
+    query: clade.str.startswith("B.D", na=False)
 
-  min_length:
-    genome: 10000
-    G: 600
-    F: 1200
-    F-antibody-escape: 1200
-  resolutions:
-    all-time:
-      min_date: 1975-01-01
-    6y:
-      min_date: 6Y
-      background_min_date: 12Y
-    3y:
-      min_date: 3Y
-      background_min_date: 12Y
+  - dataset: '*/genome/*'
+    min_length: 10000
+    query: genome_coverage>0.3
+  - dataset: '*/G/*'
+    min_length: 600
+    query: G_coverage>0.3
+  - dataset: '*/F/*'
+    min_length: 1200
+    query: F_coverage>0.3
+  - dataset: '*/F-antibody-escape/*'
+    min_length: 1200
+    query: F_coverage>0.75
 
-  subsample_max_sequences:
-    genome: 3000
-    G: 3000
-    F: 3000
-    F-antibody-escape: 2000
+  - dataset: '*/*/all-time'
+    samples:
+      all-time:
+        max_sequences: 3000
+        min_date: 1975-01-01
+  - dataset: '*/*/(6y|3y)'
+    samples:
+      recent:
+        max_sequences: 3000
+      background:
+        max_sequences: 300
+        exclude_where:
+          - qc.overallStatus=mediocre
+  - dataset: '*/*/6y'
+    samples:
+      recent:
+        min_date: 6Y
+      background:
+        min_date: 12Y
+        max_date: 6Y
+  - dataset: '*/*/3y'
+    samples:
+      recent:
+        min_date: 3Y
+      background:
+        min_date: 12Y
+        max_date: 3Y
 
-  exclude_where:
-    recent: ["qc.overallStatus=bad"]
-    background: ["qc.overallStatus=bad", "qc.overallStatus=mediocre"]
-
-  missing_data_threshold: 1000
+  - dataset: '*/F-antibody-escape/all-time'
+    samples:
+      all-time:
+        max_sequences: 2000
+  - dataset: '*/F-antibody-escape/(6y|3y)'
+    samples:
+      recent:
+        max_sequences: 2000
+      background:
+        max_sequences: 200
 
 files:
   auspice_config: "config/auspice_config.json"
@@ -141,4 +176,3 @@ enrich_antibody_escape:  # additional filtering for antibody escape sequences ad
     group_by: [country, year]  # group by these variables
     max_identical_f_prot_muts: 2  # for each group, no more than this many w identical F protein mutations
     max_identical_max_escape_mut: 6  # for each group, no more than this many w same top F escape mutation
-
