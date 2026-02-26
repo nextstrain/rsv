@@ -237,10 +237,10 @@ rule filter_for_pre_subsample_alignment:
     benchmark:
         "benchmarks/filter_for_pre_subsample_alignment_{a_or_b}_{build_name}_{resolution}.txt"
     params:
-        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
-        min_length=lambda w: config["filter"]["min_length"][w.build_name],
+        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter_for_pre_subsample_alignment"]["min_coverage"][w.build_name]}',
+        min_length=lambda w: config["filter_for_pre_subsample_alignment"]["min_length"][w.build_name],
         strain_id=config["strain_id_field"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
+        min_date=lambda w: config["filter_for_pre_subsample_alignment"]["resolutions"][w.resolution]["min_date"],
     shell:
         r"""
         exec &> >(tee {log:q})
