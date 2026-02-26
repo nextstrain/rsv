@@ -31,40 +31,86 @@ description: "config/description.md"
 strain_id_field: "accession"
 display_strain_field: "strain"
 
-
-filter:
-  group_by: "year country"
-  min_length:
-    genome: 10000
-    G: 600
-    F: 1200
-    F-antibody-escape: 1200
-  resolutions:
-    all-time:
-      min_date: 1975-01-01
-    6y:
+# Keys are dataset patterns mapped to options. Patterns use the format
+# '<subtype>/<build>/<resolution>', where each part is a literal value, '*'
+# (any), or '(a|b)' (multiple). Datasets can be split into multiple samples, in
+# which case the mapping goes from datasets to samples to options. When a
+# dataset has been split into samples by another entry, options directly under
+# the dataset pattern are applied to all samples. Datasets without explicit
+# samples get one implicit sample named 'sample'. Patterns are applied
+# top-to-bottom, last value wins, and null removes a previous option value.
+subsample:
+  '*/*/*':
+    group_by:
+      - year
+      - country
+    exclude: config/outliers_ppx.txt
+  '*/genome/*':
+    min_length: 10000
+  '*/G/*':
+    min_length: 600
+  '*/F/*':
+    min_length: 1200
+  '*/F-antibody-escape/*':
+    min_length: 1200
+  'a/*/*':
+    include: config/include_a.txt
+  'b/*/*':
+    include: config/include_b.txt
+  '*/*/all-time':
+    min_date: 1975-01-01
+    max_sequences: 3000
+    exclude_where:
+      - qc.overallStatus=bad
+  '*/*/6y':
+    recent:
       min_date: 6Y
-      background_min_date: 12Y
-    3y:
+      max_sequences: 3000
+      exclude_where:
+        - qc.overallStatus=bad
+    background:
+      min_date: 12Y
+      max_date: 6Y
+      max_sequences: 300
+      exclude_where:
+        - qc.overallStatus=bad
+        - qc.overallStatus=mediocre
+  '*/*/3y':
+    recent:
       min_date: 3Y
-      background_min_date: 12Y
-
-  subsample_max_sequences:
-    genome: 3000
-    G: 3000
-    F: 3000
-    F-antibody-escape: 2000
-
-  exclude_where:
-    recent: ["qc.overallStatus=bad"]
-    background: ["qc.overallStatus=bad", "qc.overallStatus=mediocre"]
-
-  missing_data_threshold: 1000
-  min_coverage:
-    genome: 0.3
-    G: 0.3
-    F: 0.3
-    F-antibody-escape: 0.75
+      max_sequences: 3000
+      exclude_where:
+        - qc.overallStatus=bad
+    background:
+      min_date: 12Y
+      max_date: 3Y
+      max_sequences: 300
+      exclude_where:
+        - qc.overallStatus=bad
+        - qc.overallStatus=mediocre
+  '*/F-antibody-escape/all-time':
+    max_sequences: 2000
+  '*/F-antibody-escape/(6y|3y)':
+    recent:
+      max_sequences: 2000
+    background:
+      max_sequences: 200
+  'a/genome/*':
+    query: "missing_data<1000 & clade.str.startswith('A.D', na=False) & genome_coverage>0.3"
+  'a/G/*':
+    query: "missing_data<1000 & clade.str.startswith('A.D', na=False) & G_coverage>0.3"
+  'a/F/*':
+    query: "missing_data<1000 & clade.str.startswith('A.D', na=False) & F_coverage>0.3"
+  'a/F-antibody-escape/*':
+    query: "missing_data<1000 & clade.str.startswith('A.D', na=False) & F_coverage>0.75"
+  'b/genome/*':
+    query: "missing_data<1000 & clade.str.startswith('B.D', na=False) & genome_coverage>0.3"
+  'b/G/*':
+    query: "missing_data<1000 & clade.str.startswith('B.D', na=False) & G_coverage>0.3"
+  'b/F/*':
+    query: "missing_data<1000 & clade.str.startswith('B.D', na=False) & F_coverage>0.3"
+  'b/F-antibody-escape/*':
+    query: "missing_data<1000 & clade.str.startswith('B.D', na=False) & F_coverage>0.75"
 
 files:
   auspice_config: "config/auspice_config.json"
@@ -143,4 +189,3 @@ enrich_antibody_escape:  # additional filtering for antibody escape sequences ad
     group_by: [country, year]  # group by these variables
     max_identical_f_prot_muts: 2  # for each group, no more than this many w identical F protein mutations
     max_identical_max_escape_mut: 6  # for each group, no more than this many w same top F escape mutation
-

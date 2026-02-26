@@ -52,6 +52,13 @@ The workflow is contained in the [Snakefile](Snakefile) with included
 and pulls its parameters from the config. There is little redirection and each
 rule should be able to be reasoned with on its own.
 
+You can apply your own config in addition to the defaults with Snakemake's
+`--configfile` option:
+
+```sh
+nextstrain build . --configfile my-config.yaml
+```
+
 ### Default input data
 
 The default builds start from the public Nextstrain data that have been preprocessed
@@ -104,6 +111,75 @@ inputs:
     metadata: example_data/{a_or_b}/metadata.tsv
     sequences: example_data/{a_or_b}/sequences.fasta
 ```
+
+### Subsampling
+
+The default subsampling configuration is the `subsample` section in
+[`config/configfile.yaml`](./config/configfile.yaml). It uses dataset patterns
+like `<subtype>/<build>/<resolution>`, where each part is a literal value, `*`,
+or a multivalue pattern like `(6y|3y)`. Each dataset pattern maps to Augur
+subsample options and/or sample-specific option mappings. Dataset-level options
+apply to all samples for a matching dataset. Datasets without explicit samples
+get one implicit sample named `sample`.
+
+When using `--configfile`, a user-provided `subsample` section is merged with
+the defaults. This is useful for targeted changes such as changing the number of
+sequences for one dataset:
+
+```yaml
+subsample:
+  '*/F/3y':
+    recent:
+      max_sequences: 500
+    background:
+      max_sequences: 50
+```
+
+If you want to ignore the default subsampling configuration and start from
+scratch, use `custom_subsample` instead. It follows the same dataset-patterned
+format as `subsample`.
+
+```yaml
+custom_subsample:
+  '*/*/*':
+    query: missing_data < 1000
+    group_by: [year, country]
+    max_sequences: 500
+```
+
+To split a dataset into explicit samples, add sample names under a dataset
+pattern:
+
+```yaml
+custom_subsample:
+  '*/*/3y':
+    group_by:
+      - year
+      - country
+    recent:
+      min_date: 3Y
+      max_sequences: 500
+    background:
+      min_date: 12Y
+      max_sequences: 50
+```
+
+You can also provide raw Augur subsample configs for exact datasets with
+`subsample_datasets`. Keys must be exact dataset names, not patterns. Values
+must follow the
+[Augur subsample config schema](https://nextstrain.org/schemas/augur/subsample-config/v1).
+These raw configs override the generated config for matching datasets only,
+while other datasets still use the default merged `subsample` config.
+
+```yaml
+subsample_datasets:
+  a/genome/3y:
+    samples:
+      sample:
+        max_sequences: 100
+```
+
+`custom_subsample` and `subsample_datasets` cannot be used together.
 
 ### Using locally ingested data
 
