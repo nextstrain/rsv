@@ -129,7 +129,7 @@ See [shared/vendored/README.md](./shared/vendored/README.md#vendoring) for instr
 
 
 ## Deep mutational scanning data
-The trees are annotated with escape from key monoclonal antibodies as assessed by the effects of mutations measured in deep mutational scanning by [Simonich et al]() **ADD CITATION**.
+The trees are annotated with escape from key monoclonal antibodies as assessed by the effects of mutations measured in deep mutational scanning by [Simonich et al (2026)](https://www.biorxiv.org/content/10.64898/2026.02.12.705519).
 
 ## Update example data
 
