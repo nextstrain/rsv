@@ -173,7 +173,7 @@ rule combine_samples:
             (
                 [
                     rules.filter_recent.output.sequences,
-                    rules.filter_background.output.sequences,
+                    rules.exclude_preduplication.output.sequences,
                 ]
                 if "background_min_date" in config["filter"]["resolutions"][w.resolution]
                 else [rules.filter_recent.output.sequences]
