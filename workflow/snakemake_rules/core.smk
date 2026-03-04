@@ -528,6 +528,13 @@ def get_alignment(w):
         )
 
 
+def get_reference(w):
+    if w.build_name == "genome":
+        return f"config/{w.a_or_b}reference.gbk"
+    else:
+        return build_dir + f"/{w.a_or_b}/{w.build_name}_reference.gbk"
+
+
 rule tree:
     """
     Building tree
@@ -673,7 +680,7 @@ rule ancestral:
         tree=rules.refine.output.tree,
         alignment=get_alignment,
         translations=rules.genome_align.output.translations,
-        root_sequence=build_dir + "/{a_or_b}/{build_name}_reference.gbk",
+        root_sequence=get_reference,
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/nt_muts.json",
         translations_done=build_dir + "/{a_or_b}/{build_name}/{resolution}/translations.done",
@@ -710,7 +717,7 @@ rule translate:
     input:
         tree=rules.refine.output.tree,
         node_data=rules.ancestral.output.node_data,
-        reference=build_dir + "/{a_or_b}/{build_name}_reference.gbk",
+        reference=get_reference,
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/aa_muts.json",
     log:
