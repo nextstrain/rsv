@@ -1,6 +1,6 @@
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
-from Bio.SeqFeature import SeqFeature, FeatureLocation, Seq
+from Bio.SeqFeature import SeqFeature, FeatureLocation
 import shutil
 import argparse
 import sys
