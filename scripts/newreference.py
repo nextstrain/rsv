@@ -40,7 +40,7 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("--reference", required=True, help="GenBank file with reference sequences")
-    parser.add_argument("--output-fasta", required=True, help="GenBank new reference file")
+    parser.add_argument("--output-fasta", required=True, help="FASTA new reference file")
     parser.add_argument("--output-genbank", required=True, help="GenBank new reference file")
     parser.add_argument("--gene", help="gene name or genome for entire genome")
     args = parser.parse_args()
