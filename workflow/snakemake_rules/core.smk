@@ -44,8 +44,6 @@ rule newreference:
         "logs/newreference_{a_or_b}_{gene}.txt"
     benchmark:
         "benchmarks/newreference_{a_or_b}_{gene}.txt"
-    params:
-        gene=lambda w: w.gene.split("-")[0],
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -54,7 +52,7 @@ rule newreference:
             --reference {input.oldreference} \
             --output-genbank {output.newreferencegbk} \
             --output-fasta {output.newreferencefasta} \
-            --gene {params.gene}
+            --gene {wildcards.gene}
         """
 
 
@@ -532,7 +530,8 @@ def get_reference(w):
     if w.build_name == "genome":
         return f"config/{w.a_or_b}reference.gbk"
     else:
-        return build_dir + f"/{w.a_or_b}/{w.build_name}_reference.gbk"
+        gene = config["cds"][w.build_name]
+        return build_dir + f"/{w.a_or_b}/{gene}_reference.gbk"
 
 
 rule tree:
