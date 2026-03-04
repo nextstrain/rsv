@@ -19,7 +19,7 @@ def new_reference(referencefile, outgenbank, outfasta, gene):
 
     # If user provides a --gene 'some name' that is not found, error out as this may indicate that
     # the gene name is misspelled or the user may be using the wrong GenBank file.
-    if(gene is not None and startofgene is None and endofgene is None):
+    if(startofgene is None and endofgene is None):
         print(f"ERROR: No '{gene}' was found under 'gene' or 'CDS' features in the GenBank file.", file=sys.stderr)
         sys.exit(1)
 
@@ -35,13 +35,13 @@ def new_reference(referencefile, outgenbank, outfasta, gene):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="make new reference",
+        description="make new reference based on a gene",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("--reference", required=True, help="GenBank file with reference sequences")
     parser.add_argument("--output-fasta", required=True, help="FASTA new reference file")
     parser.add_argument("--output-genbank", required=True, help="GenBank new reference file")
-    parser.add_argument("--gene", help="gene name")
+    parser.add_argument("--gene", required=True, help="gene name")
     args = parser.parse_args()
 
     new_reference(args.reference, args.output_genbank, args.output_fasta, args.gene)
