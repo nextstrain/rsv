@@ -1,18 +1,24 @@
+import re
+import shlex
+
 import pandas as pd
 from snakemake.utils import min_version
 
 # Minimum Snakemake version needed for the storage plugins used in remote_files.smk
 min_version("8.0.0")
 
+include: "shared/vendored/snakemake/config.smk"
 configfile: "config/configfile.yaml"
-
-
-wildcard_constraints:
-    a_or_b=r"a|b",
-
 
 build_dir = "results"
 auspice_dir = "auspice"
+
+include: "workflow/snakemake_rules/config.smk"
+
+wildcard_constraints:
+    a_or_b=r"a|b",
+    build_name="|".join(config.get("builds_to_run", ["genome"])),
+    resolution="|".join(config.get("resolutions_to_run", ["all-time"])),
 
 distance_map_config = pd.read_table("config/distance_maps.tsv")
 
@@ -27,6 +33,7 @@ rule all:
                subtype = config.get("subtypes",['a']),
                build = config.get("builds_to_run", ['genome']),
                resolution = config.get("resolutions_to_run", ["all-time"])),
+
 
 # remote_files.smk must be before merge_inputs.smk
 include: "shared/vendored/snakemake/remote_files.smk"
