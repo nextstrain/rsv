@@ -1,7 +1,6 @@
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
-from Bio.SeqFeature import SeqFeature, FeatureLocation, Seq
-import shutil
+from Bio.SeqFeature import SeqFeature, FeatureLocation
 import argparse
 import sys
 
@@ -20,7 +19,7 @@ def new_reference(referencefile, outgenbank, outfasta, gene):
 
     # If user provides a --gene 'some name' that is not found, error out as this may indicate that
     # the gene name is misspelled or the user may be using the wrong GenBank file.
-    if(gene is not None and startofgene is None and endofgene is None):
+    if(startofgene is None and endofgene is None):
         print(f"ERROR: No '{gene}' was found under 'gene' or 'CDS' features in the GenBank file.", file=sys.stderr)
         sys.exit(1)
 
@@ -36,18 +35,14 @@ def new_reference(referencefile, outgenbank, outfasta, gene):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="make new reference depending on whether the entire genome or only part is to be used for the tree",
+        description="make new reference based on a gene",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("--reference", required=True, help="GenBank file with reference sequences")
-    parser.add_argument("--output-fasta", required=True, help="GenBank new reference file")
+    parser.add_argument("--output-fasta", required=True, help="FASTA new reference file")
     parser.add_argument("--output-genbank", required=True, help="GenBank new reference file")
-    parser.add_argument("--gene", help="gene name or genome for entire genome")
+    parser.add_argument("--gene", required=True, help="gene name")
     args = parser.parse_args()
 
-    if args.gene=='genome':
-        shutil.copy(args.reference, args.output_genbank)
-        SeqIO.write(SeqIO.read(args.reference, 'genbank'), args.output_fasta, 'fasta')
-    else:
-        new_reference(args.reference, args.output_genbank, args.output_fasta, args.gene)
+    new_reference(args.reference, args.output_genbank, args.output_fasta, args.gene)
 

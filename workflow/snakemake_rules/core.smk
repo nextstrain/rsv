@@ -44,8 +44,6 @@ rule newreference:
         "logs/newreference_{a_or_b}_{gene}.txt"
     benchmark:
         "benchmarks/newreference_{a_or_b}_{gene}.txt"
-    params:
-        gene=lambda w: w.gene.split("-")[0],
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -54,7 +52,7 @@ rule newreference:
             --reference {input.oldreference} \
             --output-genbank {output.newreferencegbk} \
             --output-fasta {output.newreferencefasta} \
-            --gene {params.gene}
+            --gene {wildcards.gene}
         """
 
 
@@ -528,6 +526,14 @@ def get_alignment(w):
         )
 
 
+def get_reference(w):
+    if w.build_name == "genome":
+        return f"config/{w.a_or_b}reference.gbk"
+    else:
+        gene = config["cds"][w.build_name]
+        return build_dir + f"/{w.a_or_b}/{gene}_reference.gbk"
+
+
 rule tree:
     """
     Building tree
@@ -673,7 +679,7 @@ rule ancestral:
         tree=rules.refine.output.tree,
         alignment=get_alignment,
         translations=rules.genome_align.output.translations,
-        root_sequence=build_dir + "/{a_or_b}/{build_name}_reference.gbk",
+        root_sequence=get_reference,
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/nt_muts.json",
         translations_done=build_dir + "/{a_or_b}/{build_name}/{resolution}/translations.done",
@@ -710,7 +716,7 @@ rule translate:
     input:
         tree=rules.refine.output.tree,
         node_data=rules.ancestral.output.node_data,
-        reference=build_dir + "/{a_or_b}/{build_name}_reference.gbk",
+        reference=get_reference,
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/aa_muts.json",
     log:
