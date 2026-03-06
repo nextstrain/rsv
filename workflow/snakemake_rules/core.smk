@@ -7,10 +7,9 @@ This part of the workflow expects input files
 
 
 rule index_sequences:
-    message:
-        """
-        Creating an index of sequence composition for filtering.
-        """
+    """
+    Creating an index of sequence composition for filtering.
+    """
     input:
         sequences="results/{a_or_b}/sequences.fasta",
     output:
@@ -31,10 +30,9 @@ rule index_sequences:
 
 
 rule newreference:
-    message:
-        """
-        Making new reference
-        """
+    """
+    Making new reference
+    """
     input:
         oldreference="config/{a_or_b}reference.gbk",
     output:
@@ -61,10 +59,9 @@ rule newreference:
 
 
 rule filter_recent:
-    message:
-        """
-        filtering sequences
-        """
+    """
+    filtering sequences
+    """
     input:
         sequences="results/{a_or_b}/sequences.fasta",
         metadata="results/{a_or_b}/metadata.tsv",
@@ -109,10 +106,9 @@ rule filter_recent:
 
 
 rule filter_background:
-    message:
-        """
-        filtering sequences
-        """
+    """
+    filtering sequences
+    """
     input:
         sequences="results/{a_or_b}/sequences.fasta",
         metadata="results/{a_or_b}/metadata.tsv",
@@ -166,10 +162,9 @@ rule filter_background:
         """
 
 rule exclude_preduplication:
-    message:
-        """
-        excluding sequences predate the duplication starting with A.D or B.D as lineage names
-        """
+    """
+    excluding sequences predate the duplication starting with A.D or B.D as lineage names
+    """
     input:
         sequences=rules.filter_background.output.sequences,
         metadata=rules.filter_background.output.metadata,
@@ -232,10 +227,9 @@ rule combine_samples:
 
 
 rule get_nextclade_dataset:
-    message:
-        """
-        fetching nextclade dataset
-        """
+    """
+    fetching nextclade dataset
+    """
     output:
         dataset="results/nextclade_rsv-{a_or_b}.zip",
     log:
@@ -257,10 +251,9 @@ rule get_nextclade_dataset:
 
 
 rule filter_for_pre_subsample_alignment:
-    message:
-        """
-        Do the quality filtering applied to each sequence set before subsampling
-        """
+    """
+    Do the quality filtering applied to each sequence set before subsampling
+    """
     input:
         sequences="results/{a_or_b}/sequences.fasta",
         metadata="results/{a_or_b}/metadata.tsv",
@@ -294,10 +287,9 @@ rule filter_for_pre_subsample_alignment:
 
 
 rule align_pre_subsample_sequences:
-    message:
-        """
-        Aligning all pre-subsampled quality-filtered sequences
-        """
+    """
+    Aligning all pre-subsampled quality-filtered sequences
+    """
     input:
         sequences=rules.filter_for_pre_subsample_alignment.output.sequences,
         dataset=rules.get_nextclade_dataset.output.dataset,
@@ -326,8 +318,9 @@ rule align_pre_subsample_sequences:
 
 
 rule score_pre_subsample_f_proteins:
-    message:
-        "Computing F protein DMS scores for pre-subsampled sequences"
+    """
+    Computing F protein DMS scores for pre-subsampled sequences
+    """
     input:
         translations_done=rules.align_pre_subsample_sequences.output.translations_done,
         dms_scores=config["f_dms_data"],
@@ -355,8 +348,9 @@ rule score_pre_subsample_f_proteins:
 
 
 rule add_f_scores_to_pre_subsample_metadata:
-    message:
-        "Adding F protein scores to pre-subsampled metadata"
+    """
+    Adding F protein scores to pre-subsampled metadata
+    """
     input:
         original_metadata="results/{a_or_b}/metadata.tsv",
         f_scores=rules.score_pre_subsample_f_proteins.output.scores,
@@ -381,8 +375,9 @@ rule add_f_scores_to_pre_subsample_metadata:
 
 
 rule enrich_antibody_escape:
-    message:
-        "Get sequences with high antibody escape to add to tree via custom filtering rule."
+    """
+    Get sequences with high antibody escape to add to tree via custom filtering rule.
+    """
     wildcard_constraints:
         antibody="|".join(re.escape(antibody) for antibody in config["f_dms_antibodies"]),
         scoretype="total_escape|max_escape",
@@ -420,10 +415,9 @@ rule enrich_antibody_escape:
 
 
 rule genome_align:
-    message:
-        """
-        Aligning sequences to the reference
-        """
+    """
+    Aligning sequences to the reference
+    """
     input:
         sequences=rules.combine_samples.output.sequences,
         dataset=rules.get_nextclade_dataset.output.dataset,
@@ -535,8 +529,9 @@ def get_alignment(w):
 
 
 rule tree:
-    message:
-        "Building tree"
+    """
+    Building tree
+    """
     input:
         alignment=get_alignment,
     output:
@@ -559,13 +554,12 @@ rule tree:
 
 
 rule refine:
-    message:
-        """
-        Refining tree
-          - estimate timetree
-          - use {params.coalescent} coalescent timescale
-          - estimate {params.date_inference} node dates
-        """
+    """
+    Refining tree
+      - estimate timetree
+      - use {params.coalescent} coalescent timescale
+      - estimate {params.date_inference} node dates
+    """
     input:
         tree=rules.tree.output.tree,
         alignment=get_alignment,
@@ -671,11 +665,10 @@ rule distances:
 
 
 rule ancestral:
-    message:
-        """
-        Reconstructing ancestral sequences and mutations
-          - inferring ambiguous mutations
-        """
+    """
+    Reconstructing ancestral sequences and mutations
+      - inferring ambiguous mutations
+    """
     input:
         tree=rules.refine.output.tree,
         alignment=get_alignment,
@@ -711,8 +704,9 @@ rule ancestral:
 
 
 rule translate:
-    message:
-        "Translating amino acid sequences"
+    """
+    Translating amino acid sequences
+    """
     input:
         tree=rules.refine.output.tree,
         node_data=rules.ancestral.output.node_data,
@@ -739,10 +733,9 @@ rule translate:
 
 
 rule compute_f_scores_node_data:
-    message:
-        """
-        Computing F protein antibody escape scores for all tree nodes
-        """
+    """
+    Computing F protein antibody escape scores for all tree nodes
+    """
     input:
         tree_newick=rules.refine.output.tree,
         aa_muts=rules.translate.output.node_data,

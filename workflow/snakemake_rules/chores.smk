@@ -8,8 +8,6 @@ rule update_example_data_wildcards:
     - sets the subsampling size to 50
     - groups by year and country
     """
-    message:
-        "Update example data"
     input:
         sequences = "results/{a_or_b}/sequences.fasta",
         metadata = "results/{a_or_b}/metadata.tsv",

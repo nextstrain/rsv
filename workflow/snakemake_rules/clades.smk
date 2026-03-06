@@ -1,6 +1,7 @@
 rule clades_genome:
-    message:
-        "adding clades based on the entire genome"
+    """
+    adding clades based on the entire genome
+    """
     input:
         tree = rules.refine.output.tree,
         aa_muts = rules.translate.output.node_data,
@@ -26,7 +27,9 @@ rule clades_genome:
 
 
 rule clades_Goya:
-    message: "Adding internal clade labels"
+    """
+    Adding internal clade labels
+    """
     input:
         tree = rules.refine.output.tree,
         aa_muts = rules.translate.output.node_data,
@@ -51,7 +54,9 @@ rule clades_Goya:
         """
 
 rule clades_consortium:
-    message: "Adding internal clade labels"
+    """
+    Adding internal clade labels
+    """
     input:
         tree = rules.refine.output.tree,
         aa_muts = rules.translate.output.node_data,

@@ -14,7 +14,9 @@ def get_node_data(w):
     return node_data
 
 rule generate_f_dms_antibody_auspice_config:
-    message: "Generating auspice config for F DMS antibody colorings"
+    """
+    Generating auspice config for F DMS antibody colorings
+    """
     input:
         f_scores_node_data = rules.compute_f_scores_node_data.output.f_scores_node_data
     output:
@@ -84,7 +86,9 @@ def auspice_configs(wildcards):
     return configs
 
 rule export:
-    message: "Exporting data files for auspice"
+    """
+    Exporting data files for auspice
+    """
     input:
         tree = rules.refine.output.tree,
         metadata = "results/{a_or_b}/metadata.tsv",
