@@ -16,8 +16,14 @@ rule index_sequences:
     output:
         sequence_index=build_dir
         + "/{a_or_b}/sequence_index.tsv",
+    log:
+        "logs/index_sequences_{a_or_b}.txt"
+    benchmark:
+        "benchmarks/index_sequences_{a_or_b}.txt"
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur index \
             --sequences {input.sequences} \
             --output {output.sequence_index}
@@ -36,10 +42,16 @@ rule newreference:
         + "/{a_or_b}/{gene}_reference.gbk",
         newreferencefasta=build_dir
         + "/{a_or_b}/{gene}_reference.fasta",
+    log:
+        "logs/newreference_{a_or_b}_{gene}.txt"
+    benchmark:
+        "benchmarks/newreference_{a_or_b}_{gene}.txt"
     params:
         gene=lambda w: w.gene.split("-")[0],
     shell:
         """
+        exec &> >(tee {log:q})
+
         python scripts/newreference.py \
             --reference {input.oldreference} \
             --output-genbank {output.newreferencegbk} \
@@ -61,6 +73,10 @@ rule filter_recent:
     output:
         sequences=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/filtered_recent.fasta",
+    log:
+        "logs/filter_recent_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/filter_recent_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         group_by=config["filter"]["group_by"],
         min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
@@ -74,6 +90,8 @@ rule filter_recent:
         missing_data_threshold=config["filter"]["missing_data_threshold"],
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur filter \
             --sequences {input.sequences} \
             --sequence-index {input.sequence_index} \
@@ -106,6 +124,10 @@ rule filter_background:
         + "/{a_or_b}/{build_name}/{resolution}/filtered_background_pre.fasta",
         metadata=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/filtered_background_metadata.tsv",
+    log:
+        "logs/filter_background_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/filter_background_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         group_by=config["filter"]["group_by"],
         min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
@@ -123,6 +145,8 @@ rule filter_background:
         missing_data_threshold=config["filter"]["missing_data_threshold"],
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur filter \
             --sequences {input.sequences} \
             --sequence-index {input.sequence_index} \
@@ -152,6 +176,8 @@ rule exclude_preduplication:
     output:
         sequences=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/filtered_background.fasta",
+    benchmark:
+        "benchmarks/exclude_preduplication_{a_or_b}_{build_name}_{resolution}.txt"
     run:
         import pandas as pd
         import Bio.SeqIO as SeqIO
@@ -193,8 +219,14 @@ rule combine_samples:
         ),
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered.fasta",
+    log:
+        "logs/combine_samples_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/combine_samples_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
         """
+        exec &> >(tee {log:q})
+
         cat {input.subsamples} | seqkit rmdup > {output}
         """
 
@@ -206,6 +238,10 @@ rule get_nextclade_dataset:
         """
     output:
         dataset="results/nextclade_rsv-{a_or_b}.zip",
+    log:
+        "logs/get_nextclade_dataset_{a_or_b}.txt"
+    benchmark:
+        "benchmarks/get_nextclade_dataset_{a_or_b}.txt"
     params:
         ds_name=lambda w: (
             "nextstrain/rsv/a/EPI_ISL_412866"
@@ -214,6 +250,8 @@ rule get_nextclade_dataset:
         ),
     shell:
         """
+        exec &> >(tee {log:q})
+
         nextclade3 dataset get -n {params.ds_name} --output-zip {output.dataset}
         """
 
@@ -229,6 +267,10 @@ rule filter_for_pre_subsample_alignment:
         exclude=config["exclude"],
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/filtered_for_alignment.fasta",
+    log:
+        "logs/filter_for_pre_subsample_alignment_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/filter_for_pre_subsample_alignment_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
         min_length=lambda w: config["filter"]["min_length"][w.build_name],
@@ -236,6 +278,8 @@ rule filter_for_pre_subsample_alignment:
         min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur filter \
             --sequences {input.sequences} \
             --metadata {input.metadata} \
@@ -265,15 +309,19 @@ rule align_pre_subsample_sequences:
         genes=lambda w: config["cds"][w.build_name],
     threads: 8
     log:
-        "logs/align_all_{a_or_b}_{build_name}_{resolution}.txt",
+        "logs/align_pre_subsample_sequences_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/align_pre_subsample_sequences_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
         """
+        exec &> >(tee {log:q})
+
         nextclade3 run -j {threads}\
             {input.sequences} \
             -D {input.dataset} \
             --output-fasta {output.alignment} \
             --cds-selection {params.genes} \
-            --output-translations "{output.translations}/{{cds}}.fasta" 2>&1 | tee {log} && touch {output.translations_done}
+            --output-translations "{output.translations}/{{cds}}.fasta" && touch {output.translations_done}
         """
 
 
@@ -285,12 +333,18 @@ rule score_pre_subsample_f_proteins:
         dms_scores=config["f_dms_data"],
     output:
         scores=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/f_protein_scores.tsv",
+    log:
+        "logs/score_pre_subsample_f_proteins_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/score_pre_subsample_f_proteins_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         f_sequences=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/pre_subsample/translations/F.fasta",
         dms_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
         only_positive_escape=config["dms_only_positive_escape"],
     shell:
         """
+        exec &> >(tee {log:q})
+
         python scripts/score_f_sequences.py fasta \
             --sequences {params.f_sequences} \
             --dms-scores {input.dms_scores} \
@@ -308,10 +362,16 @@ rule add_f_scores_to_pre_subsample_metadata:
         f_scores=rules.score_pre_subsample_f_proteins.output.scores,
     output:
         enhanced_metadata=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/metadata_with_scores.tsv",
+    log:
+        "logs/add_f_scores_to_pre_subsample_metadata_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/add_f_scores_to_pre_subsample_metadata_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         strain_id=config["strain_id_field"],
     shell:
         """
+        exec &> >(tee {log:q})
+
         python scripts/merge_f_scores.py \
             --metadata {input.original_metadata} \
             --scores {input.f_scores} \
@@ -331,6 +391,10 @@ rule enrich_antibody_escape:
         metadata=rules.add_f_scores_to_pre_subsample_metadata.output.enhanced_metadata,
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered_{antibody}_{scoretype}.fasta"
+    log:
+        "logs/enrich_antibody_escape_{a_or_b}_{build_name}_{resolution}_{antibody}_{scoretype}.txt"
+    benchmark:
+        "benchmarks/enrich_antibody_escape_{a_or_b}_{build_name}_{resolution}_{antibody}_{scoretype}.txt"
     params:
         strain_id=config["strain_id_field"],
         escape_col=lambda w: f"{w.antibody}_{w.scoretype}",
@@ -340,6 +404,8 @@ rule enrich_antibody_escape:
         max_identical_max_escape_mut=lambda w: config["enrich_antibody_escape"][w.build_name]["max_identical_max_escape_mut"],
     shell:
         """
+        exec &> >(tee {log:q})
+
         python scripts/enrich_antibody_escape.py \
             --input-sequences {input.sequences} \
             --metadata {input.metadata} \
@@ -368,15 +434,19 @@ rule genome_align:
         genes=lambda w: config["cds"][w.build_name],
     threads: 4
     log:
-        "logs/align_{a_or_b}_{build_name}_{resolution}.txt",
+        "logs/genome_align_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/genome_align_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
         """
+        exec &> >(tee {log:q})
+
         nextclade3 run -j {threads}\
             {input.sequences} \
             -D {input.dataset} \
             --output-fasta {output.alignment} \
             --cds-selection {params.genes} \
-            --output-translations "{output.translations}/{{cds}}.fasta" 2>&1 | tee {log} \
+            --output-translations "{output.translations}/{{cds}}.fasta"
         """
 
 
@@ -388,8 +458,14 @@ rule cut:
     output:
         slicedalignment=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/{gene}_slicedalignment.fasta",
+    log:
+        "logs/cut_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
+    benchmark:
+        "benchmarks/cut_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
     shell:
         """
+        exec &> >(tee {log:q})
+
         python scripts/cut.py \
             --oldalignment {input.oldalignment} \
             --slicedalignment {output.slicedalignment} \
@@ -406,9 +482,15 @@ rule realign:
         + "/{a_or_b}/{gene}_reference.fasta",
     output:
         realigned=build_dir + "/{a_or_b}/{build_name}/{resolution}/{gene}_aligned.fasta",
+    log:
+        "logs/realign_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
+    benchmark:
+        "benchmarks/realign_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
     threads: 4
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur align --nthreads {threads} \
             --sequences {input.slicedalignment} \
             --reference-sequence {input.reference} \
@@ -424,8 +506,14 @@ rule hybrid_align:
     output:
         hybrid_alignment=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/hybrid_alignment.fasta",
+    log:
+        "logs/hybrid_align_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/hybrid_align_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
         """
+        exec &> >(tee {log:q})
+
         python scripts/align_for_tree.py \
             --realign {input.G_alignment} \
             --original {input.original} \
@@ -453,9 +541,15 @@ rule tree:
         alignment=get_alignment,
     output:
         tree=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_raw.nwk",
+    log:
+        "logs/tree_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/tree_{a_or_b}_{build_name}_{resolution}.txt"
     threads: 4
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur tree \
             --alignment {input.alignment} \
             --output {output.tree} \
@@ -479,6 +573,10 @@ rule refine:
     output:
         tree=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.nwk",
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/branch_lengths.json",
+    log:
+        "logs/refine_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/refine_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         coalescent=config["refine"]["coalescent"],
         clock_filter_iqd=config["refine"]["clock_filter_iqd"],
@@ -486,6 +584,8 @@ rule refine:
         strain_id=config["strain_id_field"],
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur refine \
             --tree {input.tree} \
             --alignment {input.alignment} \
@@ -549,12 +649,16 @@ rule distances:
         comparisons=_get_distance_comparisons_by_lineage_and_segment,
         attribute_names=_get_distance_attributes_by_lineage_and_segment,
     log:
-        "logs/distances_{a_or_b}_{build_name}_{resolution}.txt",
+        "logs/distances_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/distances_{a_or_b}_{build_name}_{resolution}.txt"
     resources:
         mem_mb=8000,
         time="00:30:00",
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur distance \
             --alignment {params.alignments} \
             --tree {input.tree} \
@@ -562,7 +666,7 @@ rule distances:
             --compare-to {params.comparisons} \
             --attribute-name {params.attribute_names} \
             --map {input.distance_maps} \
-            --output {output.distances} 2>&1 | tee {log}
+            --output {output.distances}
         """
 
 
@@ -586,9 +690,13 @@ rule ancestral:
         output_translations=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE_withInternalNodes.fasta",
         input_translations=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE.fasta",
     log:
-        "logs/ancestral_{a_or_b}_{build_name}_{resolution}.txt",
+        "logs/ancestral_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/ancestral_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur ancestral \
             --tree {input.tree} \
             --alignment {input.alignment} \
@@ -598,7 +706,7 @@ rule ancestral:
             --genes {params.genes} \
             --translations "{params.input_translations}" \
             --output-translations "{params.output_translations}" \
-            --inference {params.inference} 2>&1 | tee {log} && touch {output.translations_done}
+            --inference {params.inference} && touch {output.translations_done}
         """
 
 
@@ -611,10 +719,16 @@ rule translate:
         reference=build_dir + "/{a_or_b}/{build_name}_reference.gbk",
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/aa_muts.json",
+    log:
+        "logs/translate_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/translate_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         alignment_file_mask=build_dir + "/{a_or_b}/{build_name}/{resolution}/aligned_%GENE.fasta",
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur translate \
             --tree {input.tree} \
             --ancestral-sequences {input.node_data} \
@@ -640,9 +754,13 @@ rule compute_f_scores_node_data:
         f_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
         only_positive_escape=config["dms_only_positive_escape"],
     log:
-        "logs/compute_f_scores_node_data_{a_or_b}_{build_name}_{resolution}.txt",
+        "logs/compute_f_scores_node_data_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/compute_f_scores_node_data_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
         """
+        exec &> >(tee {log:q})
+
         python scripts/score_f_sequences.py tree \
             --tree-newick {input.tree_newick} \
             --aa-muts {input.aa_muts} \
@@ -650,7 +768,7 @@ rule compute_f_scores_node_data:
             --dms-scores {input.f_scores} \
             --dms-antibodies {params.f_antibodies} \
             --only-positive-escape {params.only_positive_escape} \
-            --output {output.f_scores_node_data} &> {log}
+            --output {output.f_scores_node_data}
         """
 
 
@@ -661,12 +779,16 @@ rule traits:
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/traits.json",
     log:
-        "logs/{a_or_b}/traits_{build_name}_{resolution}_rsv.txt",
+        "logs/traits_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/traits_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         columns=config["traits"]["columns"],
         strain_id=config["strain_id_field"],
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur traits \
             --tree {input.tree} \
             --metadata {input.metadata} \
@@ -682,10 +804,16 @@ rule frequencies:
         metadata = "results/{a_or_b}/metadata.tsv"
     output:
         frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
+    log:
+        "logs/frequencies_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/frequencies_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         min_date_arg = lambda w: f"--min-date {config['frequencies']['resolutions'][w.resolution]['min_date']}",
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur frequencies \
             --tree {input.tree} \
             --method kde \

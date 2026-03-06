@@ -19,6 +19,10 @@ rule generate_f_dms_antibody_auspice_config:
         f_scores_node_data = rules.compute_f_scores_node_data.output.f_scores_node_data
     output:
         auspice_config = "results/{a_or_b}/{build_name}/{resolution}/auspice_config_f_dms_antibodies.json"
+    log:
+        "logs/generate_f_dms_antibody_auspice_config_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/generate_f_dms_antibody_auspice_config_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         antibodies = config["f_dms_antibodies"],
         continuous_scale = " ".join(
@@ -28,6 +32,8 @@ rule generate_f_dms_antibody_auspice_config:
         )
     shell:
         """
+        exec &> >(tee {log:q})
+
         python scripts/generate_f_dms_antibody_auspice_config.py \
             --antibodies {params.antibodies} \
             --continuous-scale {params.continuous_scale} \
@@ -42,8 +48,14 @@ rule colors:
         metadata = "results/{a_or_b}/metadata.tsv",
     output:
         colors = "results/{a_or_b}/colors.tsv"
+    log:
+        "logs/colors_{a_or_b}.txt"
+    benchmark:
+        "benchmarks/colors_{a_or_b}.txt"
     shell:
         """
+        exec &> >(tee {log:q})
+
         python scripts/assign-colors.py \
             --color-schemes {input.color_schemes} \
             --ordering {input.color_orderings} \
@@ -82,11 +94,17 @@ rule export:
         description = config["description"]
     output:
         auspice_json =  build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json"
+    log:
+        "logs/export_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/export_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny",
         strain_id=config["strain_id_field"],
     shell:
         """
+        exec &> >(tee {log:q})
+
         augur export v2 \
             --tree {input.tree} \
             --metadata {input.metadata} \
@@ -110,11 +128,17 @@ rule final_strain_name:
     output:
         auspice_json=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_renamed.json",
         freq_json= "auspice/rsv_{a_or_b}_{build_name}_{resolution}_tip-frequencies.json"
+    log:
+        "logs/final_strain_name_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/final_strain_name_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         strain_id=config["strain_id_field"],
         display_strain_field=config["display_strain_field"],
     shell:
         """
+        exec &> >(tee {log:q})
+
         python3 scripts/set_final_strain_name.py --metadata {input.metadata} \
                 --metadata-id-columns {params.strain_id} \
                 --input-auspice-json {input.auspice_json} \
@@ -131,12 +155,18 @@ rule rename_and_ready_for_nextclade:
         pathogen_json= "nextclade/config/pathogen.json",
     output:
         auspice_json= "auspice/rsv_{a_or_b}_{build_name}_{resolution}.json",
+    log:
+        "logs/rename_and_ready_for_nextclade_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/rename_and_ready_for_nextclade_{a_or_b}_{build_name}_{resolution}.txt"
     params:
         accession= lambda w: config["nextclade_attributes"][w.a_or_b]["accession"],
         name= lambda w: config["nextclade_attributes"][w.a_or_b]["name"],
         ref_name= lambda w: config["nextclade_attributes"][w.a_or_b]["reference_name"]
     shell:
         """
+        exec &> >(tee {log:q})
+
         python3 scripts/rename_and_nextclade.py  \
                 --input-auspice-json {input.auspice_json} \
                 --pathogen-json {input.pathogen_json} \
