@@ -13,7 +13,7 @@ rule clades_genome:
     benchmark:
         "benchmarks/clades_genome_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
-        """
+        r"""
         exec &> >(tee {log:q})
 
         augur clades --tree {input.tree} \
@@ -39,7 +39,7 @@ rule clades_Goya:
     benchmark:
         "benchmarks/clades_Goya_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
-        """
+        r"""
         exec &> >(tee {log:q})
 
         augur clades --tree {input.tree} \
@@ -64,7 +64,7 @@ rule clades_consortium:
     benchmark:
         "benchmarks/clades_consortium_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
-        """
+        r"""
         exec &> >(tee {log:q})
 
         augur clades --tree {input.tree} \
@@ -83,7 +83,7 @@ rule download_clades:
     params:
         url = lambda w: f"https://raw.githubusercontent.com/rsv-lineages/lineage-designation-{w.a_or_b.upper()}/main/.auto-generated/lineages.tsv"
     shell:
-        """
+        r"""
         exec &> >(tee {log:q})
 
         curl {params.url} --output {output.clades}

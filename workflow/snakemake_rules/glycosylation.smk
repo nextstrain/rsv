@@ -11,7 +11,7 @@ rule glycosylation:
     params:
         aa_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/aligned_{build_name}.fasta"
     shell:
-     """
+     r"""
      exec &> >(tee {log:q})
 
      python scripts/glycosylation.py \

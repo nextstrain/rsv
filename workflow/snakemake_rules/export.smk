@@ -31,7 +31,7 @@ rule generate_f_dms_antibody_auspice_config:
             ["#440154", "#472d7b", "#3b528b", "#2c728e", "#21918c", "#28ae80", "#5ec962", "#addc30", "#fde725"]
         )
     shell:
-        """
+        r"""
         exec &> >(tee {log:q})
 
         python scripts/generate_f_dms_antibody_auspice_config.py \
@@ -53,7 +53,7 @@ rule colors:
     benchmark:
         "benchmarks/colors_{a_or_b}.txt"
     shell:
-        """
+        r"""
         exec &> >(tee {log:q})
 
         python scripts/assign-colors.py \
@@ -102,7 +102,7 @@ rule export:
         title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny",
         strain_id=config["strain_id_field"],
     shell:
-        """
+        r"""
         exec &> >(tee {log:q})
 
         augur export v2 \
@@ -136,7 +136,7 @@ rule final_strain_name:
         strain_id=config["strain_id_field"],
         display_strain_field=config["display_strain_field"],
     shell:
-        """
+        r"""
         exec &> >(tee {log:q})
 
         python3 scripts/set_final_strain_name.py --metadata {input.metadata} \
@@ -164,7 +164,7 @@ rule rename_and_ready_for_nextclade:
         name= lambda w: config["nextclade_attributes"][w.a_or_b]["name"],
         ref_name= lambda w: config["nextclade_attributes"][w.a_or_b]["reference_name"]
     shell:
-        """
+        r"""
         exec &> >(tee {log:q})
 
         python3 scripts/rename_and_nextclade.py  \
