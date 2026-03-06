@@ -9,6 +9,8 @@ min_version("8.0.0")
 
 configfile: "config/configfile.yaml"
 
+include: "shared/vendored/snakemake/config.smk"
+include: "workflow/snakemake_rules/config.smk"
 
 wildcard_constraints:
     a_or_b=r"a|b",
