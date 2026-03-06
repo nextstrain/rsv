@@ -1,6 +1,7 @@
 rule clades_genome:
-    message:
-        "adding clades based on the entire genome"
+    """
+    adding clades based on the entire genome
+    """
     input:
         tree = rules.refine.output.tree,
         aa_muts = rules.translate.output.node_data,
@@ -9,20 +10,26 @@ rule clades_genome:
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/clades_genome.json"
     log:
-        "logs/{a_or_b}/clades_genome_{build_name}_{resolution}.txt"
+        "logs/clades_genome_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/clades_genome_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
-        """
+        r"""
+        exec &> >(tee {log:q})
+
         augur clades --tree {input.tree} \
             --mutations {input.nuc_muts} {input.aa_muts} \
             --clades {input.clades} \
             --membership-name genome_clade \
             --label-name genome_clade \
-            --output-node-data  {output.node_data} 2>&1 | tee {log}
+            --output-node-data  {output.node_data}
         """
 
 
 rule clades_Goya:
-    message: "Adding internal clade labels"
+    """
+    Adding internal clade labels
+    """
     input:
         tree = rules.refine.output.tree,
         aa_muts = rules.translate.output.node_data,
@@ -31,19 +38,25 @@ rule clades_Goya:
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/clades_G.json"
     log:
-        "logs/{a_or_b}/clades_{build_name}_{resolution}.txt"
+        "logs/clades_Goya_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/clades_Goya_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
-        """
+        r"""
+        exec &> >(tee {log:q})
+
         augur clades --tree {input.tree} \
             --mutations {input.nuc_muts} {input.aa_muts} \
             --clades {input.clades} \
             --membership-name G_clade \
             --label-name G_clade \
-            --output-node-data {output.node_data} 2>&1 | tee {log}
+            --output-node-data {output.node_data}
         """
 
 rule clades_consortium:
-    message: "Adding internal clade labels"
+    """
+    Adding internal clade labels
+    """
     input:
         tree = rules.refine.output.tree,
         aa_muts = rules.translate.output.node_data,
@@ -52,21 +65,31 @@ rule clades_consortium:
     output:
         node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/clades_consortium.json"
     log:
-        "logs/{a_or_b}/clades_{build_name}_{resolution}.txt"
+        "logs/clades_consortium_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/clades_consortium_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
-        """
+        r"""
+        exec &> >(tee {log:q})
+
         augur clades --tree {input.tree} \
             --mutations {input.nuc_muts} {input.aa_muts} \
             --clades {input.clades} \
-            --output-node-data {output.node_data} 2>&1 | tee {log}
+            --output-node-data {output.node_data}
         """
 
 rule download_clades:
     output:
         clades = "results/clades_consortium_{a_or_b}.tsv"
+    log:
+        "logs/download_clades_{a_or_b}.txt"
+    benchmark:
+        "benchmarks/download_clades_{a_or_b}.txt"
     params:
         url = lambda w: f"https://raw.githubusercontent.com/rsv-lineages/lineage-designation-{w.a_or_b.upper()}/main/.auto-generated/lineages.tsv"
     shell:
-        """
+        r"""
+        exec &> >(tee {log:q})
+
         curl {params.url} --output {output.clades}
         """
