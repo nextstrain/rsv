@@ -3,7 +3,7 @@ This part of the workflow expects input files
             sequences = "data/sequences.fasta"
             metadata = "data/metadata.tsv"
 """
-
+from augur.subsample import get_referenced_files
 
 
 rule index_sequences:
@@ -58,149 +58,40 @@ rule newreference:
         """
 
 
-rule filter_recent:
-    """
-    filtering sequences
-    """
+rule subsample:
     input:
         sequences="results/{a_or_b}/sequences.fasta",
         metadata="results/{a_or_b}/metadata.tsv",
         sequence_index=rules.index_sequences.output,
-        exclude=config["exclude"],
+        config=build_dir + "/{a_or_b}/{build_name}/{resolution}/subsample_config.yaml",
+        referenced_files=lambda w: get_referenced_files(build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/subsample_config.yaml"),
     output:
-        sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_recent.fasta",
+        sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/subsampled.fasta",
     log:
-        "logs/filter_recent_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/subsample_{a_or_b}_{build_name}_{resolution}.txt",
     benchmark:
-        "benchmarks/filter_recent_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/subsample_{a_or_b}_{build_name}_{resolution}.txt",
     params:
-        group_by=config["filter"]["group_by"],
-        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
-        min_length=lambda w: config["filter"]["min_length"][w.build_name],
-        subsample_max_sequences=lambda w: config["filter"][
-            "subsample_max_sequences"
-        ][w.build_name],
         strain_id=config["strain_id_field"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
-        exclude_where=config["filter"]["exclude_where"]["recent"],
-        missing_data_threshold=config["filter"]["missing_data_threshold"],
+    threads: 2
     shell:
         r"""
         exec &> >(tee {log:q})
 
-        augur filter \
+        augur subsample \
             --sequences {input.sequences} \
             --sequence-index {input.sequence_index} \
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
-            --exclude {input.exclude} \
-            --exclude-where {params.exclude_where:q} \
-            --min-date {params.min_date} \
-            --min-length {params.min_length} \
-            --output {output.sequences} \
-            --group-by {params.group_by} \
-            --subsample-max-sequences {params.subsample_max_sequences} \
-            --query '({params.min_coverage}) & missing_data<{params.missing_data_threshold}'
+            --config {input.config} \
+            --nthreads {threads} \
+            --output-sequences {output.sequences}
         """
-
-
-rule filter_background:
-    """
-    filtering sequences
-    """
-    input:
-        sequences="results/{a_or_b}/sequences.fasta",
-        metadata="results/{a_or_b}/metadata.tsv",
-        sequence_index=rules.index_sequences.output,
-        include="config/include_{a_or_b}.txt",
-        exclude=config["exclude"],
-    output:
-        sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background_pre.fasta",
-        metadata=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background_metadata.tsv",
-    log:
-        "logs/filter_background_{a_or_b}_{build_name}_{resolution}.txt"
-    benchmark:
-        "benchmarks/filter_background_{a_or_b}_{build_name}_{resolution}.txt"
-    params:
-        group_by=config["filter"]["group_by"],
-        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
-        min_length=lambda w: config["filter"]["min_length"][w.build_name],
-        subsample_max_sequences=lambda w: int(
-            config["filter"]["subsample_max_sequences"][w.build_name],
-        )
-        // 10,
-        strain_id=config["strain_id_field"],
-        max_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution][
-            "background_min_date"
-        ],
-        exclude_where=config["filter"]["exclude_where"]["background"],
-        missing_data_threshold=config["filter"]["missing_data_threshold"],
-    shell:
-        r"""
-        exec &> >(tee {log:q})
-
-        augur filter \
-            --sequences {input.sequences} \
-            --sequence-index {input.sequence_index} \
-            --metadata {input.metadata} \
-            --metadata-id-columns {params.strain_id} \
-            --include {input.include} \
-            --exclude {input.exclude} \
-            --exclude-where {params.exclude_where:q}  \
-            --min-date {params.min_date} \
-            --max-date {params.max_date} \
-            --min-length {params.min_length} \
-            --output-sequences {output.sequences} \
-            --output-metadata {output.metadata} \
-            --group-by {params.group_by} \
-            --subsample-max-sequences {params.subsample_max_sequences} \
-            --query '({params.min_coverage}) & missing_data<{params.missing_data_threshold}'
-        """
-
-rule exclude_preduplication:
-    """
-    excluding sequences predate the duplication starting with A.D or B.D as lineage names
-    """
-    input:
-        sequences=rules.filter_background.output.sequences,
-        metadata=rules.filter_background.output.metadata,
-    output:
-        sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background.fasta",
-    benchmark:
-        "benchmarks/exclude_preduplication_{a_or_b}_{build_name}_{resolution}.txt"
-    run:
-        import pandas as pd
-        import Bio.SeqIO as SeqIO
-
-        desired_prefix = wildcards.a_or_b.upper() + ".D"
-
-        metadata_df = pd.read_csv(input.metadata, sep="\t")
-        ids_to_keep = set(metadata_df[
-            metadata_df["clade"].str.startswith(desired_prefix, na=False)
-        ]["accession"].tolist())
-
-        with open(output.sequences, "w") as seq_out:
-            for seq in SeqIO.parse(input.sequences, "fasta"):
-                if seq.id in ids_to_keep:
-                    SeqIO.write(seq, seq_out, "fasta")
-
 
 rule combine_samples:
     input:
         subsamples=lambda w: (
-            (
-                [
-                    rules.filter_recent.output.sequences,
-                    rules.exclude_preduplication.output.sequences,
-                ]
-                if "background_min_date" in config["filter"]["resolutions"][w.resolution]
-                else [rules.filter_recent.output.sequences]
-            )
+            [rules.subsample.output.sequences]
             # potentially add sequences sampled to include maximum escape sequences
             + (
                 [
@@ -265,10 +156,10 @@ rule filter_for_pre_subsample_alignment:
     benchmark:
         "benchmarks/filter_for_pre_subsample_alignment_{a_or_b}_{build_name}_{resolution}.txt"
     params:
-        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
-        min_length=lambda w: config["filter"]["min_length"][w.build_name],
+        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter_for_pre_subsample_alignment"]["min_coverage"][w.build_name]}',
+        min_length=lambda w: config["filter_for_pre_subsample_alignment"]["min_length"][w.build_name],
         strain_id=config["strain_id_field"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
+        min_date=lambda w: config["filter_for_pre_subsample_alignment"]["resolutions"][w.resolution]["min_date"],
     shell:
         r"""
         exec &> >(tee {log:q})
