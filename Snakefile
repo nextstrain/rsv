@@ -16,6 +16,7 @@ wildcard_constraints:
     a_or_b=r"a|b",
     build_name="|".join(config.get("builds_to_run", ["genome"])),
     resolution="|".join(config.get("resolutions_to_run", ["all-time"])),
+    gene="G|F",
 
 
 build_dir = "results"
