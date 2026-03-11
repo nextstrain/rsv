@@ -13,7 +13,7 @@ def alignfortree(realign, align, reference, newoutput, build):
         realigned = {s.id:s for s in realigned_aln}
         original = SeqIO.parse(align, "fasta")
         ref = SeqIO.read(reference, "genbank")
-        
+
         for feature in ref.features:
             if feature.type =='gene' or feature.type=='CDS':
                 a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     parser.add_argument("--original", required=True, help="entire genome pairwise aligned FASTA")
     parser.add_argument("--reference", required=True, help="original reference GENBANK file of entire genome")
     parser.add_argument("--output", help="output FASTA file")
-    parser.add_argument("--gene", help="specify either G or genome")
+    parser.add_argument("--build", help="specify either G or genome")
     args = parser.parse_args()
 
-    alignfortree(args.realign, args.original, args.reference, args.output, args.gene)
+    alignfortree(args.realign, args.original, args.reference, args.output, args.build)
