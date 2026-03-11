@@ -86,36 +86,28 @@ rule extend_metadata:
         """
 
 
-rule extract_open_data:
+rule extract_ppx_data:
     input:
         metadata = "data/{type}/metadata.tsv",
         sequences = "data/{type}/sequences.fasta"
     output:
-        metadata = "data/{type}/metadata_open.tsv",
-        sequences = "data/{type}/sequences_open.fasta"
+        metadata = "data/{type}/metadata_{ppx_dut}.tsv",
+        sequences = "data/{type}/sequences_{ppx_dut}.fasta",
+    wildcard_constraints:
+        ppx_dut="open|restricted",
+    params:
+        ppx_dut = lambda w: w.ppx_dut.upper(),
+        # Warn on empty output for restricted since it's feasible that
+        # none of the data is restricted
+        empty_output = lambda w: "warn" if w.ppx_dut == "restricted" else "error",
     shell:
         """
         augur filter --metadata {input.metadata} \
                      --sequences {input.sequences} \
                      --metadata-id-columns accession \
-                     --include-where "dataUseTerms=OPEN" \
+                     --exclude-all \
+                     --include-where "dataUseTerms={params.ppx_dut:q}" \
                      --output-metadata {output.metadata} \
-                     --output-sequences {output.sequences}
-        """
-
-rule extract_restricted_data:
-    input:
-        metadata = "data/{type}/metadata.tsv",
-        sequences = "data/{type}/sequences.fasta"
-    output:
-        metadata = "data/{type}/metadata_restricted.tsv",
-        sequences = "data/{type}/sequences_restricted.fasta"
-    shell:
-        """
-        augur filter --metadata {input.metadata} \
-                     --sequences {input.sequences} \
-                     --metadata-id-columns accession \
-                     --include-where "dataUseTerms=RESTRICTED" \
-                     --output-metadata {output.metadata} \
-                     --output-sequences {output.sequences}
+                     --output-sequences {output.sequences} \
+                     --empty-output-reporting {params.empty_output:q}
         """
