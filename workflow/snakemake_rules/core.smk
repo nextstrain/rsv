@@ -83,6 +83,10 @@ rule filter_recent:
         min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
         exclude_where=config["filter"]["exclude_where"]["recent"],
         missing_data_threshold=config["filter"]["missing_data_threshold"],
+        include_where=(
+            f"--include-where " + " ".join(f"input_{name}=1" for name, info in input_sources.items() if info.get("keep_all", False))
+            if any(info.get("keep_all", False) for info in input_sources.values()) else ""
+        ),
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -94,6 +98,7 @@ rule filter_recent:
             --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
             --exclude-where {params.exclude_where:q} \
+            {params.include_where} \
             --min-date {params.min_date} \
             --min-length {params.min_length} \
             --output {output.sequences} \

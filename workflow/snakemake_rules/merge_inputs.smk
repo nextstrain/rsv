@@ -46,11 +46,11 @@ def _gather_inputs():
     if not any (['sequences' in i for i in all_inputs]):
         raise InvalidConfigError("At least one input must have 'sequences'")
 
-    available_keys = set(['name', 'metadata', 'sequences'])
+    available_keys = set(['name', 'metadata', 'sequences', 'keep_all'])
     if any([len(set(el.keys())-available_keys)>0 for el in all_inputs]):
         raise InvalidConfigError(f"Each input (config.inputs and config.additional_inputs) can only include keys of {', '.join(available_keys)}")
 
-    return {el['name']: {k:(v if k=='name' else path_or_url(v)) for k,v in el.items()} for el in all_inputs}
+    return {el['name']: {k:(v if k in ['name', 'keep_all'] else path_or_url(v)) for k,v in el.items()} for el in all_inputs}
 
 input_sources = _gather_inputs()
 _input_metadata = [info['metadata'] for info in input_sources.values() if info.get('metadata', None)]
@@ -105,6 +105,7 @@ else:
             augur merge \
                 --metadata {params.metadata:q} \
                 --metadata-id-columns {params.id_field:q} \
+                --source-columns 'input_{{NAME}}' \
                 --output-metadata {output.metadata:q}
             """
 
