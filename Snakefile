@@ -12,6 +12,10 @@ configfile: "config/configfile.yaml"
 build_dir = "results"
 auspice_dir = "auspice"
 
+# remote_files.smk must be before merge_inputs.smk
+include: "shared/vendored/snakemake/remote_files.smk"
+include: "workflow/snakemake_rules/merge_inputs.smk"
+
 include: "shared/vendored/snakemake/config.smk"
 include: "workflow/snakemake_rules/config.smk"
 
@@ -33,11 +37,6 @@ rule all:
                subtype = config.get("subtypes",['a']),
                build = config.get("builds_to_run", ['genome']),
                resolution = config.get("resolutions_to_run", ["all-time"])),
-
-
-# remote_files.smk must be before merge_inputs.smk
-include: "shared/vendored/snakemake/remote_files.smk"
-include: "workflow/snakemake_rules/merge_inputs.smk"
 
 include: "workflow/snakemake_rules/core.smk"
 include: "workflow/snakemake_rules/export.smk"

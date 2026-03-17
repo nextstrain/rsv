@@ -40,6 +40,16 @@ def write_subsample_config():
         matrix = config["subsample_matrix"]
     default_options = matrix.get("defaults", {})
 
+    # Handle `keep_all` options from inputs
+    # input_sources is from merge_inputs.smk
+    keep_all_samples = {}
+    for input_name, input_info in input_sources.items():
+        if input_info.get("keep_all", False):
+            keep_all_samples[f"_workflow_keep_{input_name}"] = {
+                "exclude_all": True,
+                "include_where": f"input_{input_name}=1",
+            }
+
     for a_or_b in config["subtypes"]:
         subtype = matrix["subtypes"][a_or_b]
         subtype_options = {k: v for k, v in subtype.items() if k != "sample_overrides"}
@@ -55,6 +65,12 @@ def write_subsample_config():
 
                 # Samples are defined at the resolution level
                 samples = matrix["resolutions"][resolution]["samples"]
+
+                if conflicting_sample_names := samples.keys() & keep_all_samples.keys():
+                    print(dedent(f"""\
+                        ERROR: The following sample names conflict with generated sample names:
+                            {conflicting_sample_names!r}"""))
+                    exit(1)
 
                 # Merge options
                 for sample_name, sample_options in samples.items():
@@ -103,6 +119,8 @@ def write_subsample_config():
                         merged_sample_options["exclude_where"] = exclude_wheres
 
                     subsample_config["samples"][sample_name] = merged_sample_options
+
+                subsample_config["samples"].update(keep_all_samples)
 
                 path = build_dir + f"/{a_or_b}/{build_name}/{resolution}/subsample_config.yaml"
                 os.makedirs(os.path.dirname(path), exist_ok=True)
