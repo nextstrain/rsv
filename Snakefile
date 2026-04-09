@@ -16,9 +16,9 @@ include: "shared/vendored/snakemake/config.smk"
 include: "workflow/snakemake_rules/config.smk"
 
 wildcard_constraints:
-    a_or_b=r"a|b",
-    build_name="|".join(config.get("builds_to_run", ["genome"])),
-    resolution="|".join(config.get("resolutions_to_run", ["all-time"])),
+    a_or_b="|".join(config["valid_subtypes"]),
+    build_name="|".join(config["valid_builds"]),
+    resolution="|".join(config["valid_resolutions"]),
     gene="G|F",
 
 distance_map_config = pd.read_table("config/distance_maps.tsv")

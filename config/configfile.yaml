@@ -5,11 +5,14 @@ genesforglycosylation: ["G", "F"]
 # if the build name has a "-" in it, then the pipeline assumes
 # the gene is the part before the first "-", so "F-antibody-escape"
 # is parsed as the gene "F".
+valid_builds:  ["genome", "G", "F", "F-antibody-escape"]
 builds_to_run: ["genome", "G", "F", "F-antibody-escape"]
 
+valid_resolutions:  ["all-time", "6y", "3y"]
 resolutions_to_run: ["all-time", "6y", "3y"]
 
-subtypes: ['a', 'b']
+valid_subtypes: ["a", "b"]
+subtypes:       ["a", "b"]
 
 # Both files must have a {a_or_b} expandable field to be replaced by "a" or "b"
 # depending on if they are specified in the `subtypes` param above
