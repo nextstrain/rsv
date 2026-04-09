@@ -70,9 +70,9 @@ if len(_input_metadata) == 1:
         output:
             metadata = "results/{a_or_b}/metadata.tsv",
         log:
-            "logs/{a_or_b}/decompress_metadata.txt",
+            "logs/decompress_metadata_{a_or_b}.txt"
         benchmark:
-            "benchmarks/{a_or_b}/decompress_metadata.txt",
+            "benchmarks/decompress_metadata_{a_or_b}.txt"
         shell:
             r"""
             exec &> >(tee {log:q})
@@ -95,9 +95,9 @@ else:
         output:
             metadata = "results/{a_or_b}/metadata.tsv"
         log:
-            "logs/{a_or_b}/merge_metadata.txt",
+            "logs/merge_metadata_{a_or_b}.txt"
         benchmark:
-            "benchmarks/{a_or_b}/merge_metadata.txt"
+            "benchmarks/merge_metadata_{a_or_b}.txt"
         shell:
             r"""
             exec &> >(tee {log:q})
@@ -122,9 +122,9 @@ if len(_input_sequences) == 1:
         output:
             sequences = "results/{a_or_b}/sequences.fasta",
         log:
-            "logs/{a_or_b}/decompress_sequences.txt",
+            "logs/decompress_sequences_{a_or_b}.txt"
         benchmark:
-            "benchmarks/{a_or_b}/decompress_sequences.txt",
+            "benchmarks/decompress_sequences_{a_or_b}.txt"
         shell:
             r"""
             exec &> >(tee {log:q})
@@ -144,9 +144,9 @@ else:
         output:
             sequences = "results/{a_or_b}/sequences.fasta",
         log:
-            "logs/{a_or_b}/merge_sequences.txt",
+            "logs/merge_sequences_{a_or_b}.txt"
         benchmark:
-            "benchmarks/{a_or_b}/merge_sequences.txt"
+            "benchmarks/merge_sequences_{a_or_b}.txt"
         shell:
             r"""
             exec &> >(tee {log:q})
