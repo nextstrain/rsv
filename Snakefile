@@ -9,11 +9,14 @@ min_version("8.0.0")
 
 configfile: "config/configfile.yaml"
 
+include: "shared/vendored/snakemake/config.smk"
+include: "workflow/snakemake_rules/config.smk"
 
 wildcard_constraints:
     a_or_b=r"a|b",
     build_name="|".join(config.get("builds_to_run", ["genome"])),
     resolution="|".join(config.get("resolutions_to_run", ["all-time"])),
+    gene="G|F",
 
 
 build_dir = "results"

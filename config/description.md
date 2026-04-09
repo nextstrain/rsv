@@ -8,7 +8,7 @@ The second is ['rsv/a/G'](https://nextstrain.org/rsv/a/G) and ['rsv/b/G'](https:
 
 The third is ['rsv/a/F'](https://nextstrain.org/rsv/a/F) and ['rsv/b/F'](https://nextstrain.org/rsv/b/F), which show evolution of only the F gene.
 
-The fourth is ['rsv/a/F-antibody-escape'](https://nextstrain.org/rsv/a/F-antibody-escape) and ['rsv/b/F-antibody-escape'](https://nextstrain.org/rsv/b/F-antibody-escape), which show evolution of only the F gene but with the available sequences subsampled so as to enrich for sequences that have escape mutations to key monoclonal antibodies as assessed by the deep mutational scanning reported in [Simonich et al]() **ADD CITATION**. Note that these trees as well as the other ones can be colored by the escape from key monoclonal antibodies as computed under an additive model of the mutation effects measured in the deep mutational scanning, with annotations for either *Total Escape* (sum of effects of all mutations) and *Max Escape* (the maximum escape caused by any mutation in the strain).
+The fourth is ['rsv/a/F-antibody-escape'](https://nextstrain.org/rsv/a/F-antibody-escape) and ['rsv/b/F-antibody-escape'](https://nextstrain.org/rsv/b/F-antibody-escape), which show evolution of only the F gene but with the available sequences subsampled so as to enrich for sequences that have escape mutations to key monoclonal antibodies as assessed by the deep mutational scanning reported in [Simonich et al (2026)](https://www.biorxiv.org/content/10.64898/2026.02.12.705519). Note that these trees as well as the other ones can be colored by the escape from key monoclonal antibodies as computed under an additive model of the mutation effects measured in the deep mutational scanning, with annotations for either *Total Escape* (sum of effects of all mutations) and *Max Escape* (the maximum escape caused by any mutation in the strain).
 
 #### Analysis
 
@@ -22,7 +22,7 @@ Our bioinformatic processing workflow can be found at [github.com/nextstrain/rsv
   [RSV-A](https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineage.tsv)
   [RSV-B](https://raw.githubusercontent.com/rsv-lineages/lineage-designation-A/main/.auto-generated/lineage.tsv)
   These clade definitions are based on the [nomenclature proposal by the RSV Genotyping Consensus Consortium](https://wwwnc.cdc.gov/eid/article/30/8/24-0209_article).
-- annotation of antibody escape is done based on an additive model of mutational effects measured in the deep mutational scanning of [Simonich et al]() **ADD CITATION**, and additionally the *F-antibody-escape* builds have the sequences subsampled to enrich for those with escape mutations.
+- annotation of antibody escape is done based on an additive model of mutational effects measured in the deep mutational scanning of [Simonich et al](https://www.biorxiv.org/content/10.64898/2026.02.12.705519), and additionally the *F-antibody-escape* builds have the sequences subsampled to enrich for those with escape mutations.
 
 #### Underlying sequence data
 
