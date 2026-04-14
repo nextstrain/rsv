@@ -9,7 +9,6 @@ def get_node_data(w):
         node_data.append(rules.clades_consortium.output.node_data)
     if w.build_name not in ["G"]:
         node_data.append(rules.distances.output.distances)
-        node_data.append(rules.compute_f_scores_node_data.output.f_scores_node_data)
 
     return node_data
 
@@ -75,12 +74,6 @@ def auspice_configs(wildcards):
     configs = [config["files"]["auspice_config"]] # base config
     if wildcards.build_name!='genome':
         configs.append(config['files']['auspice_config_additional_colorings'])
-    if wildcards.build_name not in ["G"]:
-        configs.append(
-            f"results/{wildcards.a_or_b}/{wildcards.build_name}/{wildcards.resolution}/auspice_config_f_dms_antibodies.json"
-        )
-    if wildcards.build_name == "F-antibody-escape":
-        configs.append(config['files']['auspice_config_f_antibody_escape'])
     elif wildcards.build_name not in ["genome", "G"]:
         configs.append(config['files']['auspice_config_non-genome_builds'])
     return configs
