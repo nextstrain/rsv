@@ -52,7 +52,7 @@ rule filter_background_wa:
         exclude=config["exclude"],
     output:
         sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background_pre.fasta",
+        + "/{a_or_b}/{build_name}/{resolution}/filtered_background.fasta",
         metadata=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/filtered_background_metadata.tsv",
     params:
@@ -86,52 +86,41 @@ rule filter_background_wa:
             --query '({params.min_coverage}) & missing_data<1000 & division!="Washington"'
         """
 
-rule exclude_preduplication_wa:
-    message:
-        """
-        excluding sequences predate the duplication starting with A.D or B.D as lineage names
-        """
-    input:
-        sequences=rules.filter_background_wa.output.sequences,
-        metadata=rules.filter_background_wa.output.metadata,
-    output:
-        sequences=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background.fasta",
-    run:
-        import pandas as pd
-        import Bio.SeqIO as SeqIO
-
-        desired_prefix = wildcards.a_or_b.upper() + ".D"
-
-        metadata_df = pd.read_csv(input.metadata, sep="\t")
-        ids_to_keep = set(metadata_df[
-            metadata_df["clade"].str.startswith(desired_prefix, na=False)
-        ]["accession"].tolist())
-
-        with open(output.sequences, "w") as seq_out:
-            for seq in SeqIO.parse(input.sequences, "fasta"):
-                if seq.id in ids_to_keep:
-                    SeqIO.write(seq, seq_out, "fasta")
-
-
 rule combine_samples_wa:
     input:
         subsamples=lambda w: (
-            [
-                rules.filter_recent_wa.output.sequences,
-                rules.exclude_preduplication_wa.output.sequences,
-            ]
-            if "background_min_date" in config["filter"]["resolutions"][w.resolution]
-            else [rules.filter_recent_wa.output.sequences]
+            (
+                [
+                    rules.filter_recent_wa.output.sequences,
+                    rules.filter_background_wa.output.sequences,
+                ]
+                if "background_min_date" in config["filter"]["resolutions"][w.resolution]
+                else [rules.filter_recent_wa.output.sequences]
+            )
+            # potentially add sequences sampled to include maximum escape sequences
+            + (
+                [
+                    f"{build_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/filtered_{antibody}_{scoretype}.fasta"
+                    for antibody in config["f_dms_antibodies"]
+                    for scoretype in ["total_escape", "max_escape"]
+                ]
+                if w.build_name in config["enrich_antibody_escape"]
+                else []
+            )
         ),
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered.fasta",
+    log:
+        "logs/combine_samples_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/combine_samples_{a_or_b}_{build_name}_{resolution}.txt"
     shell:
-        """
+        r"""
+        exec &> >(tee {log:q})
+
         cat {input.subsamples} | seqkit rmdup > {output}
         """
 
 ruleorder: filter_recent_wa > filter_recent
 ruleorder: filter_background_wa > filter_background
-ruleorder: exclude_preduplication_wa > exclude_preduplication
 ruleorder: combine_samples_wa > combine_samples
