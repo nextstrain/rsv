@@ -5,11 +5,14 @@ genesforglycosylation: ["G", "F"]
 # if the build name has a "-" in it, then the pipeline assumes
 # the gene is the part before the first "-", so "F-antibody-escape"
 # is parsed as the gene "F".
+valid_builds:  ["genome", "G", "F", "F-antibody-escape"]
 builds_to_run: ["genome", "G", "F", "F-antibody-escape"]
 
+valid_resolutions:  ["all-time", "6y", "3y"]
 resolutions_to_run: ["all-time", "6y", "3y"]
 
-subtypes: ['a', 'b']
+valid_subtypes: ["a", "b"]
+subtypes:       ["a", "b"]
 
 # Both files must have a {a_or_b} expandable field to be replaced by "a" or "b"
 # depending on if they are specified in the `subtypes` param above
@@ -28,41 +31,63 @@ description: "config/description.md"
 strain_id_field: "accession"
 display_strain_field: "strain"
 
-
-filter:
-  group_by: "year country"
-  min_coverage:
-    genome: 0.3
-    G: 0.3
-    F: 0.3
-    F-antibody-escape: 0.75
-
-  min_length:
-    genome: 10000
-    G: 600
-    F: 1200
-    F-antibody-escape: 1200
-  resolutions:
-    all-time:
-      min_date: 1975-01-01
-    6y:
-      min_date: 6Y
-      background_min_date: 12Y
-    3y:
-      min_date: 3Y
-      background_min_date: 12Y
-
-  subsample_max_sequences:
-    genome: 3000
-    G: 3000
-    F: 3000
-    F-antibody-escape: 2000
-
+# Each option maps dataset patterns to values. Patterns use the format
+# '<subtype>/<build>/<resolution>', where each part is a literal value, '*'
+# (any), or '(a|b)' (multiple). Patterns are applied top-to-bottom: last value
+# wins, except 'query' (AND-concatenated) and list options (extended). A
+# scalar/list value applies to all samples; a dict value maps sample name to
+# value.
+subsample:
+  query:
+    '*/*/*': missing_data<1000
+    'a/*/*': clade.str.startswith("A.D", na=False)
+    'b/*/*': clade.str.startswith("B.D", na=False)
+    '*/genome/*':       genome_coverage>0.3
+    '*/G/*':                 G_coverage>0.3
+    '*/F/*':                 F_coverage>0.3
+    '*/F-antibody-escape/*': F_coverage>0.75
+  exclude:
+    '*/*/*': config/outliers_ppx.txt
   exclude_where:
-    recent: ["qc.overallStatus=bad"]
-    background: ["qc.overallStatus=bad", "qc.overallStatus=mediocre"]
-
-  missing_data_threshold: 1000
+    '*/*/*':
+      - qc.overallStatus=bad
+    '*/*/(6y|3y)':
+      background:
+        - qc.overallStatus=mediocre
+  include:
+    'a/*/*': config/include_a.txt
+    'b/*/*': config/include_b.txt
+  group_by:
+    '*/*/*':
+      - year
+      - country
+  min_length:
+    '*/genome/*': 10000
+    '*/G/*': 600
+    '*/F/*': 1200
+    '*/F-antibody-escape/*': 1200
+  max_sequences:
+    '*/*/all-time': 3000
+    '*/F-antibody-escape/all-time': 2000
+    '*/*/(6y|3y)':
+      recent: 3000
+      background: 300
+    '*/F-antibody-escape/(6y|3y)':
+      recent: 2000
+      background: 200
+  min_date:
+    '*/*/all-time': 1975-01-01
+    '*/*/6y':
+      recent: 6Y
+      background: 12Y
+    '*/*/3y':
+      recent: 3Y
+      background: 12Y
+  max_date:
+    '*/*/6y':
+      background: 6Y
+    '*/*/3y':
+      background: 3Y
 
 files:
   auspice_config: "config/auspice_config.json"
@@ -71,9 +96,12 @@ files:
   auspice_config_non-genome_builds: "config/auspice_config_non-genome.json"
 
 refine:
-  coalescent: "opt"
-  date_inference: "marginal"
-  clock_filter_iqd: 4
+  coalescent:
+    '*/*/*': "opt"
+  date_inference:
+    '*/*/*': "marginal"
+  clock_filter_iqd:
+    '*/*/*': 4
 
 ancestral:
   inference: "joint"
@@ -106,6 +134,27 @@ nextclade_attributes:
     reference_name: "hRSV/B/Australia/VIC-RCH056/2019"
     accession: "EPI_ISL_1653999"
 
+filter_for_pre_subsample_alignment:
+  min_length:
+    genome: 10000
+    G: 600
+    F: 1200
+    F-antibody-escape: 1200
+  min_coverage:
+    genome: 0.3
+    G: 0.3
+    F: 0.3
+    F-antibody-escape: 0.75
+  resolutions:
+    all-time:
+      min_date: 1975-01-01
+    6y:
+      min_date: 12Y
+    3y:
+      min_date: 12Y
+    1y:
+      min_date: 12Y
+
 # configuration specific to the F deep mutational scanning antibody escape data
 f_dms_data: dms-data/all_antibodies.csv
 f_dms_antibodies:  # columns in `f_dms_data` with per-mutation escape
@@ -120,4 +169,3 @@ enrich_antibody_escape:  # additional filtering for antibody escape sequences ad
     group_by: [country, year]  # group by these variables
     max_identical_f_prot_muts: 2  # for each group, no more than this many w identical F protein mutations
     max_identical_max_escape_mut: 6  # for each group, no more than this many w same top F escape mutation
-
