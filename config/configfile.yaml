@@ -31,72 +31,63 @@ description: "config/description.md"
 strain_id_field: "accession"
 display_strain_field: "strain"
 
-# dataset values are in the format '<subtype>/<build>/<resolution>'
-# dataset parts can be a literal value, '*', or multiple values like '(6y|3y)'
+# Each option maps dataset patterns to values. Patterns use the format
+# '<subtype>/<build>/<resolution>', where each part is a literal value, '*'
+# (any), or '(a|b)' (multiple). Patterns are applied top-to-bottom: last value
+# wins, except 'query' (AND-concatenated) and list options (extended). A
+# scalar/list value applies to all samples; a dict value maps sample name to
+# value.
 subsample:
-  - dataset: '*/*/*'
-    query: missing_data<1000
-    exclude: config/outliers_ppx.txt
-    exclude_where:
+  query:
+    '*/*/*': missing_data<1000
+    'a/*/*': clade.str.startswith("A.D", na=False)
+    'b/*/*': clade.str.startswith("B.D", na=False)
+    '*/genome/*':       genome_coverage>0.3
+    '*/G/*':                 G_coverage>0.3
+    '*/F/*':                 F_coverage>0.3
+    '*/F-antibody-escape/*': F_coverage>0.75
+  exclude:
+    '*/*/*': config/outliers_ppx.txt
+  exclude_where:
+    '*/*/*':
       - qc.overallStatus=bad
-    group_by:
+    '*/*/(6y|3y)':
+      background:
+        - qc.overallStatus=mediocre
+  include:
+    'a/*/*': config/include_a.txt
+    'b/*/*': config/include_b.txt
+  group_by:
+    '*/*/*':
       - year
       - country
-
-  - dataset: 'a/*/*'
-    include: config/include_a.txt
-    query: clade.str.startswith("A.D", na=False)
-  - dataset: 'b/*/*'
-    include: config/include_b.txt
-    query: clade.str.startswith("B.D", na=False)
-
-  - dataset: '*/genome/*'
-    min_length: 10000
-    query: genome_coverage>0.3
-  - dataset: '*/G/*'
-    min_length: 600
-    query: G_coverage>0.3
-  - dataset: '*/F/*'
-    min_length: 1200
-    query: F_coverage>0.3
-  - dataset: '*/F-antibody-escape/*'
-    min_length: 1200
-    query: F_coverage>0.75
-
-  - dataset: '*/*/all-time'
-    max_sequences: 3000
-    min_date: 1975-01-01
-  - dataset: '*/*/(6y|3y)'
-    samples:
-      recent:
-        max_sequences: 3000
-      background:
-        max_sequences: 300
-        exclude_where:
-          - qc.overallStatus=mediocre
-  - dataset: '*/*/6y'
-    samples:
-      recent:
-        min_date: 6Y
-      background:
-        min_date: 12Y
-        max_date: 6Y
-  - dataset: '*/*/3y'
-    samples:
-      recent:
-        min_date: 3Y
-      background:
-        min_date: 12Y
-        max_date: 3Y
-
-  - dataset: '*/F-antibody-escape/all-time'
-    max_sequences: 2000
-  - dataset: '*/F-antibody-escape/(6y|3y)'
-    samples:
-      recent:
-        max_sequences: 2000
-      background:
-        max_sequences: 200
+  min_length:
+    '*/genome/*': 10000
+    '*/G/*': 600
+    '*/F/*': 1200
+    '*/F-antibody-escape/*': 1200
+  max_sequences:
+    '*/*/all-time': 3000
+    '*/F-antibody-escape/all-time': 2000
+    '*/*/(6y|3y)':
+      recent: 3000
+      background: 300
+    '*/F-antibody-escape/(6y|3y)':
+      recent: 2000
+      background: 200
+  min_date:
+    '*/*/all-time': 1975-01-01
+    '*/*/6y':
+      recent: 6Y
+      background: 12Y
+    '*/*/3y':
+      recent: 3Y
+      background: 12Y
+  max_date:
+    '*/*/6y':
+      background: 6Y
+    '*/*/3y':
+      background: 3Y
 
 files:
   auspice_config: "config/auspice_config.json"
