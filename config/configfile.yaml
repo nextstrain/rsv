@@ -96,9 +96,12 @@ files:
   auspice_config_non-genome_builds: "config/auspice_config_non-genome.json"
 
 refine:
-  coalescent: "opt"
-  date_inference: "marginal"
-  clock_filter_iqd: 4
+  coalescent:
+    '*/*/*': "opt"
+  date_inference:
+    '*/*/*': "marginal"
+  clock_filter_iqd:
+    '*/*/*': 4
 
 ancestral:
   inference: "joint"

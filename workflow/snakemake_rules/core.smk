@@ -454,13 +454,12 @@ rule refine:
     """
     Refining tree
       - estimate timetree
-      - use {params.coalescent} coalescent timescale
-      - estimate {params.date_inference} node dates
     """
     input:
         tree=rules.tree.output.tree,
         alignment=get_alignment,
         metadata="results/{a_or_b}/metadata.tsv",
+        config=build_dir + "/{a_or_b}/{build_name}/{resolution}/refine_config.yaml",
     output:
         tree=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.nwk",
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/branch_lengths.json",
@@ -469,9 +468,10 @@ rule refine:
     benchmark:
         "benchmarks/refine_{a_or_b}_{build_name}_{resolution}.txt"
     params:
-        coalescent=config["refine"]["coalescent"],
-        clock_filter_iqd=config["refine"]["clock_filter_iqd"],
-        date_inference=config["refine"]["date_inference"],
+        # FIXME: remove these and use --config
+        coalescent=config["refine"]["coalescent"]['*/*/*'],
+        clock_filter_iqd=config["refine"]["clock_filter_iqd"]['*/*/*'],
+        date_inference=config["refine"]["date_inference"]['*/*/*'],
         strain_id=config["strain_id_field"],
     shell:
         r"""

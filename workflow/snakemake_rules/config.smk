@@ -20,6 +20,7 @@ DATASET_LEVELS = [
 def main():
     validate_config()
     write_subsample_config()
+    write_refine_config()
     write_config("results/run_config.yaml")
 
 
@@ -58,6 +59,22 @@ def write_subsample_config() -> None:
         with open(path, "w") as f:
             yaml.dump(out, f, sort_keys=False, Dumper=NoAliasDumper)
         print(f"Saved subsampling config to {path!r}.", file=sys.stderr)
+
+
+def write_refine_config() -> None:
+    """
+    Write per-dataset augur refine configs.
+    """
+    for dataset in get_datasets(DATASET_LEVELS):
+        out = build_refine_config(config["refine"], dataset)
+
+        a_or_b, build_name, resolution = dataset
+
+        path = build_dir + f"/{a_or_b}/{build_name}/{resolution}/refine_config.yaml"
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            yaml.dump(out, f, sort_keys=False, Dumper=NoAliasDumper)
+        print(f"Saved refine config to {path!r}.", file=sys.stderr)
 
 
 # FIXME: everything below is independent of DATASET_LEVELS and can be moved to shared/vendored/config.smk or Augur
@@ -210,6 +227,28 @@ def build_subsample_config(
         result[sample] = options
 
     return {"samples": result}
+
+
+def build_refine_config(
+    refine_config: dict[str, Any],
+    dataset: ExactDataset,
+) -> dict[str, Any]:
+    """
+    Build the augur refine config for a dataset.
+
+    For each option, dataset-matching patterns are applied top-to-bottom with
+    last-wins semantics. A null value removes any earlier value for that option.
+    """
+    merged = {}
+    for option, dataset_map in refine_config.items():
+        for pattern, value in dataset_map.items():
+            if not pattern_matches_dataset(pattern, dataset):
+                continue
+            if value is None:
+                merged.pop(option, None)
+            else:
+                merged[option] = value
+    return merged
 
 
 def pattern_matches_dataset(
