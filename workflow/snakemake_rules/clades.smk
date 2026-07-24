@@ -8,7 +8,7 @@ rule clades_genome:
         nuc_muts = rules.ancestral.output.node_data,
         clades = "config/clades_genome_{a_or_b}.tsv"
     output:
-        node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/clades_genome.json"
+        node_data = results_dir + "/{a_or_b}/{build_name}/{resolution}/clades_genome.json"
     log:
         "logs/clades_genome_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
@@ -36,7 +36,7 @@ rule clades_Goya:
         nuc_muts = rules.ancestral.output.node_data,
         clades = "config/clades_G_{a_or_b}.tsv"
     output:
-        node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/clades_G.json"
+        node_data = results_dir + "/{a_or_b}/{build_name}/{resolution}/clades_G.json"
     log:
         "logs/clades_Goya_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
@@ -63,7 +63,7 @@ rule clades_consortium:
         nuc_muts = rules.ancestral.output.node_data,
         clades = "results/clades_consortium_{a_or_b}.tsv"
     output:
-        node_data = build_dir + "/{a_or_b}/{build_name}/{resolution}/clades_consortium.json"
+        node_data = results_dir + "/{a_or_b}/{build_name}/{resolution}/clades_consortium.json"
     log:
         "logs/clades_consortium_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:

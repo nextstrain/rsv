@@ -19,7 +19,7 @@ wildcard_constraints:
     gene="G|F",
 
 
-build_dir = "results"
+results_dir = "results"
 auspice_dir = "auspice"
 
 distance_map_config = pd.read_table("config/distance_maps.tsv")

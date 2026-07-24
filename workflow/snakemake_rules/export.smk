@@ -97,7 +97,7 @@ rule export:
         auspice_config = auspice_configs,
         description = config["description"]
     output:
-        auspice_json =  build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json"
+        auspice_json =  results_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json"
     log:
         "logs/export_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
@@ -128,9 +128,9 @@ rule final_strain_name:
     input:
         auspice_json= rules.export.output.auspice_json,
         metadata = "results/{a_or_b}/metadata.tsv",
-        frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
+        frequencies = results_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     output:
-        auspice_json=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_renamed.json",
+        auspice_json=results_dir + "/{a_or_b}/{build_name}/{resolution}/tree_renamed.json",
         freq_json= "auspice/rsv_{a_or_b}_{build_name}_{resolution}_tip-frequencies.json"
     log:
         "logs/final_strain_name_{a_or_b}_{build_name}_{resolution}.txt"

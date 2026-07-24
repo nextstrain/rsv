@@ -13,7 +13,7 @@ rule index_sequences:
     input:
         sequences="results/{a_or_b}/sequences.fasta",
     output:
-        sequence_index=build_dir
+        sequence_index=results_dir
         + "/{a_or_b}/sequence_index.tsv",
     log:
         "logs/index_sequences_{a_or_b}.txt"
@@ -36,9 +36,9 @@ rule newreference:
     input:
         oldreference="config/{a_or_b}reference.gbk",
     output:
-        newreferencegbk=build_dir
+        newreferencegbk=results_dir
         + "/{a_or_b}/{gene}_reference.gbk",
-        newreferencefasta=build_dir
+        newreferencefasta=results_dir
         + "/{a_or_b}/{gene}_reference.fasta",
     log:
         "logs/newreference_{a_or_b}_{gene}.txt"
@@ -66,7 +66,7 @@ rule filter_recent:
         sequence_index=rules.index_sequences.output,
         exclude=config["exclude"],
     output:
-        sequences=build_dir
+        sequences=results_dir
         + "/{a_or_b}/{build_name}/{resolution}/filtered_recent.fasta",
     log:
         "logs/filter_recent_{a_or_b}_{build_name}_{resolution}.txt"
@@ -114,9 +114,9 @@ rule filter_background:
         include="config/include_{a_or_b}.txt",
         exclude=config["exclude"],
     output:
-        sequences=build_dir
+        sequences=results_dir
         + "/{a_or_b}/{build_name}/{resolution}/filtered_background.fasta",
-        metadata=build_dir
+        metadata=results_dir
         + "/{a_or_b}/{build_name}/{resolution}/filtered_background_metadata.tsv",
     log:
         "logs/filter_background_{a_or_b}_{build_name}_{resolution}.txt"
@@ -174,7 +174,7 @@ rule combine_samples:
             # potentially add sequences sampled to include maximum escape sequences
             + (
                 [
-                    f"{build_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/filtered_{antibody}_{scoretype}.fasta"
+                    f"{results_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/filtered_{antibody}_{scoretype}.fasta"
                     for antibody in config["f_dms_antibodies"]
                     for scoretype in ["total_escape", "max_escape"]
                 ]
@@ -183,7 +183,7 @@ rule combine_samples:
             )
         ),
     output:
-        sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered.fasta",
+        sequences=results_dir + "/{a_or_b}/{build_name}/{resolution}/filtered.fasta",
     log:
         "logs/combine_samples_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
@@ -229,7 +229,7 @@ rule filter_for_pre_subsample_alignment:
         metadata="results/{a_or_b}/metadata.tsv",
         exclude=config["exclude"],
     output:
-        sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/filtered_for_alignment.fasta",
+        sequences=results_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/filtered_for_alignment.fasta",
     log:
         "logs/filter_for_pre_subsample_alignment_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
@@ -264,9 +264,9 @@ rule align_pre_subsample_sequences:
         sequences=rules.filter_for_pre_subsample_alignment.output.sequences,
         dataset=rules.get_nextclade_dataset.output.dataset,
     output:
-        alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/sequences.aligned.fasta",
-        translations=directory(build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations"),
-        translations_done=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations.done",
+        alignment=results_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/sequences.aligned.fasta",
+        translations=directory(results_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations"),
+        translations_done=results_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations.done",
     params:
         genes=lambda w: config["cds"][w.build_name],
     threads: 8
@@ -295,13 +295,13 @@ rule score_pre_subsample_f_proteins:
         translations_done=rules.align_pre_subsample_sequences.output.translations_done,
         dms_scores=config["f_dms_data"],
     output:
-        scores=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/f_protein_scores.tsv",
+        scores=results_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/f_protein_scores.tsv",
     log:
         "logs/score_pre_subsample_f_proteins_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
         "benchmarks/score_pre_subsample_f_proteins_{a_or_b}_{build_name}_{resolution}.txt"
     params:
-        f_sequences=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/pre_subsample/translations/F.fasta",
+        f_sequences=lambda w: results_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/pre_subsample/translations/F.fasta",
         dms_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
         only_positive_escape=config["dms_only_positive_escape"],
     shell:
@@ -325,7 +325,7 @@ rule add_f_scores_to_pre_subsample_metadata:
         original_metadata="results/{a_or_b}/metadata.tsv",
         f_scores=rules.score_pre_subsample_f_proteins.output.scores,
     output:
-        enhanced_metadata=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/metadata_with_scores.tsv",
+        enhanced_metadata=results_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/metadata_with_scores.tsv",
     log:
         "logs/add_f_scores_to_pre_subsample_metadata_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
@@ -355,7 +355,7 @@ rule enrich_antibody_escape:
         sequences="results/{a_or_b}/sequences.fasta",
         metadata=rules.add_f_scores_to_pre_subsample_metadata.output.enhanced_metadata,
     output:
-        sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered_{antibody}_{scoretype}.fasta"
+        sequences=results_dir + "/{a_or_b}/{build_name}/{resolution}/filtered_{antibody}_{scoretype}.fasta"
     log:
         "logs/enrich_antibody_escape_{a_or_b}_{build_name}_{resolution}_{antibody}_{scoretype}.txt"
     benchmark:
@@ -392,8 +392,8 @@ rule genome_align:
         sequences=rules.combine_samples.output.sequences,
         dataset=rules.get_nextclade_dataset.output.dataset,
     output:
-        alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/sequences.aligned.fasta",
-        translations=directory(build_dir + "/{a_or_b}/{build_name}/{resolution}/translations"),
+        alignment=results_dir + "/{a_or_b}/{build_name}/{resolution}/sequences.aligned.fasta",
+        translations=directory(results_dir + "/{a_or_b}/{build_name}/{resolution}/translations"),
     params:
         genes=lambda w: config["cds"][w.build_name],
     threads: 4
@@ -420,7 +420,7 @@ rule cut:
         oldalignment=rules.genome_align.output.alignment,
         reference="config/{a_or_b}reference.gbk",
     output:
-        slicedalignment=build_dir
+        slicedalignment=results_dir
         + "/{a_or_b}/{build_name}/{resolution}/{gene}_slicedalignment.fasta",
     log:
         "logs/cut_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
@@ -442,10 +442,10 @@ rule cut:
 rule realign:
     input:
         slicedalignment=rules.cut.output.slicedalignment,
-        reference=build_dir
+        reference=results_dir
         + "/{a_or_b}/{gene}_reference.fasta",
     output:
-        realigned=build_dir + "/{a_or_b}/{build_name}/{resolution}/{gene}_aligned.fasta",
+        realigned=results_dir + "/{a_or_b}/{build_name}/{resolution}/{gene}_aligned.fasta",
     log:
         "logs/realign_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
     benchmark:
@@ -465,10 +465,10 @@ rule realign:
 rule hybrid_align:
     input:
         original=rules.genome_align.output.alignment,
-        G_alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/G_aligned.fasta",
+        G_alignment=results_dir + "/{a_or_b}/{build_name}/{resolution}/G_aligned.fasta",
         reference="config/{a_or_b}reference.gbk",
     output:
-        hybrid_alignment=build_dir
+        hybrid_alignment=results_dir
         + "/{a_or_b}/{build_name}/{resolution}/hybrid_alignment.fasta",
     log:
         "logs/hybrid_align_{a_or_b}_{build_name}_{resolution}.txt"
@@ -493,7 +493,7 @@ def get_alignment(w):
     else:
         gene = config["cds"][w.build_name]
         return (
-            build_dir
+            results_dir
             + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/{gene}_aligned.fasta"
         )
 
@@ -503,7 +503,7 @@ def get_reference(w):
         return f"config/{w.a_or_b}reference.gbk"
     else:
         gene = config["cds"][w.build_name]
-        return build_dir + f"/{w.a_or_b}/{gene}_reference.gbk"
+        return results_dir + f"/{w.a_or_b}/{gene}_reference.gbk"
 
 
 rule tree:
@@ -513,7 +513,7 @@ rule tree:
     input:
         alignment=get_alignment,
     output:
-        tree=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree_raw.nwk",
+        tree=results_dir + "/{a_or_b}/{build_name}/{resolution}/tree_raw.nwk",
     log:
         "logs/tree_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
@@ -543,8 +543,8 @@ rule refine:
         alignment=get_alignment,
         metadata="results/{a_or_b}/metadata.tsv",
     output:
-        tree=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.nwk",
-        node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/branch_lengths.json",
+        tree=results_dir + "/{a_or_b}/{build_name}/{resolution}/tree.nwk",
+        node_data=results_dir + "/{a_or_b}/{build_name}/{resolution}/branch_lengths.json",
     log:
         "logs/refine_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
@@ -612,12 +612,12 @@ rule distances:
     input:
         tree=rules.refine.output.tree,
         distance_maps = _get_distance_maps_by_lineage_and_segment,
-        translations_done=build_dir + "/{a_or_b}/{build_name}/{resolution}/translations.done",
+        translations_done=results_dir + "/{a_or_b}/{build_name}/{resolution}/translations.done",
     output:
-        distances= build_dir + "/{a_or_b}/{build_name}/{resolution}/distances.json"
+        distances= results_dir + "/{a_or_b}/{build_name}/{resolution}/distances.json"
     params:
         genes=lambda w: config["cds"][w.build_name],
-        alignments=lambda w: [f"{build_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/{gene}_withInternalNodes.fasta" for gene in config["cds"][w.build_name]],
+        alignments=lambda w: [f"{results_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/{gene}_withInternalNodes.fasta" for gene in config["cds"][w.build_name]],
         comparisons=_get_distance_comparisons_by_lineage_and_segment,
         attribute_names=_get_distance_attributes_by_lineage_and_segment,
     log:
@@ -653,13 +653,13 @@ rule ancestral:
         translations=rules.genome_align.output.translations,
         root_sequence=get_reference,
     output:
-        node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/nt_muts.json",
-        translations_done=build_dir + "/{a_or_b}/{build_name}/{resolution}/translations.done",
+        node_data=results_dir + "/{a_or_b}/{build_name}/{resolution}/nt_muts.json",
+        translations_done=results_dir + "/{a_or_b}/{build_name}/{resolution}/translations.done",
     params:
         inference=config["ancestral"]["inference"],
         genes=lambda w: config["cds"][w.build_name],
-        output_translations=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE_withInternalNodes.fasta",
-        input_translations=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE.fasta",
+        output_translations=lambda w: results_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE_withInternalNodes.fasta",
+        input_translations=lambda w: results_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE.fasta",
     log:
         "logs/ancestral_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
@@ -690,13 +690,13 @@ rule translate:
         node_data=rules.ancestral.output.node_data,
         reference=get_reference,
     output:
-        node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/aa_muts.json",
+        node_data=results_dir + "/{a_or_b}/{build_name}/{resolution}/aa_muts.json",
     log:
         "logs/translate_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
         "benchmarks/translate_{a_or_b}_{build_name}_{resolution}.txt"
     params:
-        alignment_file_mask=build_dir + "/{a_or_b}/{build_name}/{resolution}/aligned_%GENE.fasta",
+        alignment_file_mask=results_dir + "/{a_or_b}/{build_name}/{resolution}/aligned_%GENE.fasta",
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -719,7 +719,7 @@ rule compute_f_scores_node_data:
         aa_muts=rules.translate.output.node_data,
         f_scores=config["f_dms_data"],
     output:
-        f_scores_node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/f_scores.json"
+        f_scores_node_data=results_dir + "/{a_or_b}/{build_name}/{resolution}/f_scores.json"
     params:
         gene="F",
         f_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
@@ -748,7 +748,7 @@ rule traits:
         tree=rules.refine.output.tree,
         metadata="results/{a_or_b}/metadata.tsv",
     output:
-        node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/traits.json",
+        node_data=results_dir + "/{a_or_b}/{build_name}/{resolution}/traits.json",
     log:
         "logs/traits_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
@@ -774,7 +774,7 @@ rule frequencies:
         tree = rules.refine.output.tree,
         metadata = "results/{a_or_b}/metadata.tsv"
     output:
-        frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
+        frequencies = results_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     log:
         "logs/frequencies_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
