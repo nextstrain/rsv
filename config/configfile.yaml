@@ -2,14 +2,35 @@ conda_environment: "workflow/envs/nextstrain.yaml"
 
 genesforglycosylation: ["G", "F"]
 
-# if the build name has a "-" in it, then the pipeline assumes
+# Format: {a_or_b}/{gene}/{resolution}
+# if the gene wildcard has a "-" in it, then the pipeline assumes
 # the gene is the part before the first "-", so "F-antibody-escape"
 # is parsed as the gene "F".
-builds_to_run: ["genome", "G", "F", "F-antibody-escape"]
-
-resolutions_to_run: ["all-time", "6y", "3y"]
-
-subtypes: ['a', 'b']
+builds:
+  - a/genome/all-time
+  - a/genome/6y
+  - a/genome/3y
+  - a/G/all-time
+  - a/G/6y
+  - a/G/3y
+  - a/F/all-time
+  - a/F/6y
+  - a/F/3y
+  - a/F-antibody-escape/all-time
+  - a/F-antibody-escape/6y
+  - a/F-antibody-escape/3y
+  - b/genome/all-time
+  - b/genome/6y
+  - b/genome/3y
+  - b/G/all-time
+  - b/G/6y
+  - b/G/3y
+  - b/F/all-time
+  - b/F/6y
+  - b/F/3y
+  - b/F-antibody-escape/all-time
+  - b/F-antibody-escape/6y
+  - b/F-antibody-escape/3y
 
 # Both files must have a {a_or_b} expandable field to be replaced by "a" or "b"
 # depending on if they are specified in the `subtypes` param above
@@ -77,12 +98,6 @@ refine:
 
 ancestral:
   inference: "joint"
-
-cds:
-  F: "F"
-  G: "G"
-  genome: "F"
-  F-antibody-escape: "F"
 
 traits:
   columns: "country region"

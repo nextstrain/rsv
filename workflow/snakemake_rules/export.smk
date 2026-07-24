@@ -3,11 +3,13 @@ def get_node_data(w):
                     rules.traits.output.node_data,
                     rules.ancestral.output.node_data,
                     rules.translate.output.node_data]
-    if w.build_name in config["genesforglycosylation"]:
+    gene_build = get_gene_build(w.build)
+    gene = get_gene(w.build)
+    if gene_build in config["genesforglycosylation"]:
         node_data.append(rules.glycosylation.output.glycosylations)
-    if w.build_name == "genome":
+    if gene_build == "genome":
         node_data.append(rules.clades_consortium.output.node_data)
-    if w.build_name not in ["G"]:
+    if gene == "F":
         node_data.append(rules.distances.output.distances)
         node_data.append(rules.compute_f_scores_node_data.output.f_scores_node_data)
 
@@ -20,11 +22,11 @@ rule generate_f_dms_antibody_auspice_config:
     input:
         f_scores_node_data = rules.compute_f_scores_node_data.output.f_scores_node_data
     output:
-        auspice_config = "results/{a_or_b}/{build_name}/{resolution}/auspice_config_f_dms_antibodies.json"
+        auspice_config = "results/{build}/auspice_config_f_dms_antibodies.json"
     log:
-        "logs/generate_f_dms_antibody_auspice_config_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/generate_f_dms_antibody_auspice_config.txt"
     benchmark:
-        "benchmarks/generate_f_dms_antibody_auspice_config_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/generate_f_dms_antibody_auspice_config.txt"
     params:
         antibodies = config["f_dms_antibodies"],
         continuous_scale = " ".join(
@@ -73,15 +75,17 @@ def auspice_configs(wildcards):
     (Note: multiple config file support requires Augur v29.1.0)
     """
     configs = [config["files"]["auspice_config"]] # base config
-    if wildcards.build_name!='genome':
+    gene_build = get_gene_build(wildcards.build)
+    gene = get_gene(wildcards.build)
+    if gene_build != 'genome':
         configs.append(config['files']['auspice_config_additional_colorings'])
-    if wildcards.build_name not in ["G"]:
+    if gene == "F":
         configs.append(
-            f"results/{wildcards.a_or_b}/{wildcards.build_name}/{wildcards.resolution}/auspice_config_f_dms_antibodies.json"
+            f"results/{wildcards.build}/auspice_config_f_dms_antibodies.json"
         )
-    if wildcards.build_name == "F-antibody-escape":
+    if gene_build == "F-antibody-escape":
         configs.append(config['files']['auspice_config_f_antibody_escape'])
-    elif wildcards.build_name not in ["genome", "G"]:
+    elif gene_build not in ["genome", "G"]:
         configs.append(config['files']['auspice_config_non-genome_builds'])
     return configs
 
@@ -91,19 +95,19 @@ rule export:
     """
     input:
         tree = rules.refine.output.tree,
-        metadata = "results/{a_or_b}/metadata.tsv",
+        metadata = lambda w: f"results/{get_subtype(w.build)}/metadata.tsv",
         node_data = get_node_data,
-        colors = rules.colors.output.colors,
+        colors = lambda w: f"results/{get_subtype(w.build)}/colors.tsv",
         auspice_config = auspice_configs,
         description = config["description"]
     output:
-        auspice_json =  results_dir + "/{a_or_b}/{build_name}/{resolution}/tree.json"
+        auspice_json = results_dir + "/{build}/tree.json"
     log:
-        "logs/export_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/export.txt"
     benchmark:
-        "benchmarks/export_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/export.txt"
     params:
-        title = lambda w: f"RSV-{w.a_or_b.upper()} phylogeny",
+        title = lambda w: f"RSV-{get_subtype(w.build).upper()} phylogeny",
         strain_id=config["strain_id_field"],
     shell:
         r"""
@@ -127,15 +131,15 @@ rule export:
 rule final_strain_name:
     input:
         auspice_json= rules.export.output.auspice_json,
-        metadata = "results/{a_or_b}/metadata.tsv",
-        frequencies = results_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
+        metadata = lambda w: f"results/{get_subtype(w.build)}/metadata.tsv",
+        frequencies = results_dir + "/{build}/frequencies.json"
     output:
-        auspice_json=results_dir + "/{a_or_b}/{build_name}/{resolution}/tree_renamed.json",
-        freq_json= "auspice/rsv_{a_or_b}_{build_name}_{resolution}_tip-frequencies.json"
+        auspice_json=results_dir + "/{build}/tree_renamed.json",
+        freq_json= results_dir + "/{build}/tip-frequencies.json"
     log:
-        "logs/final_strain_name_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/final_strain_name.txt"
     benchmark:
-        "benchmarks/final_strain_name_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/final_strain_name.txt"
     params:
         strain_id=config["strain_id_field"],
         display_strain_field=config["display_strain_field"],
@@ -158,15 +162,15 @@ rule rename_and_ready_for_nextclade:
         auspice_json= rules.final_strain_name.output.auspice_json,
         pathogen_json= "nextclade/config/pathogen.json",
     output:
-        auspice_json= "auspice/rsv_{a_or_b}_{build_name}_{resolution}.json",
+        auspice_json= results_dir + "/{build}/rsv.json",
     log:
-        "logs/rename_and_ready_for_nextclade_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/rename_and_ready_for_nextclade.txt"
     benchmark:
-        "benchmarks/rename_and_ready_for_nextclade_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/rename_and_ready_for_nextclade.txt"
     params:
-        accession= lambda w: config["nextclade_attributes"][w.a_or_b]["accession"],
-        name= lambda w: config["nextclade_attributes"][w.a_or_b]["name"],
-        ref_name= lambda w: config["nextclade_attributes"][w.a_or_b]["reference_name"]
+        accession= lambda w: config["nextclade_attributes"][get_subtype(w.build)]["accession"],
+        name= lambda w: config["nextclade_attributes"][get_subtype(w.build)]["name"],
+        ref_name= lambda w: config["nextclade_attributes"][get_subtype(w.build)]["reference_name"]
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -178,4 +182,18 @@ rule rename_and_ready_for_nextclade:
                 --build-name {params.name:q} \
                 --reference-accession {params.accession:q} \
                 --output {output.auspice_json}
+        """
+
+
+rule copy_export:
+    input:
+        auspice_json = lambda w: f"results/{w.build_with_underscores.replace('_', '/')}/rsv.json",
+        tip_freq = lambda w: f"results/{w.build_with_underscores.replace('_', '/')}/tip-frequencies.json",
+    output:
+        auspice_json = "auspice/rsv_{build_with_underscores}.json",
+        tip_freq = "auspice/rsv_{build_with_underscores}_tip-frequencies.json",
+    shell:
+        """
+        cp {input.auspice_json} {output.auspice_json}
+        cp {input.tip_freq} {output.tip_freq}
         """

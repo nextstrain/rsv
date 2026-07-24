@@ -3,13 +3,13 @@ rule glycosylation:
         tree = rules.refine.output.tree,
         translations = rules.translate.output.node_data
     output:
-        glycosylations = results_dir + "/{a_or_b}/{build_name}/{resolution}/glyc.json"
+        glycosylations = results_dir + "/{build}/glyc.json"
     log:
-        "logs/glycosylation_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/glycosylation.txt"
     benchmark:
-        "benchmarks/glycosylation_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/glycosylation.txt"
     params:
-        aa_data = results_dir + "/{a_or_b}/{build_name}/{resolution}/aligned_{build_name}.fasta"
+        aa_data = lambda w: results_dir + f"/{w.build}/aligned_{get_gene(w.build)}.fasta"
     shell:
      r"""
      exec &> >(tee {log:q})

@@ -61,26 +61,25 @@ rule filter_recent:
     filtering sequences
     """
     input:
-        sequences="results/{a_or_b}/sequences.fasta",
-        metadata="results/{a_or_b}/metadata.tsv",
-        sequence_index=rules.index_sequences.output,
+        sequences=lambda w: f"results/{get_subtype(w.build)}/sequences.fasta",
+        metadata=lambda w: f"results/{get_subtype(w.build)}/metadata.tsv",
+        sequence_index=lambda w: f"results/{get_subtype(w.build)}/sequence_index.tsv",
         exclude=config["exclude"],
     output:
-        sequences=results_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_recent.fasta",
+        sequences=results_dir + "/{build}/filtered_recent.fasta",
     log:
-        "logs/filter_recent_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/filter_recent.txt"
     benchmark:
-        "benchmarks/filter_recent_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/filter_recent.txt"
     params:
         group_by=config["filter"]["group_by"],
-        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
-        min_length=lambda w: config["filter"]["min_length"][w.build_name],
+        min_coverage=lambda w: f'{get_gene(w.build)}_coverage>{config["filter"]["min_coverage"][get_gene_build(w.build)]}',
+        min_length=lambda w: config["filter"]["min_length"][get_gene_build(w.build)],
         subsample_max_sequences=lambda w: config["filter"][
             "subsample_max_sequences"
-        ][w.build_name],
+        ][get_gene_build(w.build)],
         strain_id=config["strain_id_field"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
+        min_date=lambda w: config["filter"]["resolutions"][get_resolution(w.build)]["min_date"],
         exclude_where=config["filter"]["exclude_where"]["recent"],
         missing_data_threshold=config["filter"]["missing_data_threshold"],
     shell:
@@ -108,36 +107,36 @@ rule filter_background:
     filtering sequences
     """
     input:
-        sequences="results/{a_or_b}/sequences.fasta",
-        metadata="results/{a_or_b}/metadata.tsv",
-        sequence_index=rules.index_sequences.output,
-        include="config/include_{a_or_b}.txt",
+        sequences=lambda w: f"results/{get_subtype(w.build)}/sequences.fasta",
+        metadata=lambda w: f"results/{get_subtype(w.build)}/metadata.tsv",
+        sequence_index=lambda w: f"results/{get_subtype(w.build)}/sequence_index.tsv",
+        include=lambda w: f"config/include_{get_subtype(w.build)}.txt",
         exclude=config["exclude"],
     output:
         sequences=results_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background.fasta",
+        + "/{build}/filtered_background.fasta",
         metadata=results_dir
-        + "/{a_or_b}/{build_name}/{resolution}/filtered_background_metadata.tsv",
+        + "/{build}/filtered_background_metadata.tsv",
     log:
-        "logs/filter_background_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/filter_background.txt"
     benchmark:
-        "benchmarks/filter_background_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/filter_background.txt"
     params:
         group_by=config["filter"]["group_by"],
-        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
-        min_length=lambda w: config["filter"]["min_length"][w.build_name],
+        min_coverage=lambda w: f'{get_gene(w.build)}_coverage>{config["filter"]["min_coverage"][get_gene_build(w.build)]}',
+        min_length=lambda w: config["filter"]["min_length"][get_gene_build(w.build)],
         subsample_max_sequences=lambda w: int(
-            config["filter"]["subsample_max_sequences"][w.build_name],
+            config["filter"]["subsample_max_sequences"][get_gene_build(w.build)],
         )
         // 10,
         strain_id=config["strain_id_field"],
-        max_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution][
+        max_date=lambda w: config["filter"]["resolutions"][get_resolution(w.build)]["min_date"],
+        min_date=lambda w: config["filter"]["resolutions"][get_resolution(w.build)][
             "background_min_date"
         ],
         exclude_where=config["filter"]["exclude_where"]["background"],
         missing_data_threshold=config["filter"]["missing_data_threshold"],
-        clade_prefix=lambda w: f"{w.a_or_b.upper()}.D",
+        clade_prefix=lambda w: f"{get_subtype(w.build).upper()}.D",
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -168,26 +167,26 @@ rule combine_samples:
                     rules.filter_recent.output.sequences,
                     rules.filter_background.output.sequences,
                 ]
-                if "background_min_date" in config["filter"]["resolutions"][w.resolution]
+                if "background_min_date" in config["filter"]["resolutions"][get_resolution(w.build)]
                 else [rules.filter_recent.output.sequences]
             )
             # potentially add sequences sampled to include maximum escape sequences
             + (
                 [
-                    f"{results_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/filtered_{antibody}_{scoretype}.fasta"
+                    f"{results_dir}/{w.build}/filtered_{antibody}_{scoretype}.fasta"
                     for antibody in config["f_dms_antibodies"]
                     for scoretype in ["total_escape", "max_escape"]
                 ]
-                if w.build_name in config["enrich_antibody_escape"]
+                if get_gene_build(w.build) in config["enrich_antibody_escape"]
                 else []
             )
         ),
     output:
-        sequences=results_dir + "/{a_or_b}/{build_name}/{resolution}/filtered.fasta",
+        sequences=results_dir + "/{build}/filtered.fasta",
     log:
-        "logs/combine_samples_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/combine_samples.txt"
     benchmark:
-        "benchmarks/combine_samples_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/combine_samples.txt"
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -225,20 +224,20 @@ rule filter_for_pre_subsample_alignment:
     Do the quality filtering applied to each sequence set before subsampling
     """
     input:
-        sequences="results/{a_or_b}/sequences.fasta",
-        metadata="results/{a_or_b}/metadata.tsv",
+        sequences=lambda w: f"results/{get_subtype(w.build)}/sequences.fasta",
+        metadata=lambda w: f"results/{get_subtype(w.build)}/metadata.tsv",
         exclude=config["exclude"],
     output:
-        sequences=results_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/filtered_for_alignment.fasta",
+        sequences=results_dir + "/{build}/pre_subsample/filtered_for_alignment.fasta",
     log:
-        "logs/filter_for_pre_subsample_alignment_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/filter_for_pre_subsample_alignment.txt"
     benchmark:
-        "benchmarks/filter_for_pre_subsample_alignment_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/filter_for_pre_subsample_alignment.txt"
     params:
-        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter"]["min_coverage"][w.build_name]}',
-        min_length=lambda w: config["filter"]["min_length"][w.build_name],
+        min_coverage=lambda w: f'{get_gene(w.build).split("-")[0]}_coverage>{config["filter"]["min_coverage"][get_gene(w.build)]}',
+        min_length=lambda w: config["filter"]["min_length"][get_gene(w.build)],
         strain_id=config["strain_id_field"],
-        min_date=lambda w: config["filter"]["resolutions"][w.resolution]["min_date"],
+        min_date=lambda w: config["filter"]["resolutions"][get_resolution(w.build)]["min_date"],
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -262,18 +261,18 @@ rule align_pre_subsample_sequences:
     """
     input:
         sequences=rules.filter_for_pre_subsample_alignment.output.sequences,
-        dataset=rules.get_nextclade_dataset.output.dataset,
+        dataset=lambda w: f"results/nextclade_rsv-{get_subtype(w.build)}.zip",
     output:
-        alignment=results_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/sequences.aligned.fasta",
-        translations=directory(results_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations"),
-        translations_done=results_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations.done",
+        alignment=results_dir + "/{build}/pre_subsample/sequences.aligned.fasta",
+        translations=directory(results_dir + "/{build}/pre_subsample/translations"),
+        translations_done=results_dir + "/{build}/pre_subsample/translations.done",
     params:
-        genes=lambda w: config["cds"][w.build_name],
+        genes=lambda w: get_gene(w.build),
     threads: 8
     log:
-        "logs/align_pre_subsample_sequences_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/align_pre_subsample_sequences.txt"
     benchmark:
-        "benchmarks/align_pre_subsample_sequences_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/align_pre_subsample_sequences.txt"
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -295,13 +294,13 @@ rule score_pre_subsample_f_proteins:
         translations_done=rules.align_pre_subsample_sequences.output.translations_done,
         dms_scores=config["f_dms_data"],
     output:
-        scores=results_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/f_protein_scores.tsv",
+        scores=results_dir + "/{build}/pre_subsample/f_protein_scores.tsv",
     log:
-        "logs/score_pre_subsample_f_proteins_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/score_pre_subsample_f_proteins.txt"
     benchmark:
-        "benchmarks/score_pre_subsample_f_proteins_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/score_pre_subsample_f_proteins.txt"
     params:
-        f_sequences=lambda w: results_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/pre_subsample/translations/F.fasta",
+        f_sequences=lambda w: results_dir + f"/{w.build}/pre_subsample/translations/F.fasta",
         dms_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
         only_positive_escape=config["dms_only_positive_escape"],
     shell:
@@ -322,14 +321,14 @@ rule add_f_scores_to_pre_subsample_metadata:
     Adding F protein scores to pre-subsampled metadata
     """
     input:
-        original_metadata="results/{a_or_b}/metadata.tsv",
+        original_metadata=lambda w: f"results/{get_subtype(w.build)}/metadata.tsv",
         f_scores=rules.score_pre_subsample_f_proteins.output.scores,
     output:
-        enhanced_metadata=results_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/metadata_with_scores.tsv",
+        enhanced_metadata=results_dir + "/{build}/pre_subsample/metadata_with_scores.tsv",
     log:
-        "logs/add_f_scores_to_pre_subsample_metadata_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/add_f_scores_to_pre_subsample_metadata.txt"
     benchmark:
-        "benchmarks/add_f_scores_to_pre_subsample_metadata_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/add_f_scores_to_pre_subsample_metadata.txt"
     params:
         strain_id=config["strain_id_field"],
     shell:
@@ -352,21 +351,21 @@ rule enrich_antibody_escape:
         antibody="|".join(re.escape(antibody) for antibody in config["f_dms_antibodies"]),
         scoretype="total_escape|max_escape",
     input:
-        sequences="results/{a_or_b}/sequences.fasta",
+        sequences=lambda w: f"results/{get_subtype(w.build)}/sequences.fasta",
         metadata=rules.add_f_scores_to_pre_subsample_metadata.output.enhanced_metadata,
     output:
-        sequences=results_dir + "/{a_or_b}/{build_name}/{resolution}/filtered_{antibody}_{scoretype}.fasta"
+        sequences=results_dir + "/{build}/filtered_{antibody}_{scoretype}.fasta"
     log:
-        "logs/enrich_antibody_escape_{a_or_b}_{build_name}_{resolution}_{antibody}_{scoretype}.txt"
+        "logs/{build}/enrich_antibody_escape_{antibody}_{scoretype}.txt"
     benchmark:
-        "benchmarks/enrich_antibody_escape_{a_or_b}_{build_name}_{resolution}_{antibody}_{scoretype}.txt"
+        "benchmarks/{build}/enrich_antibody_escape_{antibody}_{scoretype}.txt"
     params:
         strain_id=config["strain_id_field"],
         escape_col=lambda w: f"{w.antibody}_{w.scoretype}",
-        nseqs=lambda w: config["enrich_antibody_escape"][w.build_name]["nseqs_per_antibody_scoretype"],
-        group_by=lambda w: " ".join(shlex.quote(g) for g in config["enrich_antibody_escape"][w.build_name]["group_by"]),
-        max_identical_f_prot_muts=lambda w: config["enrich_antibody_escape"][w.build_name]["max_identical_f_prot_muts"],
-        max_identical_max_escape_mut=lambda w: config["enrich_antibody_escape"][w.build_name]["max_identical_max_escape_mut"],
+        nseqs=lambda w: config["enrich_antibody_escape"][get_gene_build(w.build)]["nseqs_per_antibody_scoretype"],
+        group_by=lambda w: " ".join(shlex.quote(g) for g in config["enrich_antibody_escape"][get_gene_build(w.build)]["group_by"]),
+        max_identical_f_prot_muts=lambda w: config["enrich_antibody_escape"][get_gene_build(w.build)]["max_identical_f_prot_muts"],
+        max_identical_max_escape_mut=lambda w: config["enrich_antibody_escape"][get_gene_build(w.build)]["max_identical_max_escape_mut"],
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -390,17 +389,17 @@ rule genome_align:
     """
     input:
         sequences=rules.combine_samples.output.sequences,
-        dataset=rules.get_nextclade_dataset.output.dataset,
+        dataset=lambda w: f"results/nextclade_rsv-{get_subtype(w.build)}.zip",
     output:
-        alignment=results_dir + "/{a_or_b}/{build_name}/{resolution}/sequences.aligned.fasta",
-        translations=directory(results_dir + "/{a_or_b}/{build_name}/{resolution}/translations"),
+        alignment=results_dir + "/{build}/sequences.aligned.fasta",
+        translations=directory(results_dir + "/{build}/translations"),
     params:
-        genes=lambda w: config["cds"][w.build_name],
+        genes=lambda w: get_gene(w.build),
     threads: 4
     log:
-        "logs/genome_align_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/genome_align.txt"
     benchmark:
-        "benchmarks/genome_align_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/genome_align.txt"
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -418,14 +417,14 @@ rule genome_align:
 rule cut:
     input:
         oldalignment=rules.genome_align.output.alignment,
-        reference="config/{a_or_b}reference.gbk",
+        reference=lambda w: f"config/{get_subtype(w.build)}reference.gbk",
     output:
         slicedalignment=results_dir
-        + "/{a_or_b}/{build_name}/{resolution}/{gene}_slicedalignment.fasta",
+        + "/{build}/{gene}_slicedalignment.fasta",
     log:
-        "logs/cut_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
+        "logs/{build}/cut_{gene}.txt"
     benchmark:
-        "benchmarks/cut_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
+        "benchmarks/{build}/cut_{gene}.txt"
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -442,14 +441,14 @@ rule cut:
 rule realign:
     input:
         slicedalignment=rules.cut.output.slicedalignment,
-        reference=results_dir
-        + "/{a_or_b}/{gene}_reference.fasta",
+        reference=lambda w: results_dir
+        + f"/{get_subtype(w.build)}/{w.gene}_reference.fasta",
     output:
-        realigned=results_dir + "/{a_or_b}/{build_name}/{resolution}/{gene}_aligned.fasta",
+        realigned=results_dir + "/{build}/{gene}_aligned.fasta",
     log:
-        "logs/realign_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
+        "logs/{build}/realign_{gene}.txt"
     benchmark:
-        "benchmarks/realign_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
+        "benchmarks/{build}/realign_{gene}.txt"
     threads: 2
     shell:
         r"""
@@ -465,15 +464,17 @@ rule realign:
 rule hybrid_align:
     input:
         original=rules.genome_align.output.alignment,
-        G_alignment=results_dir + "/{a_or_b}/{build_name}/{resolution}/G_aligned.fasta",
-        reference="config/{a_or_b}reference.gbk",
+        G_alignment=lambda w: results_dir + f"/{w.build}/G_aligned.fasta",
+        reference=lambda w: f"config/{get_subtype(w.build)}reference.gbk",
     output:
         hybrid_alignment=results_dir
-        + "/{a_or_b}/{build_name}/{resolution}/hybrid_alignment.fasta",
+        + "/{build}/hybrid_alignment.fasta",
     log:
-        "logs/hybrid_align_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/hybrid_align.txt"
     benchmark:
-        "benchmarks/hybrid_align_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/hybrid_align.txt"
+    params:
+        gene_name=lambda w: get_gene_build(w.build),
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -483,27 +484,30 @@ rule hybrid_align:
             --original {input.original} \
             --reference {input.reference} \
             --output {output.hybrid_alignment} \
-            --build {wildcards.build_name}
+            --build {params.gene_name}
         """
 
 
 def get_alignment(w):
-    if w.build_name == "genome":
+    gene_build = get_gene_build(w.build)
+    if gene_build == "genome":
         return rules.hybrid_align.output.hybrid_alignment
     else:
-        gene = config["cds"][w.build_name]
+        gene = get_gene(w.build)
         return (
             results_dir
-            + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/{gene}_aligned.fasta"
+            + f"/{w.build}/{gene}_aligned.fasta"
         )
 
 
 def get_reference(w):
-    if w.build_name == "genome":
-        return f"config/{w.a_or_b}reference.gbk"
+    gene_build = get_gene_build(w.build)
+    subtype = get_subtype(w.build)
+    if gene_build == "genome":
+        return f"config/{subtype}reference.gbk"
     else:
-        gene = config["cds"][w.build_name]
-        return results_dir + f"/{w.a_or_b}/{gene}_reference.gbk"
+        gene = get_gene(w.build)
+        return results_dir + f"/{subtype}/{gene}_reference.gbk"
 
 
 rule tree:
@@ -513,11 +517,11 @@ rule tree:
     input:
         alignment=get_alignment,
     output:
-        tree=results_dir + "/{a_or_b}/{build_name}/{resolution}/tree_raw.nwk",
+        tree=results_dir + "/{build}/tree_raw.nwk",
     log:
-        "logs/tree_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/tree.txt"
     benchmark:
-        "benchmarks/tree_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/tree.txt"
     threads: 2
     shell:
         r"""
@@ -541,14 +545,14 @@ rule refine:
     input:
         tree=rules.tree.output.tree,
         alignment=get_alignment,
-        metadata="results/{a_or_b}/metadata.tsv",
+        metadata=lambda w: f"results/{get_subtype(w.build)}/metadata.tsv",
     output:
-        tree=results_dir + "/{a_or_b}/{build_name}/{resolution}/tree.nwk",
-        node_data=results_dir + "/{a_or_b}/{build_name}/{resolution}/branch_lengths.json",
+        tree=results_dir + "/{build}/tree.nwk",
+        node_data=results_dir + "/{build}/branch_lengths.json",
     log:
-        "logs/refine_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/refine.txt"
     benchmark:
-        "benchmarks/refine_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/refine.txt"
     params:
         coalescent=config["refine"]["coalescent"],
         clock_filter_iqd=config["refine"]["clock_filter_iqd"],
@@ -575,11 +579,10 @@ rule refine:
 
 
 def _get_build_distance_map_config(wildcards):
-    build_gene = config["cds"][wildcards.build_name]
     distance_config = distance_map_config[
-        (distance_map_config["a_or_b"] == wildcards.a_or_b)
-        & (distance_map_config["build_name"] == build_gene)
-        & (distance_map_config["resolution"] == wildcards.resolution)
+        (distance_map_config["a_or_b"] == get_subtype(wildcards.build))
+        & (distance_map_config["build_name"] == get_gene(wildcards.build))
+        & (distance_map_config["resolution"] == get_resolution(wildcards.build))
     ]
     if distance_config.shape[0] > 0:
         return distance_config
@@ -598,10 +601,9 @@ def _get_distance_attributes_by_lineage_and_segment(wildcards):
 
 def _get_distance_maps_by_lineage_and_segment(wildcards):
     distance_config = _get_build_distance_map_config(wildcards)
-    if wildcards.build_name != "G":
-        build_gene = config["cds"][wildcards.build_name]
+    if (gene := get_gene(wildcards.build)) != "G":
         return [
-            f"config/distance_maps/{build_gene}/{distance_map}.json"
+            f"config/distance_maps/{gene}/{distance_map}.json"
             for distance_map in distance_config.loc[:, "distance_map"].values
         ]
     else:
@@ -612,18 +614,18 @@ rule distances:
     input:
         tree=rules.refine.output.tree,
         distance_maps = _get_distance_maps_by_lineage_and_segment,
-        translations_done=results_dir + "/{a_or_b}/{build_name}/{resolution}/translations.done",
+        translations_done=results_dir + "/{build}/translations.done",
     output:
-        distances= results_dir + "/{a_or_b}/{build_name}/{resolution}/distances.json"
+        distances= results_dir + "/{build}/distances.json"
     params:
-        genes=lambda w: config["cds"][w.build_name],
-        alignments=lambda w: [f"{results_dir}/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/{gene}_withInternalNodes.fasta" for gene in config["cds"][w.build_name]],
+        genes=lambda w: get_gene(w.build),
+        alignments=lambda w: [f"{results_dir}/{w.build}/translations/{get_gene(w.build)}_withInternalNodes.fasta"],
         comparisons=_get_distance_comparisons_by_lineage_and_segment,
         attribute_names=_get_distance_attributes_by_lineage_and_segment,
     log:
-        "logs/distances_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/distances.txt"
     benchmark:
-        "benchmarks/distances_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/distances.txt"
     resources:
         mem_mb=8000,
         time="00:30:00",
@@ -653,17 +655,17 @@ rule ancestral:
         translations=rules.genome_align.output.translations,
         root_sequence=get_reference,
     output:
-        node_data=results_dir + "/{a_or_b}/{build_name}/{resolution}/nt_muts.json",
-        translations_done=results_dir + "/{a_or_b}/{build_name}/{resolution}/translations.done",
+        node_data=results_dir + "/{build}/nt_muts.json",
+        translations_done=results_dir + "/{build}/translations.done",
     params:
         inference=config["ancestral"]["inference"],
-        genes=lambda w: config["cds"][w.build_name],
-        output_translations=lambda w: results_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE_withInternalNodes.fasta",
-        input_translations=lambda w: results_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE.fasta",
+        genes=lambda w: get_gene(w.build),
+        output_translations=lambda w: results_dir + f"/{w.build}/translations/%GENE_withInternalNodes.fasta",
+        input_translations=lambda w: results_dir + f"/{w.build}/translations/%GENE.fasta",
     log:
-        "logs/ancestral_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/ancestral.txt"
     benchmark:
-        "benchmarks/ancestral_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/ancestral.txt"
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -690,13 +692,13 @@ rule translate:
         node_data=rules.ancestral.output.node_data,
         reference=get_reference,
     output:
-        node_data=results_dir + "/{a_or_b}/{build_name}/{resolution}/aa_muts.json",
+        node_data=results_dir + "/{build}/aa_muts.json",
     log:
-        "logs/translate_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/translate.txt"
     benchmark:
-        "benchmarks/translate_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/translate.txt"
     params:
-        alignment_file_mask=results_dir + "/{a_or_b}/{build_name}/{resolution}/aligned_%GENE.fasta",
+        alignment_file_mask=results_dir + "/{build}/aligned_%GENE.fasta",
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -719,15 +721,15 @@ rule compute_f_scores_node_data:
         aa_muts=rules.translate.output.node_data,
         f_scores=config["f_dms_data"],
     output:
-        f_scores_node_data=results_dir + "/{a_or_b}/{build_name}/{resolution}/f_scores.json"
+        f_scores_node_data=results_dir + "/{build}/f_scores.json"
     params:
         gene="F",
         f_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
         only_positive_escape=config["dms_only_positive_escape"],
     log:
-        "logs/compute_f_scores_node_data_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/compute_f_scores_node_data.txt"
     benchmark:
-        "benchmarks/compute_f_scores_node_data_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/compute_f_scores_node_data.txt"
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -746,13 +748,13 @@ rule compute_f_scores_node_data:
 rule traits:
     input:
         tree=rules.refine.output.tree,
-        metadata="results/{a_or_b}/metadata.tsv",
+        metadata=lambda w: f"results/{get_subtype(w.build)}/metadata.tsv",
     output:
-        node_data=results_dir + "/{a_or_b}/{build_name}/{resolution}/traits.json",
+        node_data=results_dir + "/{build}/traits.json",
     log:
-        "logs/traits_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/traits.txt"
     benchmark:
-        "benchmarks/traits_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/traits.txt"
     params:
         columns=config["traits"]["columns"],
         strain_id=config["strain_id_field"],
@@ -772,15 +774,15 @@ rule traits:
 rule frequencies:
     input:
         tree = rules.refine.output.tree,
-        metadata = "results/{a_or_b}/metadata.tsv"
+        metadata = lambda w: f"results/{get_subtype(w.build)}/metadata.tsv"
     output:
-        frequencies = results_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
+        frequencies = results_dir + "/{build}/frequencies.json"
     log:
-        "logs/frequencies_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/frequencies.txt"
     benchmark:
-        "benchmarks/frequencies_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/frequencies.txt"
     params:
-        min_date_arg = lambda w: f"--min-date {config['frequencies']['resolutions'][w.resolution]['min_date']}",
+        min_date_arg = lambda w: f"--min-date {config['frequencies']['resolutions'][get_resolution(w.build)]['min_date']}",
     shell:
         r"""
         exec &> >(tee {log:q})

@@ -12,11 +12,14 @@ configfile: "config/configfile.yaml"
 include: "shared/vendored/snakemake/config.smk"
 include: "workflow/snakemake_rules/config.smk"
 
+builds = config["builds"]
+
 wildcard_constraints:
-    a_or_b=r"a|b",
-    build_name="|".join(config.get("builds_to_run", ["genome"])),
-    resolution="|".join(config.get("resolutions_to_run", ["all-time"])),
-    gene="G|F",
+    build="|".join(builds),
+    build_with_underscores="|".join(b.replace("/", "_") for b in builds),
+    a_or_b="|".join(set(get_subtype(b) for b in builds)),
+    gene="|".join(set(get_gene(b) for b in builds)),
+    resolution="|".join(set(get_resolution(b) for b in builds)),
 
 
 results_dir = "results"
@@ -27,14 +30,8 @@ distance_map_config = pd.read_table("config/distance_maps.tsv")
 
 rule all:
     input:
-        expand("auspice/rsv_{subtype}_{build}_{resolution}.json",
-               subtype = config.get("subtypes",['a']),
-               build = config.get("builds_to_run", ['genome']),
-               resolution = config.get("resolutions_to_run", ["all-time"])),
-        expand("auspice/rsv_{subtype}_{build}_{resolution}_tip-frequencies.json",
-               subtype = config.get("subtypes",['a']),
-               build = config.get("builds_to_run", ['genome']),
-               resolution = config.get("resolutions_to_run", ["all-time"])),
+        [f"auspice/rsv_{build.replace('/', '_')}.json" for build in builds],
+        [f"auspice/rsv_{build.replace('/', '_')}_tip-frequencies.json" for build in builds],
 
 
 # remote_files.smk must be before merge_inputs.smk

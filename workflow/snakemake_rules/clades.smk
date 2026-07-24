@@ -6,13 +6,13 @@ rule clades_genome:
         tree = rules.refine.output.tree,
         aa_muts = rules.translate.output.node_data,
         nuc_muts = rules.ancestral.output.node_data,
-        clades = "config/clades_genome_{a_or_b}.tsv"
+        clades = lambda w: f"config/clades_genome_{get_subtype(w.build)}.tsv"
     output:
-        node_data = results_dir + "/{a_or_b}/{build_name}/{resolution}/clades_genome.json"
+        node_data = results_dir + "/{build}/clades_genome.json"
     log:
-        "logs/clades_genome_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/clades_genome.txt"
     benchmark:
-        "benchmarks/clades_genome_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/clades_genome.txt"
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -34,13 +34,13 @@ rule clades_Goya:
         tree = rules.refine.output.tree,
         aa_muts = rules.translate.output.node_data,
         nuc_muts = rules.ancestral.output.node_data,
-        clades = "config/clades_G_{a_or_b}.tsv"
+        clades = lambda w: f"config/clades_G_{get_subtype(w.build)}.tsv"
     output:
-        node_data = results_dir + "/{a_or_b}/{build_name}/{resolution}/clades_G.json"
+        node_data = results_dir + "/{build}/clades_G.json"
     log:
-        "logs/clades_Goya_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/clades_Goya.txt"
     benchmark:
-        "benchmarks/clades_Goya_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/clades_Goya.txt"
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -61,13 +61,13 @@ rule clades_consortium:
         tree = rules.refine.output.tree,
         aa_muts = rules.translate.output.node_data,
         nuc_muts = rules.ancestral.output.node_data,
-        clades = "results/clades_consortium_{a_or_b}.tsv"
+        clades = lambda w: f"results/clades_consortium_{get_subtype(w.build)}.tsv"
     output:
-        node_data = results_dir + "/{a_or_b}/{build_name}/{resolution}/clades_consortium.json"
+        node_data = results_dir + "/{build}/clades_consortium.json"
     log:
-        "logs/clades_consortium_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/{build}/clades_consortium.txt"
     benchmark:
-        "benchmarks/clades_consortium_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/{build}/clades_consortium.txt"
     shell:
         r"""
         exec &> >(tee {log:q})
