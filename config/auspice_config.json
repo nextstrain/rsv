@@ -43,6 +43,11 @@
       "type": "categorical"
     },
     {
+      "key": "sequence_source",
+      "title": "Sequence source",
+      "type": "categorical"
+    },
+    {
       "key": "glyc",
       "title": "Glycosylation",
       "type": "ordinal"
@@ -118,6 +123,7 @@
     "division",
     "country",
     "region",
-    "clade_membership"
+    "clade_membership",
+    "sequence_source"
   ]
 }

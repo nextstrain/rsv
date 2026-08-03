@@ -84,11 +84,52 @@ additional_inputs:
     sequences: example_data/{a_or_b}/sequences.fasta
 ```
 
-Note that the additional inputs also require the `{a_or_b}` expandable field.
-If you only have data for a single subtype, then you can do so with
+By default, additional inputs are subsampled alongside the default inputs.
+To force-include all sequences from an additional input (bypassing subsampling),
+add `keep_all: True`. If `keep_all` is missing or `False`, then the additional
+inputs are subsampled alongside other inputs:
 
 ```yaml
-serotypes: ["a"]
+additional_inputs:
+  - name: example-data
+    metadata: example_data/{a_or_b}/metadata.tsv
+    sequences: example_data/{a_or_b}/sequences.fasta
+    keep_all: True
+```
+
+Note that `keep_all` sequences bypass quality filters (coverage, missing data,
+etc.) in addition to subsampling, so they do not need Nextclade QC columns.
+Subsampled additional inputs must pass the same quality filters as default
+inputs and therefore need the same metadata columns.
+
+#### Metadata requirements
+
+Additional input metadata TSV files must include these columns:
+
+| Column | Description |
+|--------|-------------|
+| `accession` | Must match the FASTA header exactly |
+| `strain` | Display name for the sequence in the tree |
+| `date` | Collection date (`YYYY-MM-DD`, `YYYY-MM`, or `YYYY`; use `XXXX-XX-XX` if unknown) |
+
+Recommended columns for better tree visualization: `country` (eg, "USA"), `region` (eg, "North America"),
+`division` (eg, "New York"). Any column set to `?` or left empty is treated as unknown.
+
+#### `sequence_source` column
+
+When `additional_inputs` are present, a `sequence_source` metadata column is
+added: additional sequences are labeled with their input `name`, and all other
+sequences are labeled "Pathoplexus". This enables coloring and filtering by
+origin in Auspice. Do not use "Pathoplexus" as an additional input name.
+
+#### Paths and subtypes
+
+The additional inputs require the `{a_or_b}` expandable field in paths.
+If you only have data for a single subtype, restrict the entire build with
+`subtypes`:
+
+```yaml
+subtypes: ["a"]
 additional_inputs:
   - name: private
     metadata: private/a/metadata.tsv

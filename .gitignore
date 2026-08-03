@@ -33,3 +33,6 @@ Thumbs.db
 
 # Jupyter notebook cache files
 .ipynb_checkpoints
+
+# Claude generated files
+.claude

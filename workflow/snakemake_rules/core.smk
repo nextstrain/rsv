@@ -65,6 +65,7 @@ rule filter_recent:
         metadata="results/{a_or_b}/metadata.tsv",
         sequence_index=rules.index_sequences.output,
         exclude=config["exclude"],
+        additional_include="results/{a_or_b}/additional_include.txt",
     output:
         sequences=build_dir
         + "/{a_or_b}/{build_name}/{resolution}/filtered_recent.fasta",
@@ -93,6 +94,7 @@ rule filter_recent:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
             --exclude {input.exclude} \
+            --include {input.additional_include} \
             --exclude-where {params.exclude_where:q} \
             --min-date {params.min_date} \
             --min-length {params.min_length} \
