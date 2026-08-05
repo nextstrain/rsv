@@ -74,6 +74,7 @@ refine:
   coalescent: "opt"
   date_inference: "marginal"
   clock_filter_iqd: 4
+  divergence_units: "mutations-per-site"
 
 ancestral:
   inference: "joint"
