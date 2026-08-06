@@ -194,6 +194,33 @@ properties:
             type: string
           accession:
             type: string
+  filter_for_pre_subsample_alignment:
+    type: object
+    additionalProperties: false
+    properties:
+      group_by:
+        type: string
+      min_length:
+        <<: *per_build_map
+        patternProperties:
+          "^.*$":
+            type: integer
+      min_coverage:
+        <<: *per_build_map
+        patternProperties:
+          "^.*$":
+            type: number
+      resolutions:
+        <<: *per_resolution_map
+        patternProperties:
+          "^.*$":
+            type: object
+            additionalProperties: false
+            properties:
+              min_date:
+                type: string
+              background_min_date:
+                type: string
   f_dms_data:
     type: string
   f_dms_antibodies:
