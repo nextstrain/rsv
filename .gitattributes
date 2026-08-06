@@ -1,3 +1,8 @@
 # Allow Git to decide if file is text or binary
 # Always use LF line endings even on Windows.
 * text=auto eol=lf
+
+# This is a large generated file that, while text, it is not useful to
+# routinely show the diff of.  A diff can be forced as needed, e.g. with `git
+# diff --text`.
+/config/configfile.yaml -diff
