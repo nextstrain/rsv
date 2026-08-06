@@ -1,8 +1,5 @@
 conda_environment: "workflow/envs/nextstrain.yaml"
 
-custom_rules:
-  - "profiles/wadoh/wa_filter.smk"
-
 genesforglycosylation: ["G", "F"]
 
 builds_to_run: ["genome"]
@@ -29,34 +26,65 @@ strain_id_field: "accession"
 display_strain_field: "strain"
 
 
-filter:
-  group_by: "year country division"
-  min_coverage:
-    genome: 0.3
-    G: 0.3
-    F: 0.3
-
-  min_length:
-    genome: 10000
-    G: 600
-    F: 1200
-  resolutions: #If adding new resolutions, need to add to config/distance_maps.tsv
-    all-time:
-      min_date: 1975-01-01
-    6y:
-      min_date: 6Y
-      background_min_date: 12Y
-    3y:
-      min_date: 3Y
-      background_min_date: 12Y
-    1y:
-      min_date: 1Y
-      background_min_date: 12Y
-
-  subsample_max_sequences:
-    genome: 3000
-    G: 3000
-    F: 3000
+custom_subsample:
+  a/genome/6y:
+    samples:
+      recent:
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+        - qc.overallStatus=bad
+        group_by:
+        - year
+        - country
+        - division
+        max_sequences: 10000
+        min_date: 6Y
+        min_length: 10000
+        query: genome_coverage>0.3 & missing_data<1000
+      background:
+        include: config/include_a.txt
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+        - qc.overallStatus=bad
+        - qc.overallStatus=mediocre
+        group_by:
+        - year
+        - country
+        - division
+        max_sequences: 3000
+        min_date: 12Y
+        max_date: 6Y
+        min_length: 10000
+        query: genome_coverage>0.3 & missing_data<1000 & clade.str.startswith("A.D", na=False)
+  b/genome/6y:
+    samples:
+      recent:
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+        - qc.overallStatus=bad
+        group_by:
+        - year
+        - country
+        - division
+        max_sequences: 10000
+        min_date: 6Y
+        min_length: 10000
+        query: genome_coverage>0.3 & missing_data<1000
+      background:
+        include: config/include_b.txt
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+        - qc.overallStatus=bad
+        - qc.overallStatus=mediocre
+        group_by:
+        - year
+        - country
+        - division
+        max_sequences: 3000
+        min_date: 12Y
+        max_date: 6Y
+        min_length: 10000
+        query: genome_coverage>0.3 & missing_data<1000 & clade.str.startswith("B.D", na=False)
 
 files:
   auspice_config: "profiles/wadoh/auspice_config_wa.json"
