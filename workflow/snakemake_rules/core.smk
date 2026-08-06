@@ -554,6 +554,7 @@ rule refine:
         clock_filter_iqd=config["refine"]["clock_filter_iqd"],
         date_inference=config["refine"]["date_inference"],
         strain_id=config["strain_id_field"],
+        divergence_units=config["refine"]["divergence_units"],
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -570,7 +571,8 @@ rule refine:
             --timetree \
             --stochastic-resolve \
             --use-fft \
-            --clock-filter-iqd {params.clock_filter_iqd}
+            --clock-filter-iqd {params.clock_filter_iqd} \
+            --divergence-units {params.divergence_units}
         """
 
 
