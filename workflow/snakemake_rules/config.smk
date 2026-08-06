@@ -14,6 +14,7 @@ def main():
         "results/run_config.yaml",
         Path(workflow.basedir) / "config.schema.yaml"
     )
+    write_subsample_config()
 
 
 # TODO: move this to nextstrain/shared
@@ -38,6 +39,21 @@ def dump_and_validate(dump_path, schema_path):
         validate_json(config, validator, dump_path)
     except ValidateError as e:
         raise InvalidConfigError(str(e)) from e
+
+
+def write_subsample_config():
+    # TODO: Support custom build names in the workflow and infer from
+    # config["builds"].
+    for a_or_b in ["a", "b"]:
+        for build_name in ["genome", "G", "F", "F-antibody-escape"]:
+            for resolution in ["all-time", "6y", "3y"]:
+                build = f"{a_or_b}/{build_name}/{resolution}"
+                if "custom_subsample" in config:
+                    section = ["custom_subsample", build]
+                else:
+                    section = ["subsample", build]
+                write_config(f"results/{build}/subsample_config.yaml", section=section)
+
 
 try:
     main()
