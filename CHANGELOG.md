@@ -4,4 +4,4 @@ We use this CHANGELOG to document breaking changes, new features, bug fixes, and
 
 ## 2026
 
-* TBD: Phylogenetic workflow configuration for initial quality filtering has moved to its own section, `filter_for_pre_subsample_alignment`.
+* TBD: The `filter` section in phylogenetic workflow configuration has been replaced by `subsample`/`custom_subsample` for subsampling, and `filter_for_pre_subsample_alignment` for initial quality filtering. **This is a breaking change**.
