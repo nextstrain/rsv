@@ -168,7 +168,7 @@ properties:
             type: string
           accession:
             type: string
-  filter_for_pre_subsample_alignment:
+  filter_for_f_antibody_escape:
     type: object
     additionalProperties: false
     properties:

@@ -137,7 +137,7 @@ rule get_nextclade_dataset:
         """
 
 
-rule filter_for_pre_subsample_alignment:
+rule filter_for_f_antibody_escape:
     """
     Do the quality filtering applied to each sequence set before subsampling
     """
@@ -148,14 +148,14 @@ rule filter_for_pre_subsample_alignment:
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/filtered_for_alignment.fasta",
     log:
-        "logs/filter_for_pre_subsample_alignment_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/filter_for_f_antibody_escape_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
-        "benchmarks/filter_for_pre_subsample_alignment_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/filter_for_f_antibody_escape_{a_or_b}_{build_name}_{resolution}.txt"
     params:
-        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter_for_pre_subsample_alignment"]["min_coverage"][w.build_name]}',
-        min_length=lambda w: config["filter_for_pre_subsample_alignment"]["min_length"][w.build_name],
+        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter_for_f_antibody_escape"]["min_coverage"][w.build_name]}',
+        min_length=lambda w: config["filter_for_f_antibody_escape"]["min_length"][w.build_name],
         strain_id=config["strain_id_field"],
-        min_date=lambda w: config["filter_for_pre_subsample_alignment"]["resolutions"][w.resolution]["min_date"],
+        min_date=lambda w: config["filter_for_f_antibody_escape"]["resolutions"][w.resolution]["min_date"],
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -178,7 +178,7 @@ rule align_pre_subsample_sequences:
     Aligning all pre-subsampled quality-filtered sequences
     """
     input:
-        sequences=rules.filter_for_pre_subsample_alignment.output.sequences,
+        sequences=rules.filter_for_f_antibody_escape.output.sequences,
         dataset=rules.get_nextclade_dataset.output.dataset,
     output:
         alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/sequences.aligned.fasta",

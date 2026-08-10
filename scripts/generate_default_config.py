@@ -107,7 +107,7 @@ def generate_config():
             },
         },
 
-        "filter_for_pre_subsample_alignment": {
+        "filter_for_f_antibody_escape": {
             "min_length": {
                 "genome": 10000,
                 "G": 600,
