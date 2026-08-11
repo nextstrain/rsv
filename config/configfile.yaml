@@ -44,7 +44,7 @@ filter:
     F-antibody-escape: 1200
   resolutions:
     all-time:
-      min_date: 1975-01-01
+      min_date: "1975-01-01"
     6y:
       min_date: 6Y
       background_min_date: 12Y
@@ -91,7 +91,7 @@ traits:
 frequencies:
   resolutions:
     all-time:
-      min_date: 1975-01-01
+      min_date: "1975-01-01"
     6y:
       min_date: 6Y
     3y:
