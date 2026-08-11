@@ -1,0 +1,226 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: RSV Phylogenetic Workflow Configuration
+description: >-
+  This is the schema for the Nextstrain rsv phylogenetic workflow's
+  configuration file.
+
+$defs:
+  per_subtype_map: &per_subtype_map
+    type: object
+    additionalProperties: false
+    propertyNames:
+      title: Subtype
+      description: Subtype ('a' or 'b')
+
+  per_build_map: &per_build_map
+    type: object
+    additionalProperties: false
+    propertyNames:
+      title: Build name
+      description: Build name ('genome', 'G', 'F', or 'F-antibody-escape')
+
+  per_resolution_map: &per_resolution_map
+    type: object
+    additionalProperties: false
+    propertyNames:
+      title: Resolution name
+      description: Resolution name ('all-time', '6y', or '3y')
+
+  input_item:
+    type: object
+    additionalProperties: false
+    required:
+      - name
+    anyOf:
+      - required: [metadata]
+      - required: [sequences]
+    properties:
+      name:
+        type: string
+      metadata:
+        type: string
+      sequences:
+        type: string
+
+type: object
+additionalProperties: false
+properties:
+  conda_environment:
+    type: string
+  genesforglycosylation:
+    type: array
+    items:
+      type: string
+  builds_to_run:
+    type: array
+    items:
+      type: string
+  resolutions_to_run:
+    type: array
+    items:
+      type: string
+  subtypes:
+    type: array
+    items:
+      type: string
+  inputs:
+    type: array
+    items:
+      $ref: "#/$defs/input_item"
+  additional_inputs:
+    type: array
+    items:
+      $ref: "#/$defs/input_item"
+  exclude:
+    type: string
+  description:
+    type: string
+  strain_id_field:
+    type: string
+  display_strain_field:
+    type: string
+  filter:
+    type: object
+    additionalProperties: false
+    properties:
+      group_by:
+        type: string
+      min_coverage:
+        <<: *per_build_map
+        patternProperties:
+          "^.*$":
+            type: number
+      min_length:
+        <<: *per_build_map
+        patternProperties:
+          "^.*$":
+            type: integer
+      resolutions:
+        <<: *per_resolution_map
+        patternProperties:
+          "^.*$":
+            type: object
+            additionalProperties: false
+            properties:
+              min_date:
+                type: string
+              background_min_date:
+                type: string
+      subsample_max_sequences:
+        <<: *per_build_map
+        patternProperties:
+          "^.*$":
+            type: integer
+      exclude_where:
+        type: object
+        additionalProperties: false
+        properties:
+          recent:
+            type: array
+            items:
+              type: string
+          background:
+            type: array
+            items:
+              type: string
+      missing_data_threshold:
+        type: integer
+  files:
+    type: object
+    additionalProperties: false
+    properties:
+      auspice_config:
+        type: string
+      auspice_config_additional_colorings:
+        type: string
+      auspice_config_f_antibody_escape:
+        type: string
+      auspice_config_non-genome_builds:
+        type: string
+  refine:
+    type: object
+    additionalProperties: false
+    properties:
+      coalescent:
+        type: string
+      date_inference:
+        type: string
+      clock_filter_iqd:
+        type: number
+      divergence_units:
+        type: string
+  ancestral:
+    type: object
+    additionalProperties: false
+    properties:
+      inference:
+        type: string
+  cds:
+    <<: *per_build_map
+    patternProperties:
+      "^.*$":
+        type: string
+  traits:
+    type: object
+    additionalProperties: false
+    properties:
+      columns:
+        type: [string, array]
+        items:
+          type: string
+  frequencies:
+    type: object
+    additionalProperties: false
+    properties:
+      resolutions:
+        <<: *per_resolution_map
+        patternProperties:
+          "^.*$":
+            type: object
+            additionalProperties: false
+            properties:
+              min_date:
+                type: string
+  nextclade_attributes:
+    <<: *per_subtype_map
+    patternProperties:
+      "^.*$":
+        type: object
+        additionalProperties: false
+        properties:
+          name:
+            type: string
+          reference_name:
+            type: string
+          accession:
+            type: string
+  f_dms_data:
+    type: string
+  f_dms_antibodies:
+    type: array
+    items:
+      type: string
+  dms_only_positive_escape:
+    type: boolean
+  enrich_antibody_escape:
+    <<: *per_build_map
+    patternProperties:
+      "^.*$":
+        type: object
+        additionalProperties: false
+        properties:
+          nseqs_per_antibody_scoretype:
+            type: integer
+          group_by:
+            type: array
+            items:
+              type: string
+          max_identical_f_prot_muts:
+            type: integer
+          max_identical_max_escape_mut:
+            type: integer
+  custom_rules:
+    type: array
+    description: Custom Snakemake rule files to include. If used, this will disable config schema validation.
+    items:
+      type: string
