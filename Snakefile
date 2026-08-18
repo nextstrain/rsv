@@ -47,11 +47,6 @@ include: "workflow/snakemake_rules/glycosylation.smk"
 include: "workflow/snakemake_rules/clades.smk"
 
 
-if "deploy_url" in config:
-
-    include: "workflow/snakemake_rules/nextstrain_automation.smk"
-
-
 rule clean:
     params:
         targets=["auspice", "results"],
