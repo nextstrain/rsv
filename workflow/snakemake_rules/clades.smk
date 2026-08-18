@@ -91,5 +91,5 @@ rule download_clades:
         r"""
         exec &> >(tee {log:q})
 
-        curl {params.url} --output {output.clades}
+        curl -fsSL {params.url} --output {output.clades}
         """
