@@ -5,6 +5,13 @@ description: >-
   configuration file.
 
 $defs:
+  per_full_build_map: &per_full_build_map
+    type: object
+    additionalProperties: false
+    propertyNames:
+      title: Full build name
+      description: Full build name (e.g. 'a/genome/all-time')
+
   per_subtype_map: &per_subtype_map
     type: object
     additionalProperties: false
@@ -79,52 +86,19 @@ properties:
     type: string
   display_strain_field:
     type: string
-  filter:
-    type: object
-    additionalProperties: false
-    properties:
-      group_by:
-        type: string
-      min_coverage:
-        <<: *per_build_map
-        patternProperties:
-          "^.*$":
-            type: number
-      min_length:
-        <<: *per_build_map
-        patternProperties:
-          "^.*$":
-            type: integer
-      resolutions:
-        <<: *per_resolution_map
-        patternProperties:
-          "^.*$":
-            type: object
-            additionalProperties: false
-            properties:
-              min_date:
-                type: string
-              background_min_date:
-                type: string
-      subsample_max_sequences:
-        <<: *per_build_map
-        patternProperties:
-          "^.*$":
-            type: integer
-      exclude_where:
-        type: object
-        additionalProperties: false
-        properties:
-          recent:
-            type: array
-            items:
-              type: string
-          background:
-            type: array
-            items:
-              type: string
-      missing_data_threshold:
-        type: integer
+  subsample: &subsample_config
+    <<: *per_full_build_map
+    description: >-
+      Subsampling configuration. When using --configfile, it is recommended to
+      use 'custom_subsample' instead to ignore default subsampling configuration.
+    patternProperties:
+      "^.*$":
+        $ref: "https://nextstrain.org/schemas/augur/subsample-config-unaligned/v1"
+  custom_subsample:
+    <<: *subsample_config
+    description: >-
+      Custom subsampling configuration. When using --configfile, this is
+      recommended over 'subsample' to ignore default subsampling configuration.
   files:
     type: object
     additionalProperties: false
@@ -194,6 +168,33 @@ properties:
             type: string
           accession:
             type: string
+  filter_for_f_antibody_escape:
+    type: object
+    additionalProperties: false
+    properties:
+      group_by:
+        type: string
+      min_length:
+        <<: *per_build_map
+        patternProperties:
+          "^.*$":
+            type: integer
+      min_coverage:
+        <<: *per_build_map
+        patternProperties:
+          "^.*$":
+            type: number
+      resolutions:
+        <<: *per_resolution_map
+        patternProperties:
+          "^.*$":
+            type: object
+            additionalProperties: false
+            properties:
+              min_date:
+                type: string
+              background_min_date:
+                type: string
   f_dms_data:
     type: string
   f_dms_antibodies:
