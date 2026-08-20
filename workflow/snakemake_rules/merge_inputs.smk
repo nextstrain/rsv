@@ -3,7 +3,7 @@ This part of the workflow merges inputs based on what is defined in the config.
 
 OUTPUTS:
 
-    metadata  = results/{a_or_b}/metadata.tsv
+    metadata  = results/{a_or_b}/metadata_merged.tsv
     sequences = results/{a_or_b}/sequences.fasta
 
 The config dict is expected to have a top-level `inputs` list that defines the
@@ -46,11 +46,19 @@ def _gather_inputs():
     if not any (['sequences' in i for i in all_inputs]):
         raise InvalidConfigError("At least one input must have 'sequences'")
 
-    available_keys = set(['name', 'metadata', 'sequences'])
-    if any([len(set(el.keys())-available_keys)>0 for el in all_inputs]):
-        raise InvalidConfigError(f"Each input (config.inputs and config.additional_inputs) can only include keys of {', '.join(available_keys)}")
+    available_keys_inputs = {'name', 'metadata', 'sequences'}
+    available_keys_additional = {'name', 'metadata', 'sequences', 'keep_all'}
+    for el in config.get('inputs', []):
+        extra = set(el.keys()) - available_keys_inputs
+        if extra:
+            raise InvalidConfigError(f"Each input can only include keys of {', '.join(sorted(available_keys_inputs))}. Got extra: {', '.join(sorted(extra))}")
+    for el in config.get('additional_inputs', []):
+        extra = set(el.keys()) - available_keys_additional
+        if extra:
+            raise InvalidConfigError(f"Each additional_input can only include keys of {', '.join(sorted(available_keys_additional))}. Got extra: {', '.join(sorted(extra))}")
 
-    return {el['name']: {k:(v if k=='name' else path_or_url(v)) for k,v in el.items()} for el in all_inputs}
+    path_keys = {'metadata', 'sequences'}
+    return {el['name']: {k:(path_or_url(v) if k in path_keys else v) for k,v in el.items()} for el in all_inputs}
 
 input_sources = _gather_inputs()
 _input_metadata = [info['metadata'] for info in input_sources.values() if info.get('metadata', None)]
@@ -68,7 +76,7 @@ if len(_input_metadata) == 1:
         input:
             metadata = _input_metadata[0],
         output:
-            metadata = "results/{a_or_b}/metadata.tsv",
+            metadata = "results/{a_or_b}/metadata_merged.tsv",
         log:
             "logs/decompress_metadata_{a_or_b}.txt"
         benchmark:
@@ -93,7 +101,7 @@ else:
             metadata = lambda w, input: list(map("=".join, input.items())),
             id_field = config['strain_id_field'],
         output:
-            metadata = "results/{a_or_b}/metadata.tsv"
+            metadata = "results/{a_or_b}/metadata_merged.tsv"
         log:
             "logs/merge_metadata_{a_or_b}.txt"
         benchmark:
