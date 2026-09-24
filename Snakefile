@@ -40,6 +40,7 @@ rule all:
 # remote_files.smk must be before merge_inputs.smk
 include: "shared/vendored/snakemake/remote_files.smk"
 include: "workflow/snakemake_rules/merge_inputs.smk"
+include: "workflow/snakemake_rules/sequence_source.smk"
 
 include: "workflow/snakemake_rules/core.smk"
 include: "workflow/snakemake_rules/export.smk"
