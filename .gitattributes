@@ -6,3 +6,4 @@
 # routinely show the diff of.  A diff can be forced as needed, e.g. with `git
 # diff --text`.
 /config/configfile.yaml -diff
+/config.schema.yaml -diff
