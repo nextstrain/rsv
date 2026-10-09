@@ -17,9 +17,9 @@ def main():
 
 
 def write_subsample_config():
-    for a_or_b in config.get("subtypes", ['a']):
-        for build_name in config.get("builds_to_run", ["genome"]):
-            for resolution in config.get("resolutions_to_run", ["all-time"]):
+    for a_or_b in config["subtypes"]:
+        for build_name in config["builds_to_run"]:
+            for resolution in config["resolutions_to_run"]:
                 build = f"{a_or_b}/{build_name}/{resolution}"
                 if "custom_subsample" in config:
                     section = ["custom_subsample", build]
