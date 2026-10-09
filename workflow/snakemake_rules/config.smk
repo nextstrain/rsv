@@ -17,11 +17,9 @@ def main():
 
 
 def write_subsample_config():
-    # TODO: Support custom build names in the workflow and infer from
-    # config["builds"].
-    for a_or_b in ["a", "b"]:
-        for build_name in ["genome", "G", "F", "F-antibody-escape"]:
-            for resolution in ["all-time", "6y", "3y"]:
+    for a_or_b in config["subtypes"]:
+        for build_name in config["builds_to_run"]:
+            for resolution in config["resolutions_to_run"]:
                 build = f"{a_or_b}/{build_name}/{resolution}"
                 if "custom_subsample" in config:
                     section = ["custom_subsample", build]
