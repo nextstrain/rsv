@@ -78,6 +78,11 @@ properties:
     type: array
     items:
       $ref: "#/$defs/input_item"
+  use_remote_files:
+    type: boolean
+    description: >-
+      Whether to use remote input files. When re-running the workflow in the
+      same analysis directory, set to False to use the locally cached input files.
   exclude:
     type: string
   description:
