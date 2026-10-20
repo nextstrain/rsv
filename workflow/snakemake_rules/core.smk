@@ -172,7 +172,6 @@ rule filter_for_f_antibody_escape:
     input:
         sequences="results/{a_or_b}/sequences_filtered.fasta",
         metadata="results/{a_or_b}/metadata_filtered.tsv",
-        exclude=config["exclude"],
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/filtered_for_alignment.fasta",
     log:
@@ -180,8 +179,8 @@ rule filter_for_f_antibody_escape:
     benchmark:
         "benchmarks/filter_for_f_antibody_escape_{a_or_b}_{build_name}_{resolution}.txt"
     params:
-        min_coverage=lambda w: f'{w.build_name.split("-")[0]}_coverage>{config["filter_for_f_antibody_escape"]["min_coverage"][w.build_name]}',
-        min_length=lambda w: config["filter_for_f_antibody_escape"]["min_length"][w.build_name],
+        min_coverage=f'F_coverage>{config["filter_for_f_antibody_escape"]["min_coverage"]}',
+        min_length=config["filter_for_f_antibody_escape"]["min_length"],
         strain_id=config["strain_id_field"],
         min_date=lambda w: config["filter_for_f_antibody_escape"]["resolutions"][w.resolution]["min_date"],
     shell:
@@ -192,12 +191,10 @@ rule filter_for_f_antibody_escape:
             --sequences {input.sequences} \
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
-            --exclude {input.exclude} \
-            --exclude-where 'qc.overallStatus=bad' \
             --min-length {params.min_length} \
             --min-date {params.min_date} \
             --output {output.sequences} \
-            --query '({params.min_coverage}) & missing_data<1000'
+            --query '{params.min_coverage}'
         """
 
 

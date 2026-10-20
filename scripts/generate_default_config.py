@@ -39,8 +39,6 @@ def default_config():
             },
         ],
 
-        "exclude": "config/outliers_ppx.txt",
-
         "description": "config/description.md",
 
         "strain_id_field": "accession",
@@ -110,18 +108,8 @@ def default_config():
         },
 
         "filter_for_f_antibody_escape": {
-            "min_length": {
-                "genome": 10000,
-                "G": 600,
-                "F": 1200,
-                "F-antibody-escape": 1200,
-            },
-            "min_coverage": {
-                "genome": 0.3,
-                "G": 0.3,
-                "F": 0.3,
-                "F-antibody-escape": 0.75,
-            },
+            "min_length": 1200,
+            "min_coverage": 0.75,
             "resolutions": {
                 "all-time": {"min_date": "1975-01-01"},
                 "6y": {"min_date": "6Y"},
