@@ -5,13 +5,41 @@ This part of the workflow expects input files
 """
 from augur.subsample import get_referenced_files
 
+rule filter:
+    input:
+        sequences="results/{a_or_b}/sequences.fasta",
+        metadata="results/{a_or_b}/metadata.tsv",
+        config="results/{a_or_b}/config/filter.yaml",
+        referenced_files=lambda w: get_referenced_files(f"results/{w.a_or_b}/config/filter.yaml"),
+    output:
+        sequences="results/{a_or_b}/sequences_filtered.fasta",
+        metadata="results/{a_or_b}/metadata_filtered.tsv",
+    log:
+        "logs/filter_{a_or_b}.txt"
+    benchmark:
+        "benchmarks/filter_{a_or_b}.txt"
+    params:
+        strain_id=config["strain_id_field"],
+    shell:
+        r"""
+        exec &> >(tee {log:q})
+
+        augur subsample \
+            --sequences {input.sequences} \
+            --metadata {input.metadata} \
+            --metadata-id-columns {params.strain_id} \
+            --config {input.config} \
+            --output-sequences {output.sequences} \
+            --output-metadata {output.metadata}
+        """
+
 
 rule index_sequences:
     """
     Creating an index of sequence composition for filtering.
     """
     input:
-        sequences="results/{a_or_b}/sequences.fasta",
+        sequences="results/{a_or_b}/sequences_filtered.fasta",
     output:
         sequence_index=build_dir
         + "/{a_or_b}/sequence_index.tsv",
@@ -58,8 +86,8 @@ rule newreference:
 
 rule subsample:
     input:
-        sequences="results/{a_or_b}/sequences.fasta",
-        metadata="results/{a_or_b}/metadata.tsv",
+        sequences="results/{a_or_b}/sequences_filtered.fasta",
+        metadata="results/{a_or_b}/metadata_filtered.tsv",
         sequence_index=rules.index_sequences.output,
         config="results/{a_or_b}/{build_name}/{resolution}/subsample_config.yaml",
         referenced_files=lambda w: get_referenced_files(f"results/{w.a_or_b}/{w.build_name}/{w.resolution}/subsample_config.yaml"),
@@ -142,8 +170,8 @@ rule filter_for_f_antibody_escape:
     Do the quality filtering applied to each sequence set before subsampling
     """
     input:
-        sequences="results/{a_or_b}/sequences.fasta",
-        metadata="results/{a_or_b}/metadata.tsv",
+        sequences="results/{a_or_b}/sequences_filtered.fasta",
+        metadata="results/{a_or_b}/metadata_filtered.tsv",
         exclude=config["exclude"],
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/filtered_for_alignment.fasta",
@@ -239,7 +267,7 @@ rule add_f_scores_to_pre_subsample_metadata:
     Adding F protein scores to pre-subsampled metadata
     """
     input:
-        original_metadata="results/{a_or_b}/metadata.tsv",
+        original_metadata="results/{a_or_b}/metadata_filtered.tsv",
         f_scores=rules.score_pre_subsample_f_proteins.output.scores,
     output:
         enhanced_metadata=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/metadata_with_scores.tsv",
@@ -269,7 +297,7 @@ rule enrich_antibody_escape:
         antibody="|".join(re.escape(antibody) for antibody in config["f_dms_antibodies"]),
         scoretype="total_escape|max_escape",
     input:
-        sequences="results/{a_or_b}/sequences.fasta",
+        sequences="results/{a_or_b}/sequences_filtered.fasta",
         metadata=rules.add_f_scores_to_pre_subsample_metadata.output.enhanced_metadata,
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered_{antibody}_{scoretype}.fasta"
@@ -458,7 +486,7 @@ rule refine:
     input:
         tree=rules.tree.output.tree,
         alignment=get_alignment,
-        metadata="results/{a_or_b}/metadata.tsv",
+        metadata="results/{a_or_b}/metadata_filtered.tsv",
     output:
         tree=build_dir + "/{a_or_b}/{build_name}/{resolution}/tree.nwk",
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/branch_lengths.json",
@@ -665,7 +693,7 @@ rule compute_f_scores_node_data:
 rule traits:
     input:
         tree=rules.refine.output.tree,
-        metadata="results/{a_or_b}/metadata.tsv",
+        metadata="results/{a_or_b}/metadata_filtered.tsv",
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/traits.json",
     log:
@@ -691,7 +719,7 @@ rule traits:
 rule frequencies:
     input:
         tree = rules.refine.output.tree,
-        metadata = "results/{a_or_b}/metadata.tsv"
+        metadata = "results/{a_or_b}/metadata_filtered.tsv"
     output:
         frequencies = build_dir + "/{a_or_b}/{build_name}/{resolution}/frequencies.json"
     log:

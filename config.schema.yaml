@@ -91,6 +91,21 @@ properties:
     type: string
   display_strain_field:
     type: string
+  filter: &filter_config
+    $ref: "https://nextstrain.org/schemas/augur/subsample-config-unaligned/v1"
+    # NOTE: We use augur subsample to support flexible config options. The augur
+    # subsample config schema allows subsampling options that aren't intended
+    # for use here. We could explicitly disallow it with complex JSON Schema,
+    # but that seems overkill.
+    description: >-
+      Configuration for initial filtering. Subsampling options are technically
+      supported, but we recommend placing this in the configuration section for
+      subsampling.
+  custom_filter:
+    <<: *filter_config
+    description: >-
+      Custom filtering configuration. When using --configfile, this is
+      recommended over 'filter' to ignore default filtering configuration.
   subsample: &subsample_config
     <<: *per_full_build_map
     description: >-
