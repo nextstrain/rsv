@@ -13,7 +13,17 @@ def main():
         "results/run_config.yaml",
         Path(workflow.basedir) / "config.schema.yaml"
     )
+    write_filter_config()
     write_subsample_config()
+
+
+def write_filter_config():
+    if "custom_filter" in config:
+        section = ["custom_filter"]
+    else:
+        section = ["filter"]
+    for a_or_b in config["subtypes"]:
+        write_config(f"results/{a_or_b}/config/filter.yaml", section=section)
 
 
 def write_subsample_config():
