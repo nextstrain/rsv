@@ -83,8 +83,6 @@ properties:
     description: >-
       Whether to use remote input files. When re-running the workflow in the
       same analysis directory, set to False to use the locally cached input files.
-  exclude:
-    type: string
   description:
     type: string
   strain_id_field:
@@ -195,15 +193,9 @@ properties:
       group_by:
         type: string
       min_length:
-        <<: *per_build_map
-        patternProperties:
-          "^.*$":
-            type: integer
+        type: integer
       min_coverage:
-        <<: *per_build_map
-        patternProperties:
-          "^.*$":
-            type: number
+        type: number
       resolutions:
         <<: *per_resolution_map
         patternProperties:
