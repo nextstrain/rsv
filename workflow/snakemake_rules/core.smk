@@ -86,7 +86,7 @@ rule newreference:
 
 rule subsample:
     input:
-        sequences="results/{a_or_b}/sequences_filtered.fasta",
+        sequences="results/{a_or_b}/{build_name}/sequences_aligned.fasta",
         metadata="results/{a_or_b}/metadata_filtered.tsv",
         sequence_index=rules.index_sequences.output,
         config="results/{a_or_b}/{build_name}/{resolution}/subsample_config.yaml",
@@ -141,36 +141,12 @@ rule combine_samples:
         """
 
 
-rule get_nextclade_dataset:
-    """
-    fetching nextclade dataset
-    """
-    output:
-        dataset="results/nextclade_rsv-{a_or_b}.zip",
-    log:
-        "logs/get_nextclade_dataset_{a_or_b}.txt"
-    benchmark:
-        "benchmarks/get_nextclade_dataset_{a_or_b}.txt"
-    params:
-        ds_name=lambda w: (
-            "nextstrain/rsv/a/EPI_ISL_412866"
-            if w.a_or_b == "a"
-            else "nextstrain/rsv/b/EPI_ISL_1653999"
-        ),
-    shell:
-        r"""
-        exec &> >(tee {log:q})
-
-        nextclade3 dataset get -n {params.ds_name} --output-zip {output.dataset}
-        """
-
-
 rule filter_for_f_antibody_escape:
     """
     Do the quality filtering applied to each sequence set before subsampling
     """
     input:
-        sequences="results/{a_or_b}/sequences_filtered.fasta",
+        sequences="results/{a_or_b}/{build_name}/sequences_aligned.fasta",
         metadata="results/{a_or_b}/metadata_filtered.tsv",
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/filtered_for_alignment.fasta",
@@ -198,34 +174,58 @@ rule filter_for_f_antibody_escape:
         """
 
 
-rule align_pre_subsample_sequences:
+rule nextclade_align:
     """
     Aligning all pre-subsampled quality-filtered sequences
     """
     input:
-        sequences=rules.filter_for_f_antibody_escape.output.sequences,
-        dataset=rules.get_nextclade_dataset.output.dataset,
+        sequences="results/{a_or_b}/sequences_filtered.fasta",
+        reference=lambda w: (
+            f"config/{w.a_or_b}reference.fasta"
+            if w.build_name == "genome"
+            else f"results/{w.a_or_b}/{config['cds'][w.build_name]}_reference.fasta"
+        ),
     output:
-        alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/sequences.aligned.fasta",
-        translations=directory(build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations"),
-        translations_done=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations.done",
+        alignment=build_dir + "/{a_or_b}/{build_name}/sequences_aligned.fasta",
+        translations=directory(build_dir + "/{a_or_b}/{build_name}/translations"),
+        translations_done=build_dir + "/{a_or_b}/{build_name}/translations.done",
     params:
         genes=lambda w: config["cds"][w.build_name],
     threads: 8
     log:
-        "logs/align_pre_subsample_sequences_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/nextclade_align_{a_or_b}_{build_name}.txt"
     benchmark:
-        "benchmarks/align_pre_subsample_sequences_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/nextclade_align_{a_or_b}_{build_name}.txt"
     shell:
         r"""
         exec &> >(tee {log:q})
 
         nextclade3 run -j {threads}\
             {input.sequences} \
-            -D {input.dataset} \
+            --input-ref {input.reference} \
             --output-fasta {output.alignment} \
             --cds-selection {params.genes} \
             --output-translations "{output.translations}/{{cds}}.fasta" && touch {output.translations_done}
+        """
+
+
+rule extract_f_translations:
+    input:
+        translations_done=rules.nextclade_align.output.translations_done,
+        filtered_sequences="results/{a_or_b}/{build_name}/sequences_aligned.fasta",
+    output:
+        f_sequences="results/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations/F.fasta",
+    log:
+        "logs/extract_f_translations_{a_or_b}_{build_name}_{resolution}.txt"
+    benchmark:
+        "benchmarks/extract_f_translations_{a_or_b}_{build_name}_{resolution}.txt"
+    params:
+        f_translations=lambda w: f"results/{w.a_or_b}/{w.build_name}/translations/F.fasta",
+    shell:
+        r"""
+        exec &> >(tee {log:q})
+
+        seqkit grep -f <(seqkit seq -n -i {input.filtered_sequences}) {params.f_translations} > {output.f_sequences}
         """
 
 
@@ -234,7 +234,7 @@ rule score_pre_subsample_f_proteins:
     Computing F protein DMS scores for pre-subsampled sequences
     """
     input:
-        translations_done=rules.align_pre_subsample_sequences.output.translations_done,
+        f_sequences="results/{a_or_b}/{build_name}/{resolution}/pre_subsample/translations/F.fasta",
         dms_scores=config["f_dms_data"],
     output:
         scores=build_dir + "/{a_or_b}/{build_name}/{resolution}/pre_subsample/f_protein_scores.tsv",
@@ -243,7 +243,6 @@ rule score_pre_subsample_f_proteins:
     benchmark:
         "benchmarks/score_pre_subsample_f_proteins_{a_or_b}_{build_name}_{resolution}.txt"
     params:
-        f_sequences=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/pre_subsample/translations/F.fasta",
         dms_antibodies=lambda w: " ".join(shlex.quote(ab) for ab in config["f_dms_antibodies"]),
         only_positive_escape=config["dms_only_positive_escape"],
     shell:
@@ -251,7 +250,7 @@ rule score_pre_subsample_f_proteins:
         exec &> >(tee {log:q})
 
         python scripts/score_f_sequences.py fasta \
-            --sequences {params.f_sequences} \
+            --sequences {input.f_sequences} \
             --dms-scores {input.dms_scores} \
             --output {output.scores} \
             --dms-antibodies {params.dms_antibodies} \
@@ -294,7 +293,7 @@ rule enrich_antibody_escape:
         antibody="|".join(re.escape(antibody) for antibody in config["f_dms_antibodies"]),
         scoretype="total_escape|max_escape",
     input:
-        sequences="results/{a_or_b}/sequences_filtered.fasta",
+        sequences="results/{a_or_b}/{build_name}/sequences_aligned.fasta",
         metadata=rules.add_f_scores_to_pre_subsample_metadata.output.enhanced_metadata,
     output:
         sequences=build_dir + "/{a_or_b}/{build_name}/{resolution}/filtered_{antibody}_{scoretype}.fasta"
@@ -326,48 +325,18 @@ rule enrich_antibody_escape:
         """
 
 
-rule genome_align:
-    """
-    Aligning sequences to the reference
-    """
-    input:
-        sequences=rules.combine_samples.output.sequences,
-        dataset=rules.get_nextclade_dataset.output.dataset,
-    output:
-        alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/sequences.aligned.fasta",
-        translations=directory(build_dir + "/{a_or_b}/{build_name}/{resolution}/translations"),
-    params:
-        genes=lambda w: config["cds"][w.build_name],
-    threads: 4
-    log:
-        "logs/genome_align_{a_or_b}_{build_name}_{resolution}.txt"
-    benchmark:
-        "benchmarks/genome_align_{a_or_b}_{build_name}_{resolution}.txt"
-    shell:
-        r"""
-        exec &> >(tee {log:q})
-
-        nextclade3 run -j {threads}\
-            {input.sequences} \
-            -D {input.dataset} \
-            --output-fasta {output.alignment} \
-            --cds-selection {params.genes} \
-            --output-translations "{output.translations}/{{cds}}.fasta"
-        """
-
-
 # cut out the G-Gene for alignment refinement
-rule cut:
+rule cut_G:
     input:
-        oldalignment=rules.genome_align.output.alignment,
+        oldalignment=build_dir + "/{a_or_b}/genome/{resolution}/filtered.fasta",
         reference="config/{a_or_b}reference.gbk",
     output:
         slicedalignment=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/{gene}_slicedalignment.fasta",
+        + "/{a_or_b}/genome/{resolution}/G_slicedalignment.fasta",
     log:
-        "logs/cut_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
+        "logs/cut_{a_or_b}_genome_{resolution}_G.txt"
     benchmark:
-        "benchmarks/cut_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
+        "benchmarks/cut_{a_or_b}_genome_{resolution}_G.txt"
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -376,22 +345,28 @@ rule cut:
             --oldalignment {input.oldalignment} \
             --slicedalignment {output.slicedalignment} \
             --reference {input.reference} \
-            --gene {wildcards.gene}
+            --gene G
         """
 
 
 # align the G gene with mafft
-rule realign:
+rule realign_G:
+    wildcard_constraints:
+        build_name="genome|G",
     input:
-        slicedalignment=rules.cut.output.slicedalignment,
+        slicedalignment=lambda w: (
+            rules.cut_G.output.slicedalignment
+            if w.build_name == "genome"
+            else rules.combine_samples.output.sequences
+        ),
         reference=build_dir
-        + "/{a_or_b}/{gene}_reference.fasta",
+        + "/{a_or_b}/G_reference.fasta",
     output:
-        realigned=build_dir + "/{a_or_b}/{build_name}/{resolution}/{gene}_aligned.fasta",
+        realigned=build_dir + "/{a_or_b}/{build_name}/{resolution}/G_aligned.fasta",
     log:
-        "logs/realign_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
+        "logs/realign_{a_or_b}_{build_name}_{resolution}_G.txt"
     benchmark:
-        "benchmarks/realign_{a_or_b}_{build_name}_{resolution}_{gene}.txt"
+        "benchmarks/realign_{a_or_b}_{build_name}_{resolution}_G.txt"
     threads: 2
     shell:
         r"""
@@ -406,16 +381,16 @@ rule realign:
 
 rule hybrid_align:
     input:
-        original=rules.genome_align.output.alignment,
-        G_alignment=build_dir + "/{a_or_b}/{build_name}/{resolution}/G_aligned.fasta",
+        original=build_dir + "/{a_or_b}/genome/{resolution}/filtered.fasta",
+        G_alignment=build_dir + "/{a_or_b}/genome/{resolution}/G_aligned.fasta",
         reference="config/{a_or_b}reference.gbk",
     output:
         hybrid_alignment=build_dir
-        + "/{a_or_b}/{build_name}/{resolution}/hybrid_alignment.fasta",
+        + "/{a_or_b}/genome/{resolution}/hybrid_alignment.fasta",
     log:
-        "logs/hybrid_align_{a_or_b}_{build_name}_{resolution}.txt"
+        "logs/hybrid_align_{a_or_b}_genome_{resolution}.txt"
     benchmark:
-        "benchmarks/hybrid_align_{a_or_b}_{build_name}_{resolution}.txt"
+        "benchmarks/hybrid_align_{a_or_b}_genome_{resolution}.txt"
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -425,19 +400,18 @@ rule hybrid_align:
             --original {input.original} \
             --reference {input.reference} \
             --output {output.hybrid_alignment} \
-            --build {wildcards.build_name}
+            --build "genome"
         """
 
 
 def get_alignment(w):
     if w.build_name == "genome":
         return rules.hybrid_align.output.hybrid_alignment
+    elif w.build_name == "G":
+        return rules.realign_G.output.realigned
     else:
-        gene = config["cds"][w.build_name]
-        return (
-            build_dir
-            + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/{gene}_aligned.fasta"
-        )
+        return rules.combine_samples.output.sequences
+
 
 
 def get_reference(w):
@@ -594,7 +568,7 @@ rule ancestral:
     input:
         tree=rules.refine.output.tree,
         alignment=get_alignment,
-        translations=rules.genome_align.output.translations,
+        translations=rules.nextclade_align.output.translations,
         root_sequence=get_reference,
     output:
         node_data=build_dir + "/{a_or_b}/{build_name}/{resolution}/nt_muts.json",
@@ -603,7 +577,7 @@ rule ancestral:
         inference=config["ancestral"]["inference"],
         genes=lambda w: config["cds"][w.build_name],
         output_translations=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE_withInternalNodes.fasta",
-        input_translations=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/translations/%GENE.fasta",
+        input_translations=lambda w: build_dir + f"/{w.a_or_b}/{w.build_name}/translations/%GENE.fasta",
     log:
         "logs/ancestral_{a_or_b}_{build_name}_{resolution}.txt"
     benchmark:
