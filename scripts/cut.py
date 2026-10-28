@@ -10,7 +10,7 @@ def cut(oldalignment, newalignment, referencefile, gene, min_length=0):
 
         ref = SeqIO.read(referencefile, "genbank")
         for feature in ref.features:
-            if feature.type =='gene':
+            if feature.type =='gene' or feature.type == 'CDS':
                 a =str((list(feature.qualifiers.items())[0])[-1])[2:-2]
                 if a == gene:
                     print(a)
