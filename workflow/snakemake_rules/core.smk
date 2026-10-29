@@ -432,11 +432,13 @@ rule hybrid_align:
 def get_alignment(w):
     if w.build_name == "genome":
         return rules.hybrid_align.output.hybrid_alignment
+    elif w.build_name == "G":
+        return build_dir + f"/{w.a_or_b}/G/{w.resolution}/G_aligned.fasta"
     else:
         gene = config["cds"][w.build_name]
         return (
             build_dir
-            + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/{gene}_aligned.fasta"
+            + f"/{w.a_or_b}/{w.build_name}/{w.resolution}/{gene}_slicedalignment.fasta"
         )
 
 
