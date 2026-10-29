@@ -111,7 +111,7 @@ properties:
       use 'custom_subsample' instead to ignore default subsampling configuration.
     patternProperties:
       "^.*$":
-        $ref: "https://nextstrain.org/schemas/augur/subsample-config-unaligned/v1"
+        $ref: "https://nextstrain.org/schemas/augur/subsample-config/v1"
   custom_subsample:
     <<: *subsample_config
     description: >-
