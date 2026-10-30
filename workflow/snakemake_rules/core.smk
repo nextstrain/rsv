@@ -132,6 +132,7 @@ rule subsample:
         "benchmarks/subsample_{a_or_b}_{build_name}_{resolution}.txt",
     params:
         strain_id=config["strain_id_field"],
+    threads: 4
     shell:
         r"""
         exec &> >(tee {log:q})
@@ -142,7 +143,8 @@ rule subsample:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id} \
             --config {input.config} \
-            --output-sequences {output.sequences}
+            --output-sequences {output.sequences} \
+            --nthreads {threads}
         """
 
 rule combine_samples:
