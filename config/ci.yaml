@@ -18,8 +18,6 @@ inputs:
     metadata: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata_restricted.tsv.gz"
     sequences: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences_restricted.fasta.xz"
 
-exclude: "config/outliers_ppx.txt"
-
 description: "config/description.md"
 
 strain_id_field: "accession"
@@ -29,17 +27,12 @@ custom_subsample:
   a/genome/6y:
     samples:
       wa_recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         max_sequences: 10000
         min_date: 6Y
         min_length: 14500
-        query: genome_coverage>0.3 & missing_data<1000 & division=="Washington"
+        query: genome_coverage>0.3 & division=="Washington"
       wa_background:
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -47,23 +40,18 @@ custom_subsample:
         min_date: 12Y
         max_date: 6Y
         min_length: 14500
-        query: genome_coverage>0.3 & missing_data<1000 & division=="Washington" & clade.str.startswith("A.D", na=False)
+        query: genome_coverage>0.3 & division=="Washington" & clade.str.startswith("A.D", na=False)
       context_recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 2000
         min_date: 6Y
         min_length: 14500
-        query: genome_coverage>0.3 & missing_data<1000 & division!="Washington"
+        query: genome_coverage>0.3 & division!="Washington"
       context_background:
         include: config/include_a.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -72,21 +60,16 @@ custom_subsample:
         min_date: 12Y
         max_date: 6Y
         min_length: 14500
-        query: genome_coverage>0.3 & missing_data<1000 & division!="Washington" & clade.str.startswith("A.D", na=False)
+        query: genome_coverage>0.3 & division!="Washington" & clade.str.startswith("A.D", na=False)
   b/genome/6y:
     samples:
       WA_recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         max_sequences: 10000
         min_date: 6Y
         min_length: 14500
-        query: genome_coverage>0.3 & missing_data<1000 & division=="Washington"
+        query: genome_coverage>0.3 & division=="Washington"
       WA_background:
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -94,23 +77,18 @@ custom_subsample:
         min_date: 12Y
         max_date: 6Y
         min_length: 14500
-        query: genome_coverage>0.3 & missing_data<1000 & division=="Washington" & clade.str.startswith("B.D", na=False)
+        query: genome_coverage>0.3 & division=="Washington" & clade.str.startswith("B.D", na=False)
       context_recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 2000
         min_date: 6Y
         min_length: 14500
-        query: genome_coverage>0.3 & missing_data<1000 & division!="Washington"
+        query: genome_coverage>0.3 & division!="Washington"
       context_background:
         include: config/include_b.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -119,7 +97,7 @@ custom_subsample:
         min_date: 12Y
         max_date: 6Y
         min_length: 14500
-        query: genome_coverage>0.3 & missing_data<1000 & division!="Washington" & clade.str.startswith("B.D", na=False)
+        query: genome_coverage>0.3 & division!="Washington" & clade.str.startswith("B.D", na=False)
 
 
 files:
