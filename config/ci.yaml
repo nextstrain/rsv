@@ -1,13 +1,154 @@
-# This configuration file contains the custom configurations parameters
-# for the CI workflow to run with the example data.
+conda_environment: "workflow/envs/nextstrain.yaml"
+
+genesforglycosylation: ["G", "F"]
 
 builds_to_run: ["genome"]
 
-resolutions_to_run: ["all-time"]
+resolutions_to_run: ["6y"]
 
-subtypes: ["a"]
+subtypes: ['a', 'b']
 
+# Both files must have a {a_or_b} expandable field to be replaced by "a" or "b"
+# depending on if they are specified in the `subtypes` param above
 inputs:
-  - name: example_data
-    metadata: example_data/{a_or_b}/metadata.tsv
-    sequences: example_data/{a_or_b}/sequences.fasta
+  - name: ppx_open
+    metadata: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata.tsv.gz"
+    sequences: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences.fasta.xz"
+  - name: ppx_restricted
+    metadata: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata_restricted.tsv.gz"
+    sequences: "https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences_restricted.fasta.xz"
+
+exclude: "config/outliers_ppx.txt"
+
+description: "config/description.md"
+
+strain_id_field: "accession"
+display_strain_field: "strain"
+
+custom_subsample:
+  a/genome/6y:
+    samples:
+      wa_recent:
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+        - qc.overallStatus=bad
+        max_sequences: 10000
+        min_date: 6Y
+        min_length: 14500
+        query: genome_coverage>0.3 & missing_data<1000 & division=="Washington"
+      wa_background:
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+        - qc.overallStatus=bad
+        - qc.overallStatus=mediocre
+        group_by:
+        - year
+        max_sequences: 2000
+        min_date: 12Y
+        max_date: 6Y
+        min_length: 14500
+        query: genome_coverage>0.3 & missing_data<1000 & division=="Washington" & clade.str.startswith("A.D", na=False)
+      context_recent:
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+        - qc.overallStatus=bad
+        group_by:
+        - year
+        - country
+        max_sequences: 2000
+        min_date: 6Y
+        min_length: 14500
+        query: genome_coverage>0.3 & missing_data<1000 & division!="Washington"
+      context_background:
+        include: config/include_a.txt
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+        - qc.overallStatus=bad
+        - qc.overallStatus=mediocre
+        group_by:
+        - year
+        - country
+        max_sequences: 1000
+        min_date: 12Y
+        max_date: 6Y
+        min_length: 14500
+        query: genome_coverage>0.3 & missing_data<1000 & division!="Washington" & clade.str.startswith("A.D", na=False)
+  b/genome/6y:
+    samples:
+      WA_recent:
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+        - qc.overallStatus=bad
+        max_sequences: 10000
+        min_date: 6Y
+        min_length: 14500
+        query: genome_coverage>0.3 & missing_data<1000 & division=="Washington"
+      WA_background:
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+        - qc.overallStatus=bad
+        - qc.overallStatus=mediocre
+        group_by:
+        - year
+        max_sequences: 3000
+        min_date: 12Y
+        max_date: 6Y
+        min_length: 14500
+        query: genome_coverage>0.3 & missing_data<1000 & division=="Washington" & clade.str.startswith("B.D", na=False)
+      context_recent:
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+        - qc.overallStatus=bad
+        group_by:
+        - year
+        - country
+        max_sequences: 2000
+        min_date: 6Y
+        min_length: 14500
+        query: genome_coverage>0.3 & missing_data<1000 & division!="Washington"
+      context_background:
+        include: config/include_b.txt
+        exclude: config/outliers_ppx.txt
+        exclude_where:
+        - qc.overallStatus=bad
+        - qc.overallStatus=mediocre
+        group_by:
+        - year
+        - country
+        max_sequences: 1000
+        min_date: 12Y
+        max_date: 6Y
+        min_length: 14500
+        query: genome_coverage>0.3 & missing_data<1000 & division!="Washington" & clade.str.startswith("B.D", na=False)
+
+
+files:
+  auspice_config: "profiles/wadoh/auspice_config_wa.json"
+  auspice_config_additional_colorings: "config/auspice_config_additional_colorings.json"
+
+refine:
+  coalescent: "opt"
+  date_inference: "marginal"
+  clock_filter_iqd: 4
+  divergence_units: "mutations"
+
+ancestral:
+  inference: "joint"
+
+cds:
+  F: "F"
+  G: "G"
+  genome: "F"
+
+traits:
+  columns: "country region"
+
+nextclade_attributes:
+  a:
+    name: "RSV-A NextClade using real-time tree"
+    reference_name: "hRSV/A/England/397/2017"
+    accession: "EPI_ISL_412866"
+  b:
+    name: "RSV-B NextClade using real-time tree"
+    reference_name: "hRSV/B/Australia/VIC-RCH056/2019"
+    accession: "EPI_ISL_1653999"

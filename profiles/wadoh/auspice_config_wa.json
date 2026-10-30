@@ -1,0 +1,126 @@
+{
+  "title": "Genomic epidemiology of RSV - Washington-focused",
+  "maintainers": [
+    {"name": "WA DOH Molecular Epidemiology Program", "url": "https://doh.wa.gov/about-us/executive-offices/health-and-science/disease-control-and-health-statistics/communicable-disease-epidemiology/molecular-epidemiology-program"}
+  ],
+  "data_provenance": [
+    {
+      "name": "GenBank",
+      "url": "https://www.ncbi.nlm.nih.gov/genbank/"
+    },
+    {
+      "name": "Pathoplexus",
+      "url": "https://pathoplexus.org"
+    }
+  ],
+  "build_url": "https://github.com/NW-PaGe/rsv",
+  "colorings": [
+    {
+      "key": "gt",
+      "title": "Genotype",
+      "type": "categorical"
+    },
+    {
+      "key": "num_date",
+      "title": "Date",
+      "type": "continuous"
+    },
+    {
+      "key": "country",
+      "title": "Country",
+      "type": "categorical"
+    },
+    {
+      "key": "region",
+      "title": "Region",
+      "type": "categorical"
+    },
+    {
+      "key": "division",
+      "title": "Division",
+      "type": "categorical"
+    },
+    {
+      "key": "dataUseTerms",
+      "title": "Data use terms",
+      "type": "categorical"
+    },
+    {
+      "key": "glyc",
+      "title": "Glycosylation",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_00",
+      "title": "F Protein Epitope 0",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_01",
+      "title": "F Protein Epitope 1",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_02",
+      "title": "F Protein Epitope 2",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_03",
+      "title": "F Protein Epitope 3",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_04",
+      "title": "F Protein Epitope 4",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_05",
+      "title": "F Protein Epitope 5",
+      "type": "ordinal"
+    },
+    {
+      "key": "epi_all",
+      "title": "All F Protein Epitopes",
+      "type": "ordinal"
+    },
+    {
+      "key": "surface_residues_postf",
+      "title": "F Protein Postfusion Surface Residues",
+      "type": "ordinal"
+    },
+    {
+      "key": "surface_residues_pref",
+      "title": "F Protein Prefusion Surface Residues",
+      "type": "ordinal"
+    }
+  ],
+  "metadata_columns": [
+    "PPX_accession",
+    "INSDC_accession",
+    "restrictedUntil"
+  ],
+  "geo_resolutions": [
+    "division",
+    "country",
+    "region"
+  ],
+  "panels": [
+     "tree",
+     "map",
+     "entropy",
+     "frequencies"
+  ],
+  "display_defaults": {
+    "map_triplicate": true,
+    "color_by": "clade_membership",
+    "transmission_lines": false
+  },
+  "filters": [
+    "division",
+    "country",
+    "region",
+    "clade_membership"
+  ]
+}
