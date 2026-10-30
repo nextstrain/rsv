@@ -41,26 +41,21 @@ custom_subsample:
         max_date: 6Y
         min_length: 14500
         query: genome_coverage>0.3 & division=="Washington" & clade.str.startswith("A.D", na=False)
-      context_recent:
-        group_by:
-        - year
-        - country
-        max_sequences: 2000
-        min_date: 6Y
+      context:
+        drop_sample: true
+        min_date: 12Y
         min_length: 14500
         query: genome_coverage>0.3 & division!="Washington"
-      context_background:
-        include: config/include_a.txt
-        exclude_where:
-        - qc.overallStatus=mediocre
-        group_by:
-        - year
-        - country
-        max_sequences: 1000
-        min_date: 12Y
-        max_date: 6Y
-        min_length: 14500
-        query: genome_coverage>0.3 & division!="Washington" & clade.str.startswith("A.D", na=False)
+      nearest_context:
+        method: hamming
+        focal_sample: wa_recent
+        context_sample: context
+        k: 1
+        ignore_missing_data: all
+      # NOTE: removed to avoid empty sample error
+      # include:
+      #   include: config/include_a.txt
+      #   exclude_all: true
   b/genome/6y:
     samples:
       WA_recent:
@@ -78,26 +73,21 @@ custom_subsample:
         max_date: 6Y
         min_length: 14500
         query: genome_coverage>0.3 & division=="Washington" & clade.str.startswith("B.D", na=False)
-      context_recent:
-        group_by:
-        - year
-        - country
-        max_sequences: 2000
-        min_date: 6Y
+      context:
+        drop_sample: true
+        min_date: 12Y
         min_length: 14500
         query: genome_coverage>0.3 & division!="Washington"
-      context_background:
-        include: config/include_b.txt
-        exclude_where:
-        - qc.overallStatus=mediocre
-        group_by:
-        - year
-        - country
-        max_sequences: 1000
-        min_date: 12Y
-        max_date: 6Y
-        min_length: 14500
-        query: genome_coverage>0.3 & division!="Washington" & clade.str.startswith("B.D", na=False)
+      nearest_context:
+        method: hamming
+        focal_sample: WA_recent
+        context_sample: context
+        k: 1
+        ignore_missing_data: all
+      # NOTE: removed to avoid empty sample error
+      # include:
+      #   include: config/include_b.txt
+      #   exclude_all: true
 
 
 files:
