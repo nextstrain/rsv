@@ -83,14 +83,27 @@ properties:
     description: >-
       Whether to use remote input files. When re-running the workflow in the
       same analysis directory, set to False to use the locally cached input files.
-  exclude:
-    type: string
   description:
     type: string
   strain_id_field:
     type: string
   display_strain_field:
     type: string
+  filter: &filter_config
+    $ref: "https://nextstrain.org/schemas/augur/subsample-config-unaligned/v1"
+    # NOTE: We use augur subsample to support flexible config options. The augur
+    # subsample config schema allows subsampling options that aren't intended
+    # for use here. We could explicitly disallow it with complex JSON Schema,
+    # but that seems overkill.
+    description: >-
+      Configuration for initial filtering. Subsampling options are technically
+      supported, but we recommend placing this in the configuration section for
+      subsampling.
+  custom_filter:
+    <<: *filter_config
+    description: >-
+      Custom filtering configuration. When using --configfile, this is
+      recommended over 'filter' to ignore default filtering configuration.
   subsample: &subsample_config
     <<: *per_full_build_map
     description: >-
@@ -98,7 +111,7 @@ properties:
       use 'custom_subsample' instead to ignore default subsampling configuration.
     patternProperties:
       "^.*$":
-        $ref: "https://nextstrain.org/schemas/augur/subsample-config-unaligned/v1"
+        $ref: "https://nextstrain.org/schemas/augur/subsample-config/v1"
   custom_subsample:
     <<: *subsample_config
     description: >-
@@ -180,15 +193,9 @@ properties:
       group_by:
         type: string
       min_length:
-        <<: *per_build_map
-        patternProperties:
-          "^.*$":
-            type: integer
+        type: integer
       min_coverage:
-        <<: *per_build_map
-        patternProperties:
-          "^.*$":
-            type: number
+        type: number
       resolutions:
         <<: *per_resolution_map
         patternProperties:

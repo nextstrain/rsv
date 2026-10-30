@@ -39,12 +39,21 @@ def default_config():
             },
         ],
 
-        "exclude": "config/outliers_ppx.txt",
-
         "description": "config/description.md",
 
         "strain_id_field": "accession",
         "display_strain_field": "strain",
+
+        "filter": {
+            "samples": {
+                "all": {
+                    "exclude": "config/outliers_ppx.txt",
+                    "exclude_where": ["qc.overallStatus=bad"],
+                    "min_date": "1975-01-01",
+                    "query": "missing_data<1000",
+                }
+            }
+        },
 
         "subsample": subsample_config(),
 
@@ -99,18 +108,8 @@ def default_config():
         },
 
         "filter_for_f_antibody_escape": {
-            "min_length": {
-                "genome": 10000,
-                "G": 600,
-                "F": 1200,
-                "F-antibody-escape": 1200,
-            },
-            "min_coverage": {
-                "genome": 0.3,
-                "G": 0.3,
-                "F": 0.3,
-                "F-antibody-escape": 0.75,
-            },
+            "min_length": 1200,
+            "min_coverage": 0.75,
             "resolutions": {
                 "all-time": {"min_date": "1975-01-01"},
                 "6y": {"min_date": "6Y"},
@@ -172,20 +171,16 @@ def subsample_config():
     }
 
     group_by = ["year", "country"]
-    exclude_file = "config/outliers_ppx.txt"
-    recent_exclude = ["qc.overallStatus=bad"]
-    background_exclude = ["qc.overallStatus=bad", "qc.overallStatus=mediocre"]
+    background_exclude = ["qc.overallStatus=mediocre"]
 
     for a_or_b in subtypes:
         for build_name, build_info in builds.items():
-            recent_query     = f"{build_info['coverage_col']}>{build_info['min_coverage']} & missing_data<1000"
-            background_query = f'{build_info["coverage_col"]}>{build_info["min_coverage"]} & missing_data<1000 & clade.str.startswith("{a_or_b.upper()}.D", na=False)'
+            recent_query     = f"{build_info['coverage_col']}>{build_info['min_coverage']}"
+            background_query = f'{build_info["coverage_col"]}>{build_info["min_coverage"]} & clade.str.startswith("{a_or_b.upper()}.D", na=False)'
 
             resolutions = {
                 "all-time": {
                     "sample": {
-                        "exclude": exclude_file,
-                        "exclude_where": recent_exclude,
                         "group_by": group_by,
                         "max_sequences": build_info["recent_max_seqs"],
                         "min_date": "1975-01-01",
@@ -195,8 +190,6 @@ def subsample_config():
                 },
                 "6y": {
                     "recent": {
-                        "exclude": exclude_file,
-                        "exclude_where": recent_exclude,
                         "group_by": group_by,
                         "max_sequences": build_info["recent_max_seqs"],
                         "min_date": "6Y",
@@ -205,7 +198,6 @@ def subsample_config():
                     },
                     "background": {
                         "include": f"config/include_{a_or_b}.txt",
-                        "exclude": exclude_file,
                         "exclude_where": background_exclude,
                         "group_by": group_by,
                         "max_sequences": int(build_info["recent_max_seqs"] / 10),
@@ -217,8 +209,6 @@ def subsample_config():
                 },
                 "3y": {
                     "recent": {
-                        "exclude": exclude_file,
-                        "exclude_where": recent_exclude,
                         "group_by": group_by,
                         "max_sequences": build_info["recent_max_seqs"],
                         "min_date": "3Y",
@@ -227,7 +217,6 @@ def subsample_config():
                     },
                     "background": {
                         "include": f"config/include_{a_or_b}.txt",
-                        "exclude": exclude_file,
                         "exclude_where": background_exclude,
                         "group_by": group_by,
                         "max_sequences": int(build_info["recent_max_seqs"] / 10),

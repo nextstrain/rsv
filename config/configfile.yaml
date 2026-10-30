@@ -22,42 +22,41 @@ inputs:
 - name: ppx_restricted
   metadata: https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/metadata_restricted.tsv.gz
   sequences: https://data.nextstrain.org/files/workflows/rsv/{a_or_b}/sequences_restricted.fasta.xz
-exclude: config/outliers_ppx.txt
 description: config/description.md
 strain_id_field: accession
 display_strain_field: strain
+filter:
+  samples:
+    all:
+      exclude: config/outliers_ppx.txt
+      exclude_where:
+      - qc.overallStatus=bad
+      min_date: '1975-01-01'
+      query: missing_data<1000
 subsample:
   a/genome/all-time:
     samples:
       sample:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: '1975-01-01'
         min_length: 10000
-        query: genome_coverage>0.3 & missing_data<1000
+        query: genome_coverage>0.3
   a/genome/6y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: 6Y
         min_length: 10000
-        query: genome_coverage>0.3 & missing_data<1000
+        query: genome_coverage>0.3
       background:
         include: config/include_a.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -66,25 +65,20 @@ subsample:
         min_date: 12Y
         max_date: 6Y
         min_length: 10000
-        query: genome_coverage>0.3 & missing_data<1000 & clade.str.startswith("A.D", na=False)
+        query: genome_coverage>0.3 & clade.str.startswith("A.D", na=False)
   a/genome/3y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: 3Y
         min_length: 10000
-        query: genome_coverage>0.3 & missing_data<1000
+        query: genome_coverage>0.3
       background:
         include: config/include_a.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -93,38 +87,30 @@ subsample:
         min_date: 12Y
         max_date: 3Y
         min_length: 10000
-        query: genome_coverage>0.3 & missing_data<1000 & clade.str.startswith("A.D", na=False)
+        query: genome_coverage>0.3 & clade.str.startswith("A.D", na=False)
   a/G/all-time:
     samples:
       sample:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: '1975-01-01'
         min_length: 600
-        query: G_coverage>0.3 & missing_data<1000
+        query: G_coverage>0.3
   a/G/6y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: 6Y
         min_length: 600
-        query: G_coverage>0.3 & missing_data<1000
+        query: G_coverage>0.3
       background:
         include: config/include_a.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -133,25 +119,20 @@ subsample:
         min_date: 12Y
         max_date: 6Y
         min_length: 600
-        query: G_coverage>0.3 & missing_data<1000 & clade.str.startswith("A.D", na=False)
+        query: G_coverage>0.3 & clade.str.startswith("A.D", na=False)
   a/G/3y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: 3Y
         min_length: 600
-        query: G_coverage>0.3 & missing_data<1000
+        query: G_coverage>0.3
       background:
         include: config/include_a.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -160,38 +141,30 @@ subsample:
         min_date: 12Y
         max_date: 3Y
         min_length: 600
-        query: G_coverage>0.3 & missing_data<1000 & clade.str.startswith("A.D", na=False)
+        query: G_coverage>0.3 & clade.str.startswith("A.D", na=False)
   a/F/all-time:
     samples:
       sample:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: '1975-01-01'
         min_length: 1200
-        query: F_coverage>0.3 & missing_data<1000
+        query: F_coverage>0.3
   a/F/6y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: 6Y
         min_length: 1200
-        query: F_coverage>0.3 & missing_data<1000
+        query: F_coverage>0.3
       background:
         include: config/include_a.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -200,25 +173,20 @@ subsample:
         min_date: 12Y
         max_date: 6Y
         min_length: 1200
-        query: F_coverage>0.3 & missing_data<1000 & clade.str.startswith("A.D", na=False)
+        query: F_coverage>0.3 & clade.str.startswith("A.D", na=False)
   a/F/3y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: 3Y
         min_length: 1200
-        query: F_coverage>0.3 & missing_data<1000
+        query: F_coverage>0.3
       background:
         include: config/include_a.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -227,38 +195,30 @@ subsample:
         min_date: 12Y
         max_date: 3Y
         min_length: 1200
-        query: F_coverage>0.3 & missing_data<1000 & clade.str.startswith("A.D", na=False)
+        query: F_coverage>0.3 & clade.str.startswith("A.D", na=False)
   a/F-antibody-escape/all-time:
     samples:
       sample:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 2000
         min_date: '1975-01-01'
         min_length: 1200
-        query: F_coverage>0.75 & missing_data<1000
+        query: F_coverage>0.75
   a/F-antibody-escape/6y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 2000
         min_date: 6Y
         min_length: 1200
-        query: F_coverage>0.75 & missing_data<1000
+        query: F_coverage>0.75
       background:
         include: config/include_a.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -267,25 +227,20 @@ subsample:
         min_date: 12Y
         max_date: 6Y
         min_length: 1200
-        query: F_coverage>0.75 & missing_data<1000 & clade.str.startswith("A.D", na=False)
+        query: F_coverage>0.75 & clade.str.startswith("A.D", na=False)
   a/F-antibody-escape/3y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 2000
         min_date: 3Y
         min_length: 1200
-        query: F_coverage>0.75 & missing_data<1000
+        query: F_coverage>0.75
       background:
         include: config/include_a.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -294,38 +249,30 @@ subsample:
         min_date: 12Y
         max_date: 3Y
         min_length: 1200
-        query: F_coverage>0.75 & missing_data<1000 & clade.str.startswith("A.D", na=False)
+        query: F_coverage>0.75 & clade.str.startswith("A.D", na=False)
   b/genome/all-time:
     samples:
       sample:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: '1975-01-01'
         min_length: 10000
-        query: genome_coverage>0.3 & missing_data<1000
+        query: genome_coverage>0.3
   b/genome/6y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: 6Y
         min_length: 10000
-        query: genome_coverage>0.3 & missing_data<1000
+        query: genome_coverage>0.3
       background:
         include: config/include_b.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -334,25 +281,20 @@ subsample:
         min_date: 12Y
         max_date: 6Y
         min_length: 10000
-        query: genome_coverage>0.3 & missing_data<1000 & clade.str.startswith("B.D", na=False)
+        query: genome_coverage>0.3 & clade.str.startswith("B.D", na=False)
   b/genome/3y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: 3Y
         min_length: 10000
-        query: genome_coverage>0.3 & missing_data<1000
+        query: genome_coverage>0.3
       background:
         include: config/include_b.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -361,38 +303,30 @@ subsample:
         min_date: 12Y
         max_date: 3Y
         min_length: 10000
-        query: genome_coverage>0.3 & missing_data<1000 & clade.str.startswith("B.D", na=False)
+        query: genome_coverage>0.3 & clade.str.startswith("B.D", na=False)
   b/G/all-time:
     samples:
       sample:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: '1975-01-01'
         min_length: 600
-        query: G_coverage>0.3 & missing_data<1000
+        query: G_coverage>0.3
   b/G/6y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: 6Y
         min_length: 600
-        query: G_coverage>0.3 & missing_data<1000
+        query: G_coverage>0.3
       background:
         include: config/include_b.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -401,25 +335,20 @@ subsample:
         min_date: 12Y
         max_date: 6Y
         min_length: 600
-        query: G_coverage>0.3 & missing_data<1000 & clade.str.startswith("B.D", na=False)
+        query: G_coverage>0.3 & clade.str.startswith("B.D", na=False)
   b/G/3y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: 3Y
         min_length: 600
-        query: G_coverage>0.3 & missing_data<1000
+        query: G_coverage>0.3
       background:
         include: config/include_b.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -428,38 +357,30 @@ subsample:
         min_date: 12Y
         max_date: 3Y
         min_length: 600
-        query: G_coverage>0.3 & missing_data<1000 & clade.str.startswith("B.D", na=False)
+        query: G_coverage>0.3 & clade.str.startswith("B.D", na=False)
   b/F/all-time:
     samples:
       sample:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: '1975-01-01'
         min_length: 1200
-        query: F_coverage>0.3 & missing_data<1000
+        query: F_coverage>0.3
   b/F/6y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: 6Y
         min_length: 1200
-        query: F_coverage>0.3 & missing_data<1000
+        query: F_coverage>0.3
       background:
         include: config/include_b.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -468,25 +389,20 @@ subsample:
         min_date: 12Y
         max_date: 6Y
         min_length: 1200
-        query: F_coverage>0.3 & missing_data<1000 & clade.str.startswith("B.D", na=False)
+        query: F_coverage>0.3 & clade.str.startswith("B.D", na=False)
   b/F/3y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 3000
         min_date: 3Y
         min_length: 1200
-        query: F_coverage>0.3 & missing_data<1000
+        query: F_coverage>0.3
       background:
         include: config/include_b.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -495,38 +411,30 @@ subsample:
         min_date: 12Y
         max_date: 3Y
         min_length: 1200
-        query: F_coverage>0.3 & missing_data<1000 & clade.str.startswith("B.D", na=False)
+        query: F_coverage>0.3 & clade.str.startswith("B.D", na=False)
   b/F-antibody-escape/all-time:
     samples:
       sample:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 2000
         min_date: '1975-01-01'
         min_length: 1200
-        query: F_coverage>0.75 & missing_data<1000
+        query: F_coverage>0.75
   b/F-antibody-escape/6y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 2000
         min_date: 6Y
         min_length: 1200
-        query: F_coverage>0.75 & missing_data<1000
+        query: F_coverage>0.75
       background:
         include: config/include_b.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -535,25 +443,20 @@ subsample:
         min_date: 12Y
         max_date: 6Y
         min_length: 1200
-        query: F_coverage>0.75 & missing_data<1000 & clade.str.startswith("B.D", na=False)
+        query: F_coverage>0.75 & clade.str.startswith("B.D", na=False)
   b/F-antibody-escape/3y:
     samples:
       recent:
-        exclude: config/outliers_ppx.txt
-        exclude_where:
-        - qc.overallStatus=bad
         group_by:
         - year
         - country
         max_sequences: 2000
         min_date: 3Y
         min_length: 1200
-        query: F_coverage>0.75 & missing_data<1000
+        query: F_coverage>0.75
       background:
         include: config/include_b.txt
-        exclude: config/outliers_ppx.txt
         exclude_where:
-        - qc.overallStatus=bad
         - qc.overallStatus=mediocre
         group_by:
         - year
@@ -562,7 +465,7 @@ subsample:
         min_date: 12Y
         max_date: 3Y
         min_length: 1200
-        query: F_coverage>0.75 & missing_data<1000 & clade.str.startswith("B.D", na=False)
+        query: F_coverage>0.75 & clade.str.startswith("B.D", na=False)
 files:
   auspice_config: config/auspice_config.json
   auspice_config_additional_colorings: config/auspice_config_additional_colorings.json
@@ -600,16 +503,8 @@ nextclade_attributes:
     reference_name: hRSV/B/Australia/VIC-RCH056/2019
     accession: EPI_ISL_1653999
 filter_for_f_antibody_escape:
-  min_length:
-    genome: 10000
-    G: 600
-    F: 1200
-    F-antibody-escape: 1200
-  min_coverage:
-    genome: 0.3
-    G: 0.3
-    F: 0.3
-    F-antibody-escape: 0.75
+  min_length: 1200
+  min_coverage: 0.75
   resolutions:
     all-time:
       min_date: '1975-01-01'
